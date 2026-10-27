@@ -55,7 +55,7 @@ src/
     snapshot.svelte.ts                Spielstand über neue Artifact-Versionen hinweg
   features/
     start/           Startseite: Hero, PlayersPanel, RulesPanel, OptionsPanel, ChoiceGroup, Panel
-    table/           Spieltisch: TopBar, ScoreBoard, Opponents, Board, Pile, Hand, HandCard, Actions, GameLog, LogText, …
+    table/           Spieltisch: TopBar, GameStatus, Opponents, Seat, Board, Pile, DrawPile, Hand, HandCard, Actions, GameLog, …
     sheets/          Fenster: Regeln, Übergabe, Reihenfolge, Ergebnis
   ui/              gemeinsame Bausteine: Card, CardBack, Chip, SuitIcon, Logo, Sheet, Subject, format.ts
   styles/global.css  Design-Tokens (hell/dunkel), Knöpfe, Formularfelder – alles andere steht in den Komponenten

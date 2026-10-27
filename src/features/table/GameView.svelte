@@ -3,19 +3,19 @@ import type { GameState } from '../../core/game';
 import Actions from './Actions.svelte';
 import Board from './Board.svelte';
 import GameLog from './GameLog.svelte';
+import GameStatus from './GameStatus.svelte';
 import Hand from './Hand.svelte';
 import LastMove from './LastMove.svelte';
 import Opponents from './Opponents.svelte';
-import ScoreBoard from './ScoreBoard.svelte';
 import TopBar from './TopBar.svelte';
 
-/** Der Spieltisch: oben die Punkte, in der Mitte die Stapel, unten die Hand; daneben das Protokoll. */
+/** Der Spieltisch: oben das Gegenüber, in der Mitte die Stapel, unten die eigene Hand; daneben das Protokoll. */
 let { game }: { game: GameState } = $props();
 </script>
 
 <div class="game">
   <TopBar />
-  <ScoreBoard {game} />
+  <GameStatus {game} />
   <main class="table">
     <div class="play">
       <Opponents {game} />
