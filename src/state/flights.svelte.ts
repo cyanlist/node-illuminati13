@@ -5,9 +5,9 @@
 import type { Card } from '../core/cards';
 
 /** Dauer eines Flugs in Millisekunden */
-export const FLIGHT_MS = 700;
+export const FLIGHT_MS = 400;
 /** Pause statt Flug, wenn nicht animiert wird – das Ablegen bleibt trotzdem nachvollziehbar */
-const STILL_MS = 450;
+const STILL_MS = 250;
 
 export interface Flight {
   id: number;
