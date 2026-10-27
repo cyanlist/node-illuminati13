@@ -204,10 +204,11 @@ async function presentProof(
 
 /**
  * Nachziehen: Jede neue Karte bekommt zuerst einen (noch unsichtbaren) Platz in der Hand und fliegt dann
- * vom Nachziehstapel genau dorthin – in die eigene Hand offen, zum Gegenüber verdeckt.
+ * vom Nachziehstapel genau dorthin – in die eigene Hand offen, zum Gegenüber verdeckt (außer mit offenen Karten).
  */
 async function drawUp(player: number, running: () => boolean): Promise<boolean> {
-  const faceDown = player !== table.handOwner || table.phase === 'handoff';
+  const hidden = player !== table.handOwner || table.phase === 'handoff';
+  const faceDown = hidden && !table.game?.settings.openHands;
   for (const card of table.anim?.drawn ?? []) {
     const anim = table.anim;
     if (!anim || !running()) return false;

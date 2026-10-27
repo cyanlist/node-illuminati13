@@ -19,6 +19,8 @@ export interface Settings {
   /** Name 1 und Name 2; leer heißt „Du“ bzw. „Spieler*in 1/2“ */
   names: [string, string];
   showValues: boolean;
+  /** Mit offenen Karten: Die Hand des Gegenübers liegt offen, zu zweit entfällt die Übergabe */
+  openHands: boolean;
   /** Variante „Wenn die Weltordnung sich verschiebt“ */
   variant: boolean;
   dir: RotationDir;
@@ -35,6 +37,7 @@ export const DEFAULT_SETTINGS: Settings = {
   cpuLevel: 'medium',
   names: ['', ''],
   showValues: true,
+  openHands: false,
   variant: false,
   dir: 'rechts',
   ruleMode: 'classic',
@@ -63,6 +66,7 @@ export function normalizeSettings(raw: unknown): Settings {
       typeof names[1] === 'string' ? names[1] : d.names[1],
     ],
     showValues: flag(data.showValues, d.showValues),
+    openHands: flag(data.openHands, d.openHands),
     variant: flag(data.variant, d.variant),
     dir: oneOf(data.dir, ['rechts', 'links'], d.dir),
     ruleMode: oneOf(data.ruleMode, ['classic', 'custom', 'random'], d.ruleMode),

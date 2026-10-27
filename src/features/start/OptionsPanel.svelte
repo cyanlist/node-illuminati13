@@ -3,7 +3,7 @@ import type { Settings } from '../../core/settings';
 import CheckOption from './CheckOption.svelte';
 import Panel from './Panel.svelte';
 
-/** Wahre Werte anzeigen und die Variante „Wenn die Weltordnung sich verschiebt“. */
+/** Wahre Werte anzeigen, offene Karten und die Variante „Wenn die Weltordnung sich verschiebt“. */
 let { draft = $bindable() }: { draft: Settings } = $props();
 </script>
 
@@ -13,6 +13,13 @@ let { draft = $bindable() }: { draft: Settings } = $props();
     description="Ausgeschaltet rechnest du selbst im Kopf, wie am echten Tisch."
     bind:checked={draft.showValues}
   />
+  {#if draft.mode !== 'solo'}
+    <CheckOption
+      title="Mit offenen Karten spielen"
+      description="Die Karten des Gegenübers liegen offen – zum Lernen und Zuschauen. Zu zweit entfällt die Übergabe."
+      bind:checked={draft.openHands}
+    />
+  {/if}
   <CheckOption
     title="Variante „Wenn die Weltordnung sich verschiebt“"
     description="Landet eine 13 auf einem Stapel, wandern alle vier Regeln eine Position weiter."

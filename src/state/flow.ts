@@ -41,7 +41,9 @@ function beginTurn(): void {
     if (table.view === 'game') scheduleCpu(TIMING.cpuThinking);
     return;
   }
-  table.phase = game.settings.mode === 'hotseat' ? 'handoff' : 'play';
+  // zu zweit wird das Gerät mit verdeckten Karten weitergegeben – mit offenen Karten ist das unnötig
+  const handoff = game.settings.mode === 'hotseat' && !game.settings.openHands;
+  table.phase = handoff ? 'handoff' : 'play';
 }
 
 /** Spielt einen Zug ab und führt danach den Rundenablauf weiter. */
