@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { bestCombo, findCombos } from '../src/core/combos';
-import { CLASSIC_RULES, RULE_KEYS, RULES, rotateRules } from '../src/core/rules';
+import { CLASSIC_RULES, isRuleKey, RULE_KEYS, RULE_PACKS, RULES, rotateRules } from '../src/core/rules';
 import { sumOfValues, trueValue } from '../src/core/values';
 import { card, seededRng } from './helpers';
 
@@ -65,5 +65,23 @@ describe('Regeln', () => {
       plain: 4,
       mean: 5,
     });
+  });
+});
+
+describe('Regelpakete', () => {
+  it('liefern vier gültige Regeln und erkennen sich selbst wieder', () => {
+    for (const pack of RULE_PACKS) {
+      const rules = pack.rules(seededRng(1));
+      expect(rules, pack.id).toHaveLength(4);
+      expect(rules.every(isRuleKey), pack.id).toBe(true);
+      if (pack.matches) expect(pack.matches(rules), pack.id).toBe(true);
+    }
+  });
+
+  it('haben eindeutige ids, und nur Klassisch passt auf die klassischen Regeln', () => {
+    expect(new Set(RULE_PACKS.map((pack) => pack.id)).size).toBe(RULE_PACKS.length);
+    expect(RULE_PACKS.filter((pack) => pack.matches?.(CLASSIC_RULES)).map((pack) => pack.id)).toEqual([
+      'classic',
+    ]);
   });
 });
