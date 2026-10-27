@@ -1,5 +1,5 @@
 <script lang="ts">
-import { normalizeSettings } from '../../core/settings';
+import { normalizeSettings, resolveRuleMode, settingsForEditing } from '../../core/settings';
 import { resume, startGame } from '../../state/flow';
 import { table } from '../../state/table.svelte';
 import { loadSettings, saveSettings } from '../../storage';
@@ -10,13 +10,13 @@ import PlayersPanel from './PlayersPanel.svelte';
 import RulesPanel from './RulesPanel.svelte';
 
 /** Startseite: links der Titel, rechts die Einstellungen für das nächste Spiel. */
-let draft = $state(loadSettings());
+let draft = $state(settingsForEditing(loadSettings()));
 
 const running = $derived(table.game !== null && table.phase !== 'over');
 
 function onsubmit(event: SubmitEvent): void {
   event.preventDefault();
-  const settings = normalizeSettings($state.snapshot(draft));
+  const settings = resolveRuleMode(normalizeSettings($state.snapshot(draft)));
   saveSettings(settings);
   startGame(settings);
 }

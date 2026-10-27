@@ -1,4 +1,4 @@
-import { CLASSIC_RULES, isRuleKey, type RotationDir, type RuleKey } from './rules';
+import { CLASSIC_RULES, isRuleKey, type RotationDir, type RuleKey, sameRules } from './rules';
 
 /** Wer spielt: gegen den Computer, zu zweit an einem Gerät oder allein. */
 export type GameMode = 'cpu' | 'hotseat' | 'solo';
@@ -70,4 +70,21 @@ export function normalizeSettings(raw: unknown): Settings {
     hints: oneOf(data.hints, ['off', 'nudge', 'full'], d.hints),
     hintCost: flag(data.hintCost, d.hintCost),
   };
+}
+
+/**
+ * Für die Startseite: Dort gibt es immer die vier Auswahlfelder. Im klassischen Modus zeigen sie
+ * die klassischen Regeln, auch wenn von früher noch eine eigene Zuordnung gespeichert ist.
+ */
+export function settingsForEditing(settings: Settings): Settings {
+  return settings.ruleMode === 'classic' ? { ...settings, customRules: [...CLASSIC_RULES] } : settings;
+}
+
+/**
+ * Beim Spielstart: Ohne „Bei jedem Spiel neu auslosen“ gilt das Spiel als klassisch, wenn die Felder
+ * den klassischen Regeln entsprechen, sonst als eigene Zuordnung.
+ */
+export function resolveRuleMode(settings: Settings): Settings {
+  if (settings.ruleMode === 'random') return settings;
+  return { ...settings, ruleMode: sameRules(settings.customRules, CLASSIC_RULES) ? 'classic' : 'custom' };
 }

@@ -40,7 +40,7 @@ Biome (Lint/Format).
 src/
   core/            Spielkern ohne UI-Bezug (framework-frei, getestet)
     cards.ts         Farben, Karten, Deck, Mischen
-    rules/           eine Datei pro Regel (plus.ts, minus.ts, …), registry.ts trägt sie ein, rotation.ts für die Variante
+    rules/           eine Datei pro Regel (plus.ts, minus.ts, …), registry.ts trägt sie ein, packs.ts bündelt Regelpakete für die Startseite, rotation.ts für die Variante
     values.ts        wahrer Wert einer Handkarte
     combos.ts        13er-Kombinationen finden
     settings.ts      Einstellungen und deren Prüfung

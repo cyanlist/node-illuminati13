@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { chooseCpuMove } from '../src/core/ai';
 import { applyMove, finishTurn, type GameState, HAND_SIZE, newGame, ranking } from '../src/core/game';
 import { CLASSIC_RULES } from '../src/core/rules';
-import { normalizeSettings } from '../src/core/settings';
+import { normalizeSettings, resolveRuleMode, settingsForEditing } from '../src/core/settings';
 import { card, seededRng, settings } from './helpers';
 
 /** Ein Spiel mit festgelegter Hand und festgelegten Stapeln, wie im Beispiel der Anleitung. */
@@ -160,5 +160,21 @@ describe('Einstellungen', () => {
       settings({ customRules: [...CLASSIC_RULES] }),
     );
     expect(normalizeSettings(null)).toEqual(settings());
+  });
+
+  it('leitet den Regel-Modus beim Spielstart aus den Feldern ab', () => {
+    expect(resolveRuleMode(settings({ ruleMode: 'custom', customRules: [...CLASSIC_RULES] })).ruleMode).toBe(
+      'classic',
+    );
+    expect(
+      resolveRuleMode(settings({ ruleMode: 'classic', customRules: ['min', 'minus', 'copy', 'max'] }))
+        .ruleMode,
+    ).toBe('custom');
+    expect(resolveRuleMode(settings({ ruleMode: 'random' })).ruleMode).toBe('random');
+  });
+
+  it('zeigt im klassischen Modus die klassischen Regeln zum Bearbeiten', () => {
+    const stored = settings({ ruleMode: 'classic', customRules: ['mirror', 'min', 'plain', 'mean'] });
+    expect(settingsForEditing(stored).customRules).toEqual([...CLASSIC_RULES]);
   });
 });
