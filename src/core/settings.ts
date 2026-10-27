@@ -16,7 +16,7 @@ export interface Settings {
   mode: GameMode;
   /** Stärke des Computers – nur im Spiel gegen den Computer */
   cpuLevel: CpuLevel;
-  /** Name 1 (bzw. „Du“) und Name 2 für das Spiel zu zweit */
+  /** Name 1 und Name 2; leer heißt „Du“ bzw. „Spieler*in 1/2“ */
   names: [string, string];
   showValues: boolean;
   /** Variante „Wenn die Weltordnung sich verschiebt“ */
@@ -33,7 +33,7 @@ export interface Settings {
 export const DEFAULT_SETTINGS: Settings = {
   mode: 'cpu',
   cpuLevel: 'medium',
-  names: ['Du', ''],
+  names: ['', ''],
   showValues: true,
   variant: false,
   dir: 'rechts',
@@ -58,7 +58,8 @@ export function normalizeSettings(raw: unknown): Settings {
     mode: oneOf(data.mode, ['cpu', 'hotseat', 'solo'], d.mode),
     cpuLevel: oneOf(data.cpuLevel, ['easy', 'medium', 'hard'], d.cpuLevel),
     names: [
-      typeof names[0] === 'string' ? names[0] : d.names[0],
+      // früher stand „Du“ als Name im Feld – zu zweit wurde daraus „Du ist an der Reihe“
+      typeof names[0] === 'string' && names[0].trim() !== 'Du' ? names[0] : d.names[0],
       typeof names[1] === 'string' ? names[1] : d.names[1],
     ],
     showValues: flag(data.showValues, d.showValues),

@@ -162,6 +162,11 @@ describe('Einstellungen', () => {
     expect(normalizeSettings(null)).toEqual(settings());
   });
 
+  it('macht aus einem früher gespeicherten Namen „Du“ ein leeres Feld', () => {
+    expect(normalizeSettings({ names: ['Du', 'Bea'] }).names).toEqual(['', 'Bea']);
+    expect(normalizeSettings({ names: ['Anna', ''] }).names).toEqual(['Anna', '']);
+  });
+
   it('leitet den Regel-Modus beim Spielstart aus den Feldern ab', () => {
     expect(resolveRuleMode(settings({ ruleMode: 'custom', customRules: [...CLASSIC_RULES] })).ruleMode).toBe(
       'classic',

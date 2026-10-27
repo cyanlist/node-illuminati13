@@ -55,7 +55,7 @@ src/
     flights.svelte.ts, positions.ts   fliegende Karten und ihre Start-/Zielpunkte
     snapshot.svelte.ts                Spielstand über neue Artifact-Versionen hinweg
   features/
-    start/           Startseite: Hero, PlayersPanel, RulesPanel, HintsPanel, OptionsPanel, ChoiceGroup, CheckOption, Panel
+    start/           Startseite: Hero, PlayersPanel, RulesPanel, HintsPanel, OptionsPanel, ChoiceGroup, Segmented, CheckOption, Panel
     table/           Spieltisch: TopBar, GameStatus, Opponents, Seat, Board, Pile, DrawPile, ProofStage, Hand, HandCard, Actions, GameLog, …
     sheets/          Fenster: Regeln, Übergabe, Reihenfolge, Ergebnis
   ui/              gemeinsame Bausteine: Card, CardBack, Chip, SuitIcon, Logo, Sheet, Subject, format.ts
