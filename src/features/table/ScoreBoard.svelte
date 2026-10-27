@@ -1,7 +1,6 @@
 <script lang="ts">
 import type { GameState } from '../../core/game';
 import { table } from '../../state/table.svelte';
-import CardBack from '../../ui/CardBack.svelte';
 import ScoreCard from './ScoreCard.svelte';
 
 let { game }: { game: GameState } = $props();
@@ -27,11 +26,6 @@ const turnsLeft = $derived(game.finalTurnsLeft);
     {#if game.settings.ruleMode === 'custom'}<span class="tag">Eigene Regeln</span>{/if}
     {#if game.settings.ruleMode === 'random'}<span class="tag">Ausgeloste Regeln</span>{/if}
     {#if game.settings.variant}<span class="tag">Weltordnung {table.rotations}× verschoben</span>{/if}
-    <div class="deck">
-      <CardBack />
-      <b>{table.deckCount}</b>
-      <small>Karten im<br />Nachziehstapel</small>
-    </div>
   </div>
 </section>
 
@@ -65,23 +59,5 @@ const turnsLeft = $derived(game.finalTurnsLeft);
   .warn {
     color: var(--text);
     border-color: var(--text);
-  }
-
-  .deck {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    --cw: 28px;
-  }
-
-  .deck b {
-    font-size: 24px;
-    line-height: 1;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .deck small {
-    color: var(--muted);
-    line-height: 1.2;
   }
 </style>

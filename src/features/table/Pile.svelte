@@ -35,7 +35,8 @@ const rule = $derived(ruleKey ? RULES[ruleKey] : null);
     {/if}
   </div>
 
-  <div class="count"><b>{SUITS[suit].name}</b> · {cards.length === 0 ? 'leer' : cardCount(cards.length)}</div>
+  <!-- <div class="count"><b>{SUITS[suit].name}</b> · {cards.length === 0 ? 'leer' : cardCount(cards.length)}</div> -->
+   <div class="count"><b>{SUITS[suit].name}</b></div>
 </div>
 
 <style>
@@ -57,7 +58,7 @@ const rule = $derived(ruleKey ? RULES[ruleKey] : null);
     line-height: 1.2;
     text-align: center;
     color: var(--muted);
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
   }
 
   .short {
