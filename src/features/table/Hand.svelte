@@ -29,7 +29,7 @@ const interactive = $derived(
         showValues={game.settings.showValues}
         selected={table.selected.includes(card.id)}
         hinted={table.hint.includes(card.id)}
-        dealt={table.dealt.includes(card.id)}
+        arriving={table.arriving(card.id)}
         disabled={!interactive}
         onclick={() => toggleCard(card.id)}
       />

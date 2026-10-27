@@ -17,8 +17,8 @@ export type Phase =
   | 'over';
 
 /**
- * Laufende Ablege-Animation. Der Zug ist im Spielzustand schon ausgeführt; die Anzeige zeigt
- * so lange den Stand davor, bis jede Karte einzeln auf ihrem Stapel gelandet ist.
+ * Laufende Animation eines Zugs. Der Zug ist im Spielzustand schon ausgeführt; die Anzeige zeigt
+ * so lange den Stand davor, bis jede Karte einzeln abgelegt und jede neue Karte nachgezogen ist.
  */
 export interface MoveAnimation {
   id: number;
@@ -32,10 +32,16 @@ export interface MoveAnimation {
   combos: number[];
   deck: number;
   logLength: number;
-  /** Hand der Person am Zug vor dem Zug – nachgezogene Karten erscheinen erst nach der Animation */
+  /** Hand der Person am Zug vor dem Zug */
   handBefore: Card[];
   /** ids der Karten, die die Hand schon verlassen haben (in der Luft oder gelandet) */
   launched: number[];
+  /** Nachgezogene Karten in der Reihenfolge, in der sie in die Hand kommen */
+  drawn: Card[];
+  /** ids der nachgezogenen Karten, die schon ihren Platz in der Hand haben (evtl. noch im Anflug) */
+  incoming: number[];
+  /** ids der nachgezogenen Karten, die angekommen und sichtbar sind */
+  arrived: number[];
 }
 
 class TableState {
@@ -54,8 +60,6 @@ class TableState {
   /** Ergebnisfenster weggeklickt, um den Tisch anzusehen */
   resultsHidden = $state(false);
   anim = $state<MoveAnimation | null>(null);
-  /** Frisch nachgezogene Karten, die einmal eingeblendet werden */
-  dealt = $state<number[]>([]);
   /** Bisheriger Bestwert im Solo-Spiel, für das Ergebnisfenster */
   soloBest = $state(0);
 
@@ -107,13 +111,24 @@ class TableState {
     return this.anim?.combos[index] ?? this.game?.players[index]?.combos ?? 0;
   }
 
-  /** Handkarten einer Person. Während sie ablegt, bleibt jede Karte liegen, bis sie selbst abhebt. */
+  /**
+   * Handkarten einer Person. Während sie am Zug ist, bleibt jede gespielte Karte liegen, bis sie abhebt,
+   * und jede neue Karte taucht erst auf, wenn sie vom Nachziehstapel losfliegt.
+   */
   hand(index: number): Card[] {
     const player = this.game?.players[index];
     if (!player) return [];
     const anim = this.anim;
     if (!anim || anim.player !== index) return player.hand;
-    return anim.handBefore.filter((card) => !anim.launched.includes(card.id));
+    const kept = anim.handBefore.filter((card) => !anim.launched.includes(card.id));
+    const incoming = anim.drawn.filter((card) => anim.incoming.includes(card.id));
+    return [...kept, ...incoming];
+  }
+
+  /** Die Karte hat schon ihren Platz in der Hand, ist aber noch im Anflug – der Platz bleibt leer. */
+  arriving(cardId: number): boolean {
+    const anim = this.anim;
+    return !!anim && anim.incoming.includes(cardId) && !anim.arrived.includes(cardId);
   }
 }
 

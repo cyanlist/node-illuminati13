@@ -13,22 +13,22 @@ interface Props {
   showValues: boolean;
   selected: boolean;
   hinted: boolean;
-  dealt: boolean;
+  /** Neue Karte im Anflug – ihr Platz bleibt bis zur Landung leer */
+  arriving: boolean;
   disabled: boolean;
   onclick: () => void;
 }
-let { card, piles, rules, showValues, selected, hinted, dealt, disabled, onclick }: Props = $props();
+let { card, piles, rules, showValues, selected, hinted, arriving, disabled, onclick }: Props = $props();
 
 const value = $derived(trueValue(card, piles, rules));
 </script>
 
-<div class="slot">
+<div class="slot" class:arriving>
   <Card
     {card}
     value={showValues ? value.value : null}
     {selected}
     {hinted}
-    {dealt}
     {disabled}
     {onclick}
     data-hand-card={card.id}
@@ -43,6 +43,10 @@ const value = $derived(trueValue(card, piles, rules));
     align-items: center;
     gap: 8px;
     min-width: 0;
+  }
+
+  .arriving {
+    visibility: hidden;
   }
 
   .formula {

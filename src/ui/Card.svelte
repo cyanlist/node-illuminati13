@@ -15,12 +15,10 @@ interface Props extends HTMLAttributes<HTMLElement> {
   value?: number | null;
   selected?: boolean;
   hinted?: boolean;
-  dealt?: boolean;
   disabled?: boolean;
   onclick?: () => void;
 }
-let { card, value = null, selected = false, hinted = false, dealt = false, disabled = false, onclick, ...rest }: Props =
-  $props();
+let { card, value = null, selected = false, hinted = false, disabled = false, onclick, ...rest }: Props = $props();
 
 const label = $derived(`${SUITS[card.suit].name} ${card.rank}${value !== null ? `, wahrer Wert ${num(value)}` : ''}`);
 const cornerIcon = 'calc(var(--cw) * 0.12)';
@@ -42,7 +40,6 @@ const cornerIcon = 'calc(var(--cw) * 0.12)';
     class="card suit-{card.suit}"
     class:selected
     class:hinted
-    class:dealt
     aria-pressed={selected}
     aria-label={label}
     {disabled}
@@ -52,7 +49,7 @@ const cornerIcon = 'calc(var(--cw) * 0.12)';
     {@render face()}
   </button>
 {:else}
-  <div class="card suit-{card.suit}" class:selected class:hinted class:dealt role="img" aria-label={label} {...rest}>
+  <div class="card suit-{card.suit}" class:selected class:hinted role="img" aria-label={label} {...rest}>
     {@render face()}
   </div>
 {/if}
@@ -169,17 +166,6 @@ const cornerIcon = 'calc(var(--cw) * 0.12)';
       box-shadow:
         0 0 0 6px var(--marker),
         0 10px 18px var(--shadow);
-    }
-  }
-
-  .dealt {
-    animation: deal 0.4s ease-out;
-  }
-
-  @keyframes deal {
-    from {
-      opacity: 0;
-      transform: translateY(18px);
     }
   }
 </style>

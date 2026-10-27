@@ -23,9 +23,12 @@ const thinking = $derived(table.phase === 'cpu' && !table.anim);
           {/if}
         </span>
         <div class="cards">
-          <!-- data-opponent-slot: Startpunkt, wenn diese Karte gleich abgelegt wird -->
+          <!-- data-opponent-slot: Start- bzw. Zielpunkt, wenn diese Karte abgelegt oder nachgezogen wird -->
           {#each table.hand(index) as card, slot (card.id)}
-            <CardBack data-opponent-slot="{index}-{slot}" />
+            <CardBack
+              data-opponent-slot="{index}-{slot}"
+              style={table.arriving(card.id) ? 'visibility: hidden' : undefined}
+            />
           {/each}
         </div>
       </div>

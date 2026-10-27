@@ -1,6 +1,7 @@
 /**
  * Spielablauf: Spiel starten, Zug vorbereiten, Computerzug und das Abspielen eines Zugs Karte für Karte.
  */
+import { tick } from 'svelte';
 import { chooseCpuMove } from '../core/ai';
 import {
   applyMove,
@@ -9,12 +10,13 @@ import {
   type GameState,
   type Move,
   newGame,
+  type PlacementStep,
   playerAt,
 } from '../core/game';
 import type { Settings } from '../core/settings';
 import { loadSoloBest, saveSoloBest } from '../storage';
 import { flyCard } from './flights.svelte';
-import { launchRect, pileRect } from './positions';
+import { drawPileRect, launchRect, pileRect } from './positions';
 import { type MoveAnimation, requireGame, table } from './table.svelte';
 
 /** Taktung in Millisekunden */
@@ -24,9 +26,9 @@ const TIMING = {
   beforeFirstCard: 120,
   betweenCards: 300,
   betweenCardsCpu: 450,
+  betweenDraws: 80,
   afterMove: 250,
   afterMoveCpu: 800,
-  dealtFade: 600,
 };
 
 let cpuTimer: ReturnType<typeof setTimeout> | undefined;
@@ -38,7 +40,6 @@ export function startGame(settings: Settings): void {
   stopCpu();
   table.game = newGame(settings);
   table.anim = null;
-  table.dealt = [];
   table.rulesOpen = false;
   table.resultsHidden = false;
   table.view = 'game';
@@ -79,7 +80,10 @@ function cpuTurn(): void {
 /** Was die Anzeige während der Animation weiter zeigt: der Stand direkt vor dem Zug. */
 function animationStart(
   game: GameState,
-): Omit<MoveAnimation, 'id' | 'player' | 'pending' | 'landed' | 'launched'> {
+): Omit<
+  MoveAnimation,
+  'id' | 'player' | 'pending' | 'landed' | 'launched' | 'drawn' | 'incoming' | 'arrived'
+> {
   return {
     rules: [...game.rules],
     rotations: game.rotations,
@@ -92,40 +96,62 @@ function animationStart(
 }
 
 /**
- * Führt einen Zug aus und spielt ihn Karte für Karte ab: Jede Karte bleibt in der Hand liegen, bis sie
- * abhebt, und fliegt dann einzeln auf ihren Stapel. Erst danach zeigt die Anzeige Punkte, Protokoll und
- * nachgezogene Karten. Dann ist die nächste Person dran.
+ * Führt einen Zug aus und spielt ihn ab: erst fliegen die gespielten Karten einzeln aus der Hand auf ihre
+ * Stapel, dann die nachgezogenen Karten vom Nachziehstapel in die Hand. Erst danach zeigt die Anzeige
+ * Punkte und Protokoll, und die nächste Person ist dran.
  */
 export async function playMove(move: Move): Promise<void> {
   const game = requireGame();
   const player = game.current;
   const isCpu = currentPlayer(game).cpu;
-  const id = nextAnimationId++;
   const before = animationStart(game);
   const result = applyMove(game, move);
-  table.anim = {
+  const drawnIds = new Set(result.drawn);
+  const anim: MoveAnimation = {
     ...before,
-    id,
+    id: nextAnimationId++,
     player,
     pending: result.steps.map((step) => step.card.id),
     landed: [],
     launched: [],
+    drawn: currentPlayer(game).hand.filter((card) => drawnIds.has(card.id)),
+    incoming: [],
+    arrived: [],
   };
+  table.anim = anim;
   table.hint = [];
   table.message = '';
+  // ein neues Spiel oder der Weg zur Startseite beendet die Animation
+  const running = (): boolean => table.anim?.id === anim.id;
 
   await wait(TIMING.beforeFirstCard);
-  for (const step of result.steps) {
-    // ein neues Spiel oder der Weg zur Startseite beendet die Animation
-    const anim: MoveAnimation | null = table.anim;
-    if (!anim || anim.id !== id) return;
+  if (!(await layDown(result.steps, player, isCpu, running))) return;
+  if (!(await drawUp(player, running))) return;
+  await wait(isCpu ? TIMING.afterMoveCpu : TIMING.afterMove);
+  if (!running()) return;
+
+  table.anim = null;
+  table.selected = [];
+  afterMove();
+}
+
+/** Ablegen: Jede Karte bleibt in der Hand liegen, bis sie abhebt, und fliegt dann auf ihren Stapel. */
+async function layDown(
+  steps: PlacementStep[],
+  player: number,
+  isCpu: boolean,
+  running: () => boolean,
+): Promise<boolean> {
+  for (const step of steps) {
+    const anim = table.anim;
+    if (!anim || !running()) return false;
 
     // abheben: Startpunkt messen, dann verschwindet die Karte aus der Hand und fliegt los
     const slot = table.hand(player).findIndex((card) => card.id === step.card.id);
     const from = launchRect(step.card.id, player, slot);
     anim.launched.push(step.card.id);
     await flyCard(step.card, from, pileRect(step.card.suit));
-    if (table.anim?.id !== id) return;
+    if (!running()) return false;
 
     // gelandet: Karte liegt oben auf dem Stapel, ggf. mit verschobenen Regeln
     anim.pending = anim.pending.filter((cardId) => cardId !== step.card.id);
@@ -134,20 +160,31 @@ export async function playMove(move: Move): Promise<void> {
     anim.rotations = step.rotations;
     await wait(isCpu ? TIMING.betweenCardsCpu : TIMING.betweenCards);
   }
-  await wait(isCpu ? TIMING.afterMoveCpu : TIMING.afterMove);
-  if (table.anim?.id !== id) return;
-
-  table.anim = null;
-  table.selected = [];
-  showDealt(result.drawn);
-  afterMove();
+  return running();
 }
 
-function showDealt(ids: number[]): void {
-  table.dealt = ids;
-  setTimeout(() => {
-    if (table.dealt === ids) table.dealt = [];
-  }, TIMING.dealtFade);
+/**
+ * Nachziehen: Jede neue Karte bekommt zuerst einen (noch unsichtbaren) Platz in der Hand und fliegt dann
+ * vom Nachziehstapel genau dorthin – in die eigene Hand offen, zum Gegenüber verdeckt.
+ */
+async function drawUp(player: number, running: () => boolean): Promise<boolean> {
+  const faceDown = player !== table.handOwner || table.phase === 'handoff';
+  for (const card of table.anim?.drawn ?? []) {
+    const anim = table.anim;
+    if (!anim || !running()) return false;
+
+    const from = drawPileRect();
+    anim.deck--;
+    anim.incoming.push(card.id);
+    await tick(); // Platz in der Hand entsteht erst beim nächsten Zeichnen
+    const slot = table.hand(player).findIndex((c) => c.id === card.id);
+    await flyCard(card, from, launchRect(card.id, player, slot), { faceDown });
+    if (!running()) return false;
+
+    anim.arrived.push(card.id);
+    await wait(TIMING.betweenDraws);
+  }
+  return running();
 }
 
 /** Nach dem Zug: Rundenablauf weiterführen und entweder den nächsten Zug vorbereiten oder werten. */

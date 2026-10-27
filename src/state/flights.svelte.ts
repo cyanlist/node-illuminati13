@@ -12,9 +12,11 @@ const STILL_MS = 250;
 export interface Flight {
   id: number;
   card: Card;
-  /** Startpunkt (Hand oder verdeckte Karte); ohne Startpunkt blendet die Karte über dem Stapel ein */
+  /** Startpunkt (Hand, verdeckte Karte oder Nachziehstapel); ohne Startpunkt blendet die Karte am Ziel ein */
   from: DOMRect | null;
   to: DOMRect;
+  /** Verdeckt fliegen – beim Nachziehen zum Gegenüber */
+  faceDown: boolean;
 }
 
 class FlightState {
@@ -29,8 +31,13 @@ let nextId = 1;
 const prefersReducedMotion = (): boolean =>
   window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
 
-/** Lässt eine Karte von `from` auf ihren Stapel `to` fliegen; das Promise erfüllt sich bei der Landung. */
-export function flyCard(card: Card, from: DOMRect | null, to: DOMRect | null): Promise<void> {
+/** Lässt eine Karte von `from` nach `to` fliegen; das Promise erfüllt sich bei der Landung. */
+export function flyCard(
+  card: Card,
+  from: DOMRect | null,
+  to: DOMRect | null,
+  { faceDown = false }: { faceDown?: boolean } = {},
+): Promise<void> {
   return new Promise((resolve) => {
     if (!to || prefersReducedMotion()) {
       setTimeout(resolve, STILL_MS);
@@ -38,7 +45,7 @@ export function flyCard(card: Card, from: DOMRect | null, to: DOMRect | null): P
     }
     const id = nextId++;
     waiting.set(id, resolve);
-    flights.list.push({ id, card, from, to });
+    flights.list.push({ id, card, from, to, faceDown });
   });
 }
 

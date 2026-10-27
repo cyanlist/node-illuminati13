@@ -1,10 +1,11 @@
 <script lang="ts">
 import { FLIGHT_MS, type Flight, flights, landFlight } from '../../state/flights.svelte';
 import Card from '../../ui/Card.svelte';
+import CardBack from '../../ui/CardBack.svelte';
 
 /**
- * Karten im Flug: Jede liegt schon an ihrem Ziel (dem Stapel) und wird per Web-Animation
- * vom Startpunkt dorthin bewegt – mit leichtem Bogen und etwas Drehung.
+ * Karten im Flug: Jede liegt schon an ihrem Ziel (Stapel oder Platz in der Hand) und wird per
+ * Web-Animation vom Startpunkt dorthin bewegt – mit leichtem Bogen und etwas Drehung.
  */
 function fly(node: HTMLElement, flight: Flight) {
   const { from, to } = flight;
@@ -55,7 +56,11 @@ function fly(node: HTMLElement, flight: Flight) {
     style:--cw="{flight.to.width}px"
     use:fly={flight}
   >
-    <Card card={flight.card} />
+    {#if flight.faceDown}
+      <CardBack />
+    {:else}
+      <Card card={flight.card} />
+    {/if}
   </div>
 {/each}
 
