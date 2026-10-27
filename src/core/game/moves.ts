@@ -47,7 +47,7 @@ function applyProof(
 
   logMove(state, { kind: 'proof', player: state.current, parts, points: cards.length });
   logRotations(state, steps);
-  return { steps, drawn };
+  return { steps, drawn, parts };
 }
 
 /** Noch keine Erleuchtung: eine Karte auf ihren Stapel, eine nachziehen. */
@@ -62,7 +62,7 @@ function applyDiscard(state: GameState, player: Player, cardId: number): MoveRes
 
   logMove(state, { kind: 'discard', player: state.current, card });
   logRotations(state, steps);
-  return { steps, drawn };
+  return { steps, drawn, parts: [] };
 }
 
 function cardsFromHand(player: Player, ids: readonly number[]): Card[] {

@@ -11,6 +11,9 @@ export const pileRect = (suit: SuitIndex): DOMRect | null => rectOf(`[data-pile=
 
 export const drawPileRect = (): DOMRect | null => rectOf('[data-draw-pile]');
 
+/** Platz einer Karte auf der Beweis-Bühne */
+export const stageRect = (cardId: number): DOMRect | null => rectOf(`[data-stage-slot="${cardId}"]`);
+
 /**
  * Wo eine Karte gerade liegt: offen in der Hand oder – beim Gegenüber – als verdeckte Karte an Platz `slot`.
  * Gemessen wird erst beim Abflug, weil die übrigen Karten bis dahin schon nachgerückt sein können.

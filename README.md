@@ -48,14 +48,15 @@ src/
     ai.ts            Zugwahl des Computers
   state/           Zustand und Ablauf der Oberfläche
     table.svelte.ts  was der Tisch zeigt (Spiel, Phase, Auswahl, laufende Ablege-Animation)
-    flow.ts          Spiel starten, Computerzug, Zug Karte für Karte abspielen
+    flow.ts          Rundenablauf: Spiel starten, Computerzug, nächster Zug, Wertung
+    move-animation.ts  einen Zug Karte für Karte abspielen: Beweis-Bühne, Ablegen, Nachziehen
     actions.ts       Eingaben: Karten wählen, Tipp, ablegen, Reihenfolge, aufdecken
     main-button.ts   Beschriftung und Zustand des Ablegen-Knopfs
     flights.svelte.ts, positions.ts   fliegende Karten und ihre Start-/Zielpunkte
     snapshot.svelte.ts                Spielstand über neue Artifact-Versionen hinweg
   features/
     start/           Startseite: Hero, PlayersPanel, RulesPanel, OptionsPanel, ChoiceGroup, Panel
-    table/           Spieltisch: TopBar, GameStatus, Opponents, Seat, Board, Pile, DrawPile, Hand, HandCard, Actions, GameLog, …
+    table/           Spieltisch: TopBar, GameStatus, Opponents, Seat, Board, Pile, DrawPile, ProofStage, Hand, HandCard, Actions, GameLog, …
     sheets/          Fenster: Regeln, Übergabe, Reihenfolge, Ergebnis
   ui/              gemeinsame Bausteine: Card, CardBack, Chip, SuitIcon, Logo, Sheet, Subject, format.ts
   styles/global.css  Design-Tokens (hell/dunkel), Knöpfe, Formularfelder – alles andere steht in den Komponenten

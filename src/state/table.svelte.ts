@@ -3,7 +3,7 @@
  * (Auswahl, Fenster, laufende Ablege-Animation). Geändert wird er über flow.ts und actions.ts.
  */
 import type { Card, SuitIndex } from '../core/cards';
-import { currentPlayer, type GameState, type LogEntry } from '../core/game';
+import { currentPlayer, type GameState, type LogEntry, type ProofPart } from '../core/game';
 import type { RuleKey } from '../core/rules';
 
 export type View = 'start' | 'game';
@@ -23,9 +23,8 @@ export type Phase =
 export interface MoveAnimation {
   id: number;
   player: number;
-  /** ids der Karten, die noch nicht gelandet sind */
+  /** ids der Karten, die noch nicht auf ihrem Stapel gelandet sind */
   pending: number[];
-  landed: Card[];
   rules: RuleKey[];
   rotations: number;
   points: number[];
@@ -42,6 +41,31 @@ export interface MoveAnimation {
   incoming: number[];
   /** ids der nachgezogenen Karten, die angekommen und sichtbar sind */
   arrived: number[];
+  /** Bei einem Beweis: die Bühne, auf der die Karten vorgezeigt werden */
+  proof: ProofStage | null;
+}
+
+/**
+ * Beweis-Bühne über dem Board: Die Karten werden allen gezeigt, ihre wahren Werte nacheinander
+ * enthüllt und die 13 aufgelöst – erst danach fliegen sie auf ihre Stapel.
+ */
+export interface ProofStage {
+  /** Die Karten mit Rechenweg in der Reihenfolge, in der sie gewählt wurden */
+  parts: ProofPart[];
+  /** ids der Karten, die schon auf der Bühne liegen */
+  arrived: number[];
+  /** ids der Karten, die die Bühne Richtung Stapel verlassen haben */
+  left: number[];
+  /** Karte, deren Rechenweg gerade zu sehen ist (-1: keine) */
+  revealing: number;
+  /** Wie viele wahre Werte schon enthüllt sind */
+  revealed: number;
+  /** „= 13 · +n Punkte“ ist aufgelöst */
+  solved: boolean;
+  /** Die Bühne wird durchsichtig, die Karten fliegen auf ihre Stapel */
+  clearing: boolean;
+  /** Angetippt: alles Weitere ohne Pausen */
+  skipped: boolean;
 }
 
 class TableState {

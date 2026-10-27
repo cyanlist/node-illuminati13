@@ -76,4 +76,6 @@ export interface MoveResult {
   steps: PlacementStep[];
   /** ids der nachgezogenen Karten */
   drawn: number[];
+  /** Bei einem Beweis: die Karten mit ihrem Rechenweg in der gewählten Reihenfolge; beim Abwurf leer */
+  parts: ProofPart[];
 }

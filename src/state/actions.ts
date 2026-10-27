@@ -6,7 +6,7 @@ import { bestCombo } from '../core/combos';
 import { currentPlayer } from '../core/game';
 import { sumOfValues, TARGET } from '../core/values';
 import { num } from '../ui/format';
-import { playMove } from './flow';
+import { playTurn } from './flow';
 import { requireGame, table } from './table.svelte';
 
 /** Nur am Zug und nicht, während noch Karten fliegen. */
@@ -50,9 +50,9 @@ export function playSelection(): void {
       table.phase = 'order';
       return;
     }
-    void playMove({ type: 'proof', cardIds: ids, topPick });
+    void playTurn({ type: 'proof', cardIds: ids, topPick });
   } else if (cards.length === 1) {
-    void playMove({ type: 'discard', cardId: first.id });
+    void playTurn({ type: 'discard', cardId: first.id });
   } else {
     table.message = `Deine Auswahl ergibt ${num(sum)}, nicht 13. Wähle eine 13 oder eine einzelne Karte zum Abwerfen.`;
   }
@@ -68,7 +68,7 @@ export function confirmOrder(): void {
   const topPick = { ...table.topPick };
   table.topPick = null;
   table.phase = 'play';
-  void playMove({ type: 'proof', cardIds: ids, topPick });
+  void playTurn({ type: 'proof', cardIds: ids, topPick });
 }
 
 export function cancelOrder(): void {

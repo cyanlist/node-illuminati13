@@ -46,6 +46,12 @@ describe('Züge', () => {
     expect(player?.combos).toBe(1);
     expect(player?.hand.length).toBe(HAND_SIZE);
     expect(result.drawn.length).toBe(3);
+    // Rechenweg für die Beweis-Bühne, in der gewählten Reihenfolge
+    expect(result.parts.map((part) => [part.formula, part.value])).toEqual([
+      ['2 − 7', -5],
+      ['10', 10],
+      ['max(6, 8)', 8],
+    ]);
     expect(game.piles.map((pile) => pile.at(-1)?.rank)).toEqual([4, 7, 13, 8]);
     expect(game.log.at(-1)).toMatchObject({ kind: 'proof', points: 3 });
   });
@@ -76,7 +82,8 @@ describe('Züge', () => {
   it('Abwurf: eine Karte auf ihren Stapel, eine nachziehen', () => {
     const game = exampleGame();
     const deckBefore = game.deck.length;
-    applyMove(game, { type: 'discard', cardId: card(0, 5).id });
+    const result = applyMove(game, { type: 'discard', cardId: card(0, 5).id });
+    expect(result.parts).toEqual([]);
     expect(game.piles[0]?.at(-1)?.rank).toBe(5);
     expect(game.players[0]?.hand.length).toBe(HAND_SIZE);
     expect(game.deck.length).toBe(deckBefore - 1);

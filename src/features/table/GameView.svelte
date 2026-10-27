@@ -5,8 +5,8 @@ import Board from './Board.svelte';
 import GameLog from './GameLog.svelte';
 import GameStatus from './GameStatus.svelte';
 import Hand from './Hand.svelte';
-import LastMove from './LastMove.svelte';
 import Opponents from './Opponents.svelte';
+import ProofStage from './ProofStage.svelte';
 import TopBar from './TopBar.svelte';
 
 /** Der Spieltisch: oben das Gegenüber, in der Mitte die Stapel, unten die eigene Hand; daneben das Protokoll. */
@@ -19,8 +19,10 @@ let { game }: { game: GameState } = $props();
   <main class="table">
     <div class="play">
       <Opponents {game} />
-      <Board />
-      <LastMove {game} />
+      <div class="board-area">
+        <Board />
+        <ProofStage {game} />
+      </div>
       <Hand {game} />
       <Actions {game} />
     </div>
@@ -47,6 +49,11 @@ let { game }: { game: GameState } = $props();
     .table {
       grid-template-columns: minmax(0, 1fr) 290px;
     }
+  }
+
+  /* die Beweis-Bühne legt sich über das Board */
+  .board-area {
+    position: relative;
   }
 
   .play {
