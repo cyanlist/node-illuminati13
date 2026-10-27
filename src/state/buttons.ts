@@ -1,3 +1,7 @@
+/**
+ * Beschriftung und Zustand der beiden Knöpfe unter der Hand: Tipp und Ablegen.
+ */
+import { canTakeHint, HINT_COST } from '../core/game';
 import { sumOfValues, TARGET } from '../core/values';
 import { num, pts } from '../ui/format';
 import { table } from './table.svelte';
@@ -20,4 +24,29 @@ export function mainButton(): MainButton {
   if (sum === TARGET) return { label: `13 beweisen · +${pts(selected.length)}`, disabled: false, win: true };
   if (selected.length === 1) return { label: 'Karte abwerfen', disabled: false, win: false };
   return { label: `Ergibt ${num(sum)}, keine 13`, disabled: true, win: false };
+}
+
+export interface HintButton {
+  /** Tipps sind in den Einstellungen ausgeschaltet */
+  hidden: boolean;
+  label: string;
+  disabled: boolean;
+  /** Erklärung, warum der Knopf gesperrt ist */
+  title?: string;
+}
+
+/** Der Tipp-Knopf: zeigt die Kosten, solange in diesem Zug noch kein Tipp bezahlt ist. */
+export function hintButton(): HintButton {
+  const game = table.game;
+  if (!game || game.settings.hints === 'off') return { hidden: true, label: 'Tipp', disabled: true };
+  // schon bezahlt: derselbe Tipp noch einmal, ohne Kosten
+  if (table.hintTaken !== null || !game.settings.hintCost)
+    return { hidden: false, label: 'Tipp', disabled: false };
+  const affordable = canTakeHint(game);
+  return {
+    hidden: false,
+    label: `Tipp · −${pts(HINT_COST)}`,
+    disabled: !affordable,
+    title: affordable ? undefined : 'Ein Tipp kostet einen Punkt – sammle erst einen.',
+  };
 }

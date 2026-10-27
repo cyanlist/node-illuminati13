@@ -43,6 +43,9 @@ const winner = $derived(entry.kind === 'end' && game.players.length > 1 ? rankin
     third="hat keine Karten mehr und setzt aus."
     second="hast keine Karten mehr und setzt aus."
   />
+{:else if entry.kind === 'hint'}
+  <Subject player={playerAt(game, entry.player)} third="holt sich einen Tipp" second="holst dir einen Tipp" />
+  (−{pts(entry.cost)}).
 {:else if entry.kind === 'final'}
   {entry.players > 1
     ? 'Der Nachziehstapel ist leer. Jetzt hat jede*r noch einen letzten Zug.'

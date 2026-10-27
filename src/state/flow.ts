@@ -33,6 +33,7 @@ function beginTurn(): void {
   const game = requireGame();
   table.selected = [];
   table.hint = [];
+  table.hintTaken = null;
   table.message = '';
   table.topPick = null;
   if (currentPlayer(game).cpu) {

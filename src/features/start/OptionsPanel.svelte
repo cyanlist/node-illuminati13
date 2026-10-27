@@ -1,5 +1,6 @@
 <script lang="ts">
 import type { Settings } from '../../core/settings';
+import CheckOption from './CheckOption.svelte';
 import Panel from './Panel.svelte';
 
 /** Wahre Werte anzeigen und die Variante „Wenn die Weltordnung sich verschiebt“. */
@@ -7,17 +8,16 @@ let { draft = $bindable() }: { draft: Settings } = $props();
 </script>
 
 <Panel title="Optionen">
-  <label class="check">
-    <input type="checkbox" bind:checked={draft.showValues} />
-    <b>Wahre Werte anzeigen</b>
-    <small>Ausgeschaltet rechnest du selbst im Kopf, wie am echten Tisch.</small>
-  </label>
-
-  <label class="check">
-    <input type="checkbox" bind:checked={draft.variant} />
-    <b>Variante „Wenn die Weltordnung sich verschiebt“</b>
-    <small>Landet eine 13 auf einem Stapel, wandern alle vier Regeln eine Position weiter.</small>
-  </label>
+  <CheckOption
+    title="Wahre Werte anzeigen"
+    description="Ausgeschaltet rechnest du selbst im Kopf, wie am echten Tisch."
+    bind:checked={draft.showValues}
+  />
+  <CheckOption
+    title="Variante „Wenn die Weltordnung sich verschiebt“"
+    description="Landet eine 13 auf einem Stapel, wandern alle vier Regeln eine Position weiter."
+    bind:checked={draft.variant}
+  />
 
   {#if draft.variant}
     <label class="field">
@@ -31,26 +31,6 @@ let { draft = $bindable() }: { draft: Settings } = $props();
 </Panel>
 
 <style>
-  .check {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 2px 10px;
-    margin-block: 4px 12px;
-    cursor: pointer;
-  }
-
-  .check input {
-    width: 18px;
-    height: 18px;
-    margin-top: 2px;
-    accent-color: var(--accent);
-  }
-
-  .check small {
-    grid-column: 2;
-    color: var(--muted);
-  }
-
   .field {
     display: flex;
     flex-direction: column;

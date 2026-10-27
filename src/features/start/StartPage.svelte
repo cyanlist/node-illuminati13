@@ -4,6 +4,7 @@ import { resume, startGame } from '../../state/flow';
 import { table } from '../../state/table.svelte';
 import { loadSettings, saveSettings } from '../../storage';
 import Hero from './Hero.svelte';
+import HintsPanel from './HintsPanel.svelte';
 import OptionsPanel from './OptionsPanel.svelte';
 import PlayersPanel from './PlayersPanel.svelte';
 import RulesPanel from './RulesPanel.svelte';
@@ -26,6 +27,7 @@ function onsubmit(event: SubmitEvent): void {
   <form {onsubmit}>
     <PlayersPanel bind:draft />
     <RulesPanel bind:draft />
+    <HintsPanel bind:draft />
     <OptionsPanel bind:draft />
     <div class="actions">
       <button type="button" class="btn btn--ghost" onclick={() => (table.rulesOpen = true)}>Regeln lesen</button>

@@ -44,18 +44,18 @@ src/
     values.ts        wahrer Wert einer Handkarte
     combos.ts        13er-Kombinationen finden
     settings.ts      Einstellungen und deren Prüfung
-    game/            Spielzustand: types, new-game, moves (Beweis/Abwurf), turns (Rundenablauf), ranking
+    game/            Spielzustand: types, new-game, moves (Beweis/Abwurf), turns (Rundenablauf), hints (Tipp), ranking
     ai.ts            Zugwahl des Computers
   state/           Zustand und Ablauf der Oberfläche
     table.svelte.ts  was der Tisch zeigt (Spiel, Phase, Auswahl, laufende Ablege-Animation)
     flow.ts          Rundenablauf: Spiel starten, Computerzug, nächster Zug, Wertung
     move-animation.ts  einen Zug Karte für Karte abspielen: Beweis-Bühne, Ablegen, Nachziehen
     actions.ts       Eingaben: Karten wählen, Tipp, ablegen, Reihenfolge, aufdecken
-    main-button.ts   Beschriftung und Zustand des Ablegen-Knopfs
+    buttons.ts       Beschriftung und Zustand von Tipp- und Ablegen-Knopf
     flights.svelte.ts, positions.ts   fliegende Karten und ihre Start-/Zielpunkte
     snapshot.svelte.ts                Spielstand über neue Artifact-Versionen hinweg
   features/
-    start/           Startseite: Hero, PlayersPanel, RulesPanel, OptionsPanel, ChoiceGroup, Panel
+    start/           Startseite: Hero, PlayersPanel, RulesPanel, HintsPanel, OptionsPanel, ChoiceGroup, CheckOption, Panel
     table/           Spieltisch: TopBar, GameStatus, Opponents, Seat, Board, Pile, DrawPile, ProofStage, Hand, HandCard, Actions, GameLog, …
     sheets/          Fenster: Regeln, Übergabe, Reihenfolge, Ergebnis
   ui/              gemeinsame Bausteine: Card, CardBack, Chip, SuitIcon, Logo, Sheet, Subject, format.ts

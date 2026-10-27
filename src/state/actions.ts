@@ -2,10 +2,9 @@
  * Was die Person am Gerät tun kann: Karten markieren, Tipp holen, ablegen, Reihenfolge wählen, aufdecken.
  */
 import type { SuitIndex } from '../core/cards';
-import { bestCombo } from '../core/combos';
-import { currentPlayer } from '../core/game';
+import { canTakeHint, takeHint } from '../core/game';
 import { sumOfValues, TARGET } from '../core/values';
-import { num } from '../ui/format';
+import { cardCount, num } from '../ui/format';
 import { playTurn } from './flow';
 import { requireGame, table } from './table.svelte';
 
@@ -21,13 +20,28 @@ export function toggleCard(id: number): void {
     : [...table.selected, id];
 }
 
+/**
+ * Tipp je nach Einstellung: Andeutung (ob es eine 13 gibt und aus wie vielen Karten) oder volle Hilfe
+ * (die Karten werden markiert). Bezahlt wird ein Tipp nur einmal pro Zug; danach zeigt er dasselbe gratis.
+ */
 export function showHint(): void {
   if (!canPlay()) return;
   const game = requireGame();
-  const combo = bestCombo(currentPlayer(game).hand, game.piles, game.rules);
-  table.selected = combo ? combo.map((card) => card.id) : [];
-  table.hint = [...table.selected];
-  table.message = combo ? '' : 'Hier verbirgt sich keine 13. Wähle eine Karte zum Abwerfen.';
+  if (table.hintTaken === null) {
+    if (!canTakeHint(game)) return;
+    table.hintTaken = takeHint(game)?.map((card) => card.id) ?? [];
+  }
+  const combo = table.hintTaken;
+
+  if (combo.length === 0) {
+    table.message = 'Hier verbirgt sich keine 13. Wähle eine Karte zum Abwerfen.';
+  } else if (game.settings.hints === 'full') {
+    table.selected = [...combo];
+    table.hint = [...combo];
+    table.message = '';
+  } else {
+    table.message = `Hier steckt eine 13 aus ${cardCount(combo.length)}.`;
+  }
 }
 
 /** Der Ablegen-Knopf: 13 → Beweis (ggf. erst Reihenfolge wählen), eine Karte → abwerfen, sonst Hinweis. */

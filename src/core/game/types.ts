@@ -31,6 +31,7 @@ export type LogEntry =
   | { kind: 'discard'; player: number; card: Card }
   | { kind: 'rotation'; count: number; dir: RotationDir }
   | { kind: 'skip'; player: number }
+  | { kind: 'hint'; player: number; cost: number }
   | { kind: 'final'; players: number }
   | { kind: 'end' };
 

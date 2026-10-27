@@ -74,8 +74,10 @@ class TableState {
   phase = $state<Phase>('play');
   /** ids der markierten Handkarten */
   selected = $state<number[]>([]);
-  /** Tipp: hervorgehobene Karten */
+  /** Tipp (volle Hilfe): hervorgehobene Karten */
   hint = $state<number[]>([]);
+  /** Tipp in diesem Zug: ids der gefundenen 13 ([] = keine); null = noch kein Tipp geholt */
+  hintTaken = $state<number[] | null>(null);
   /** Kurze Rückmeldung unter dem Knopf */
   message = $state('');
   /** Gewählte oberste Karte je Farbe, solange das Reihenfolge-Fenster offen ist */

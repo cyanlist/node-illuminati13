@@ -1,3 +1,4 @@
+export { canTakeHint, HINT_COST, takeHint } from './hints';
 export { applyMove } from './moves';
 export { newGame } from './new-game';
 export { currentPlayer, playerAt } from './players';

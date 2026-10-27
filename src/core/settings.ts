@@ -4,6 +4,11 @@ import { CLASSIC_RULES, isRuleKey, type RotationDir, type RuleKey } from './rule
 export type GameMode = 'cpu' | 'hotseat' | 'solo';
 /** Woher die Regeln der Stapel kommen. */
 export type RuleMode = 'classic' | 'custom' | 'random';
+/**
+ * Wie viel der Tipp verrät: gar nichts (kein Tipp-Knopf), nur ob es eine 13 gibt und aus wie vielen Karten,
+ * oder welche Karten es sind.
+ */
+export type HintLevel = 'off' | 'nudge' | 'full';
 
 export interface Settings {
   mode: GameMode;
@@ -16,6 +21,9 @@ export interface Settings {
   ruleMode: RuleMode;
   /** Regel je Stapel (Herz, Pik, Karo, Kreuz) bei eigener Zuordnung */
   customRules: RuleKey[];
+  hints: HintLevel;
+  /** Ein Tipp kostet einen Punkt */
+  hintCost: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -26,6 +34,8 @@ export const DEFAULT_SETTINGS: Settings = {
   dir: 'rechts',
   ruleMode: 'classic',
   customRules: [...CLASSIC_RULES],
+  hints: 'nudge',
+  hintCost: false,
 };
 
 const oneOf = <T extends string>(value: unknown, options: readonly T[], fallback: T): T =>
@@ -51,5 +61,7 @@ export function normalizeSettings(raw: unknown): Settings {
     ruleMode: oneOf(data.ruleMode, ['classic', 'custom', 'random'], d.ruleMode),
     customRules:
       Array.isArray(rules) && rules.length === 4 && rules.every(isRuleKey) ? [...rules] : [...d.customRules],
+    hints: oneOf(data.hints, ['off', 'nudge', 'full'], d.hints),
+    hintCost: flag(data.hintCost, d.hintCost),
   };
 }

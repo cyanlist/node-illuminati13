@@ -1,14 +1,15 @@
 <script lang="ts">
 import { currentPlayer, type GameState } from '../../core/game';
 import { playSelection, showHint } from '../../state/actions';
+import { hintButton, mainButton } from '../../state/buttons';
 import { goHome } from '../../state/flow';
-import { mainButton } from '../../state/main-button';
 import { table } from '../../state/table.svelte';
 
-/** Tipp und der eine Ablegen-Knopf; darunter eine kurze Rückmeldung. */
+/** Tipp (falls eingeschaltet) und der eine Ablegen-Knopf; darunter eine kurze Rückmeldung. */
 let { game }: { game: GameState } = $props();
 
 const main = $derived(mainButton());
+const hint = $derived(hintButton());
 const waitingLabel = $derived(
   table.anim ? 'Wird abgelegt …' : table.phase === 'cpu' ? `${currentPlayer(game).name} ist am Zug …` : 'Ablegen',
 );
@@ -19,12 +20,16 @@ const waitingLabel = $derived(
     <button type="button" class="btn btn--ghost" onclick={goHome}>Andere Einstellungen</button>
     <button type="button" class="btn btn--primary" onclick={() => (table.resultsHidden = false)}>Ergebnis ansehen</button>
   {:else if table.phase === 'play' && !table.anim}
-    <button type="button" class="btn btn--ghost" onclick={showHint}>Tipp</button>
+    {#if !hint.hidden}
+      <button type="button" class="btn btn--ghost" disabled={hint.disabled} title={hint.title} onclick={showHint}>
+        {hint.label}
+      </button>
+    {/if}
     <button type="button" class="btn btn--primary" class:btn--win={main.win} disabled={main.disabled} onclick={playSelection}>
       {main.label}
     </button>
   {:else}
-    <button type="button" class="btn btn--ghost" disabled>Tipp</button>
+    {#if !hint.hidden}<button type="button" class="btn btn--ghost" disabled>Tipp</button>{/if}
     <button type="button" class="btn btn--primary" disabled>{waitingLabel}</button>
   {/if}
 </div>

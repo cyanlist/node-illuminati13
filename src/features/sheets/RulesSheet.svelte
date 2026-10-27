@@ -80,6 +80,13 @@ const close = (): void => {
     </tbody>
   </table>
 
+  <h3>Tipps</h3>
+  <p>
+    Auf der Startseite stellst du ein, wie viel der Tipp-Knopf verrät: gar nichts (aus), nur ob es eine 13 gibt und aus
+    wie vielen Karten (Andeutung) oder welche Karten es sind (volle Hilfe). Wahlweise kostet ein Tipp einen Punkt –
+    einmal pro Zug, und nur, wenn du einen Punkt hast.
+  </p>
+
   <h3>Variante: Wenn die Weltordnung sich verschiebt</h3>
   <p>Landet eine 13 auf einem Stapel, rotieren die vier Regeln um eine Position in die vereinbarte Richtung.</p>
 
