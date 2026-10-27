@@ -1,0 +1,218 @@
+/*
+ * Globale Styles: Design-Tokens (hell/dunkel), Grundlagen, Knöpfe und Formularfelder.
+ * Alles Weitere steht als <style> direkt in der jeweiligen Svelte-Komponente.
+ */
+
+/* ---------- Design-Tokens ---------- */
+
+:root {
+  --bg: #eceff3;
+  --surface: #ffffff;
+  --surface-2: #f4f5f8;
+  --text: #1d2330;
+  --muted: #5d6676;
+  --line: #d6dbe3;
+  --accent: #28344a;
+  --on-accent: #ffffff;
+  --ok: #17784a;
+  --on-ok: #ffffff;
+  --marker: #28344a;
+  --focus: #3a6ee0;
+  --shadow: rgba(22, 30, 45, 0.1);
+  --scrim: rgba(15, 20, 30, 0.5);
+  /* jede Farbe (Suit) hat ihren eigenen Ton – Karte und Stapel teilen ihn */
+  --herz: #c81e3a;
+  --pik: #6a3fb8;
+  --karo: #b35c00;
+  --kreuz: #17784a;
+
+  --font-title: "Kalam", "Segoe Print", "Bradley Hand", cursive;
+  --font-body: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* Kartenbreite; alles an der Karte skaliert damit */
+  --cw: clamp(58px, 16vw, 96px);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b;
+    --surface: #1e2128;
+    --surface-2: #262a32;
+    --text: #e8eaef;
+    --muted: #9ba3b2;
+    --line: #353a45;
+    --accent: #e8eaef;
+    --on-accent: #14161b;
+    --ok: #4cc98a;
+    --on-ok: #0d1912;
+    --marker: #e8eaef;
+    --focus: #7aa2ff;
+    --shadow: rgba(0, 0, 0, 0.35);
+    --scrim: rgba(0, 0, 0, 0.6);
+    --herz: #ff7f8e;
+    --pik: #b9a0ff;
+    --karo: #ffb347;
+    --kreuz: #5fd39a;
+    color-scheme: dark;
+  }
+}
+
+/* dieselben Werte für ein ausdrücklich gewähltes dunkles Design (Artifact-Viewer) */
+:root[data-theme="dark"] {
+  --bg: #14161b;
+  --surface: #1e2128;
+  --surface-2: #262a32;
+  --text: #e8eaef;
+  --muted: #9ba3b2;
+  --line: #353a45;
+  --accent: #e8eaef;
+  --on-accent: #14161b;
+  --ok: #4cc98a;
+  --on-ok: #0d1912;
+  --marker: #e8eaef;
+  --focus: #7aa2ff;
+  --shadow: rgba(0, 0, 0, 0.35);
+  --scrim: rgba(0, 0, 0, 0.6);
+  --herz: #ff7f8e;
+  --pik: #b9a0ff;
+  --karo: #ffb347;
+  --kreuz: #5fd39a;
+  color-scheme: dark;
+}
+
+/* Farbton einer Farbe (Suit) – Karten, Stapel, Chips und Texte lesen ihn als var(--suit) */
+.suit-0 {
+  --suit: var(--herz);
+}
+.suit-1 {
+  --suit: var(--pik);
+}
+.suit-2 {
+  --suit: var(--karo);
+}
+.suit-3 {
+  --suit: var(--kreuz);
+}
+
+/* ---------- Grundlagen ---------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  /* biome-ignore lint/complexity/noImportantStyles: hidden muss jede display-Angabe einer Komponente schlagen */
+  display: none !important;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 16px 40px;
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.suit-text {
+  color: var(--suit);
+  font-weight: 700;
+}
+
+/* ---------- Knöpfe ---------- */
+
+.btn {
+  font: inherit;
+  font-weight: 700;
+  color: var(--text);
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  padding: 9px 16px;
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s,
+    transform 0.1s;
+}
+
+.btn:hover:not(:disabled) {
+  border-color: var(--muted);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+
+.btn--win {
+  background: var(--ok);
+  border-color: var(--ok);
+  color: var(--on-ok);
+}
+
+.btn--ghost {
+  background: transparent;
+}
+
+.btn--small {
+  padding: 6px 12px;
+  font-size: 14px;
+}
+
+.btn--large {
+  padding: 12px 24px;
+  font-size: 17px;
+}
+
+/* ---------- Formularfelder ---------- */
+
+input[type="text"],
+select {
+  font: inherit;
+  font-weight: 400;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+  width: 100%;
+  min-width: 0;
+}
+
+/* ---------- Bewegung reduzieren ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    /* biome-ignore lint/complexity/noImportantStyles: abschalten soll ausnahmslos wirken */
+    animation: none !important;
+    /* biome-ignore lint/complexity/noImportantStyles: abschalten soll ausnahmslos wirken */
+    transition: none !important;
+  }
+}

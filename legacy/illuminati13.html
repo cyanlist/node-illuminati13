@@ -1,0 +1,1221 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Illuminati 13</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kalam:wght@700&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+/* Layout: Startseite (Titel links, Einstellungen rechts) und ruhiger Spieltisch.
+   Am Tisch: oben Punkte, in der Mitte die vier Stapel, darunter die Hand mit einem Ablegen-Knopf,
+   rechts (breit) bzw. unten (schmal) das Protokoll. */
+:root {
+  --bg: #eceff3;
+  --surface: #ffffff;
+  --surface-2: #f4f5f8;
+  --text: #1d2330;
+  --muted: #5d6676;
+  --line: #d6dbe3;
+  --accent: #28344a;
+  --on-accent: #ffffff;
+  --ok: #17784a;
+  --on-ok: #ffffff;
+  --marker: #28344a;
+  --focus: #3a6ee0;
+  --shadow: rgba(22, 30, 45, .10);
+  --scrim: rgba(15, 20, 30, .5);
+  /* jede Farbe (Suit) hat ihren eigenen Ton, Karte und Stapel teilen ihn */
+  --herz: #c81e3a; --pik: #6a3fb8; --karo: #b35c00; --kreuz: #17784a;
+
+  --f-title: 'Kalam', 'Segoe Print', 'Bradley Hand', cursive;
+  --f-body: 'Atkinson Hyperlegible', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --cw: clamp(58px, 16vw, 96px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1e2128; --surface-2: #262a32; --text: #e8eaef; --muted: #9ba3b2; --line: #353a45;
+    --accent: #e8eaef; --on-accent: #14161b; --ok: #4cc98a; --on-ok: #0d1912; --marker: #e8eaef; --focus: #7aa2ff;
+    --shadow: rgba(0, 0, 0, .35); --scrim: rgba(0, 0, 0, .6);
+    --herz: #ff7f8e; --pik: #b9a0ff; --karo: #ffb347; --kreuz: #5fd39a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1e2128; --surface-2: #262a32; --text: #e8eaef; --muted: #9ba3b2; --line: #353a45;
+  --accent: #e8eaef; --on-accent: #14161b; --ok: #4cc98a; --on-ok: #0d1912; --marker: #e8eaef; --focus: #7aa2ff;
+  --shadow: rgba(0, 0, 0, .35); --scrim: rgba(0, 0, 0, .6);
+  --herz: #ff7f8e; --pik: #b9a0ff; --karo: #ffb347; --kreuz: #5fd39a; color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--f-body);
+  font-size: 15px;
+  line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 16px 40px;
+}
+.app { max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.suittxt { color: var(--suit); font-weight: 700; }
+
+/* ---------- Startseite ---------- */
+.start { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px 40px; }
+@media (min-width: 920px) {
+  .start { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); align-items: start; padding-top: 24px; }
+  .hero { position: sticky; top: max(24px, env(safe-area-inset-top, 0px)); }
+}
+.hero { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.hero .logo { width: 60px; height: 54px; }
+.hero h1 { font-size: clamp(46px, 9vw, 76px); }
+.lead { font-size: 17px; max-width: 30em; margin: 0; text-wrap: pretty; }
+.hero .quote { margin: 0; max-width: 30em; }
+.fan { display: flex; padding: 22px 0 14px 4px; --cw: clamp(62px, 13vw, 96px); }
+.fanslot { transform: rotate(var(--r)) translateY(var(--y)); }
+.fanslot + .fanslot { margin-left: calc(var(--cw) * -.26); }
+.fanslot .card { box-shadow: 0 6px 16px var(--shadow); }
+.setup { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.panel { background: var(--surface); border-radius: 16px; box-shadow: 0 1px 3px var(--shadow); padding: 16px 18px; min-width: 0; }
+.panel legend.h {
+  float: left; width: 100%; padding: 0;
+  font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0 0 10px; font-weight: 700;
+}
+.panel legend.h + * { clear: both; }
+.rulerows { display: grid; gap: 12px; margin-top: 14px; }
+.rulerow { display: grid; grid-template-columns: 6em minmax(0, 1fr); gap: 2px 12px; align-items: center; }
+.rulerow .suitname { display: flex; align-items: center; gap: 6px; }
+.rulerow .si { width: 18px; height: 18px; }
+.rulerow small { grid-column: 2; color: var(--muted); }
+.rulerow .fixed { font-weight: 700; }
+.ruletools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.note { color: var(--muted); margin: 12px 0 0; }
+.startactions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
+.btn.btn-lg { padding: 12px 24px; font-size: 17px; }
+.btn.small { padding: 6px 12px; font-size: 14px; }
+
+/* ---------- Kopf ---------- */
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 10px; }
+.logo { width: 40px; height: 36px; color: var(--text); flex: none; }
+h1 { font-family: var(--f-title); font-weight: 700; font-size: clamp(26px, 4.5vw, 36px); line-height: 1; margin: 0; }
+h1 span { color: var(--herz); }
+nav { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.btn {
+  font: inherit; font-weight: 700; color: var(--text); background: var(--surface);
+  border: 1.5px solid var(--line); border-radius: 10px; padding: 9px 16px; cursor: pointer;
+  transition: background-color .15s, border-color .15s, transform .1s;
+}
+.btn:hover:not(:disabled) { border-color: var(--muted); }
+.btn:active:not(:disabled) { transform: translateY(1px); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.btn.primary.win { background: var(--ok); border-color: var(--ok); color: var(--on-ok); }
+.btn.ghost { background: transparent; }
+
+/* ---------- Punkte ---------- */
+.scores { display: flex; flex-wrap: wrap; gap: 10px; align-items: stretch; }
+.score {
+  background: var(--surface); border: 2px solid transparent; border-radius: 12px; padding: 8px 14px;
+  display: grid; grid-template-columns: auto 1fr; column-gap: 12px; align-items: center; min-width: 150px;
+  box-shadow: 0 1px 3px var(--shadow);
+}
+.score.active { border-color: var(--accent); }
+.pname { grid-column: 1 / -1; font-weight: 700; display: flex; gap: 6px; align-items: center; }
+.turnmark { color: var(--muted); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+.pts { font-size: 32px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.score .sub { color: var(--muted); font-size: 13px; line-height: 1.25; }
+.meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-left: auto; }
+.deckinfo { display: flex; align-items: center; gap: 8px; }
+.deckinfo .back { --cw: 28px; }
+.deckinfo b { font-size: 24px; line-height: 1; font-variant-numeric: tabular-nums; }
+.deckinfo small { color: var(--muted); line-height: 1.2; }
+.tag {
+  border: 1.5px solid var(--line); background: var(--surface); color: var(--muted); border-radius: 999px;
+  padding: 2px 10px; font-weight: 700; font-size: 13px; white-space: nowrap;
+}
+.tag.warn { color: var(--text); border-color: var(--text); }
+
+/* ---------- Tisch ---------- */
+.table { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; }
+@media (min-width: 980px) { .table { grid-template-columns: minmax(0, 1fr) 290px; } }
+.play { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+
+.opp { display: flex; flex-direction: column; gap: 6px; }
+.opprow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.oppname { font-weight: 700; min-width: 0; }
+.backs { display: flex; gap: 4px; }
+.backs .back { --cw: clamp(28px, 6.5vw, 38px); }
+.thinking { color: var(--muted); font-weight: 400; font-style: italic; }
+.thinking span { animation: blink 1.2s infinite; }
+.thinking span:nth-child(2) { animation-delay: .2s; }
+.thinking span:nth-child(3) { animation-delay: .4s; }
+@keyframes blink { 0%, 100% { opacity: .2 } 50% { opacity: 1 } }
+
+.board {
+  background: var(--surface); border-radius: 16px; box-shadow: 0 1px 3px var(--shadow);
+  padding: clamp(12px, 2.4vw, 22px);
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(6px, 2vw, 18px);
+}
+.pile { display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 0; }
+.rule {
+  font-size: clamp(12px, 1.6vw, 14px); font-weight: 700; color: var(--muted); text-align: center; line-height: 1.2;
+  min-height: 2.4em; display: flex; align-items: center; justify-content: center; overflow-wrap: anywhere;
+}
+.rule .short { display: none; }
+@media (max-width: 620px) { .rule .long { display: none; } .rule .short { display: inline; } }
+.rule.shift { animation: shift 1.4s ease-out; }
+@keyframes shift {
+  0% { color: var(--text); transform: translateX(-12px); }
+  40% { color: var(--text); transform: translateX(3px); }
+  100% { transform: none; }
+}
+.stack { position: relative; width: var(--cw); aspect-ratio: 5 / 7; max-width: 100%; }
+.stack.empty {
+  border: 2px dashed var(--suit); border-radius: 10px; display: grid; place-items: center;
+  background: color-mix(in srgb, var(--suit) 6%, transparent);
+}
+.stack.empty .si { width: 40%; height: 40%; opacity: .5; }
+.stack .under {
+  position: absolute; inset: 0; border: 2px solid var(--suit); border-radius: 10px;
+  background: color-mix(in srgb, var(--suit) 10%, var(--surface)); transform: translate(3px, 3px) rotate(2.5deg);
+}
+.stack .card { position: absolute; inset: 0; width: 100%; }
+/* fliegende Karte beim Ablegen und frisch gezogene Karten */
+.flying { position: fixed; z-index: 30; pointer-events: none; transform-origin: center; }
+.flying .card { width: 100%; box-shadow: 0 14px 28px var(--shadow); }
+.card.dealt { animation: deal .4s ease-out; }
+@keyframes deal { from { opacity: 0; transform: translateY(18px); } }
+.pcount { font-size: 12px; color: var(--muted); text-align: center; }
+.pcount b { color: var(--suit); }
+
+.lastmove { margin: 0; text-align: center; min-height: 1.5em; color: var(--text); }
+.calc { color: var(--muted); }
+
+/* Karten: Zahl 1–13, Farbton der Farbe als Rahmen, Schrift und Tönung */
+.s0 { --suit: var(--herz); }
+.s1 { --suit: var(--pik); }
+.s2 { --suit: var(--karo); }
+.s3 { --suit: var(--kreuz); }
+.card {
+  position: relative; display: block; width: var(--cw); aspect-ratio: 5 / 7; padding: 0; margin: 0;
+  color: var(--suit, var(--text)); border: 2px solid var(--suit, var(--text)); border-radius: 10px;
+  background: color-mix(in srgb, var(--suit, var(--text)) 9%, var(--surface));
+  font-family: var(--f-body); box-shadow: 0 1px 2px var(--shadow); transition: transform .15s, box-shadow .15s;
+}
+.si { fill: currentColor; color: var(--suit, currentColor); display: block; }
+.corner {
+  position: absolute; display: flex; flex-direction: column; align-items: center;
+  font-weight: 700; font-size: calc(var(--cw) * .17); line-height: 1;
+}
+.corner .si { width: calc(var(--cw) * .12); height: calc(var(--cw) * .12); margin-top: 1px; }
+.tl { top: 6%; left: 9%; }
+.br { bottom: 6%; right: 9%; transform: rotate(180deg); }
+.big {
+  position: absolute; left: 50%; top: 45%; transform: translate(-50%, -50%);
+  font-size: calc(var(--cw) * .44); font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums;
+}
+.pip { position: absolute; left: 50%; top: 74%; width: 20%; height: 20%; transform: translate(-50%, -50%); }
+.pip .si { width: 100%; height: 100%; }
+button.card { cursor: pointer; }
+button.card:hover:not(:disabled) { transform: translateY(-4px); }
+button.card:disabled { cursor: default; }
+.card.sel { transform: translateY(-12px); box-shadow: 0 0 0 3px var(--marker), 0 10px 18px var(--shadow); }
+button.card.sel:hover:not(:disabled) { transform: translateY(-14px); }
+.card.hint { animation: hint 1s ease-in-out 3; }
+@keyframes hint { 50% { box-shadow: 0 0 0 6px var(--marker), 0 10px 18px var(--shadow); } }
+.tv {
+  position: absolute; top: -10px; right: -10px; min-width: 28px; height: 28px; padding: 0 6px;
+  background: var(--text); color: var(--surface); border-radius: 999px;
+  font-weight: 700; font-size: 14px; display: grid; place-items: center; font-variant-numeric: tabular-nums;
+  box-shadow: 0 0 0 2px var(--bg);
+}
+.back {
+  width: var(--cw); aspect-ratio: 5 / 7; border: 1.5px solid var(--line); border-radius: 6px;
+  background: var(--surface-2); display: grid; place-items: center; color: var(--muted); flex: none;
+}
+.back svg { width: 60%; height: 60%; }
+
+/* Hand und Knopf */
+.hand { display: flex; justify-content: center; gap: clamp(5px, 1.6vw, 16px); flex-wrap: wrap; padding-top: 16px; min-height: 80px; }
+.slot { display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 0; }
+.formula { font-size: clamp(11px, 1.5vw, 13px); color: var(--muted); white-space: nowrap; }
+.actionbar { display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap; }
+.actionbar .btn.primary { min-width: min(260px, 100%); }
+.toast { margin: 0; text-align: center; min-height: 1.45em; color: var(--muted); font-weight: 700; }
+
+.chip {
+  display: inline-flex; align-items: center; gap: 2px; font-weight: 700;
+  border: 1.5px solid currentColor; border-radius: 6px; padding: 0 5px; line-height: 1.35;
+  color: var(--suit, var(--text)); background: color-mix(in srgb, var(--suit, var(--text)) 9%, var(--surface));
+  white-space: nowrap; vertical-align: baseline;
+}
+.chip .si { width: .8em; height: .8em; }
+
+/* Protokoll */
+.log {
+  background: var(--surface); border-radius: 14px; box-shadow: 0 1px 3px var(--shadow);
+  padding: 12px 14px; min-width: 0; align-self: start; max-height: 360px; overflow: auto; width: 100%;
+}
+@media (min-width: 980px) { .log { position: sticky; top: max(12px, env(safe-area-inset-top, 0px)); max-height: calc(100vh - 28px); } }
+.log h2 { margin: 0 0 4px; font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.log ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.log li { border-top: 1px solid var(--line); padding-block: 7px; font-size: 14px; }
+.log li:first-child { border-top: 0; }
+.log li.sys { color: var(--muted); font-style: italic; }
+
+/* Fenster */
+.overlay {
+  position: fixed; inset: 0; z-index: 20; background: var(--scrim); overflow: auto; display: grid; place-items: center;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+}
+.sheet {
+  width: 100%; max-width: 580px; padding: clamp(18px, 4vw, 26px);
+  background: var(--surface); border-radius: 16px; box-shadow: 0 20px 50px var(--shadow);
+}
+.sheet h2 { font-size: clamp(22px, 4vw, 27px); margin: 0 0 8px; line-height: 1.15; text-wrap: balance; }
+.sheet h3 { font-size: 16px; margin: 18px 0 4px; }
+.sheet p, .sheet ul { margin: 6px 0; }
+.sheet ul { padding-left: 1.3em; }
+.sheet .actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; margin-top: 18px; }
+.quote { color: var(--muted); font-style: italic; border-left: 3px solid var(--line); padding-left: 12px; }
+.ruletable, .results { width: 100%; border-collapse: collapse; margin: 8px 0; }
+.ruletable th, .ruletable td, .results th, .results td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.ruletable td.suittd { display: flex; align-items: center; gap: 6px; font-weight: 700; color: var(--suit); white-space: nowrap; }
+.ruletable .si { width: 16px; height: 16px; }
+.results td.num { text-align: right; font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.results tr.win td:first-child { font-weight: 700; }
+.pick { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 14px; --cw: 56px; }
+.pickname { font-weight: 700; color: var(--suit); min-width: 4.5em; }
+.pickcard { border: 0; background: none; padding: 5px; border-radius: 14px; cursor: pointer; }
+.pickcard.on { box-shadow: 0 0 0 3px var(--marker); }
+
+fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+legend { font-weight: 700; padding: 0; margin-bottom: 6px; }
+.field { display: flex; flex-direction: column; gap: 6px; margin-block: 14px 0; font-weight: 700; min-width: 0; }
+.seg { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.seg label {
+  border: 1.5px solid var(--line); border-radius: 12px; padding: 10px 12px; cursor: pointer; background: var(--surface-2);
+  display: flex; flex-direction: column; gap: 2px; font-weight: 400; position: relative;
+}
+.seg label:has(input:checked) { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.seg input { position: absolute; top: 0; left: 0; opacity: 0; pointer-events: none; }
+.seg label:focus-within { outline: 3px solid var(--focus); outline-offset: 2px; }
+.seg b { line-height: 1.25; }
+.seg small, .check small { color: var(--muted); }
+.names { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0 12px; }
+input[type="text"], select {
+  font: inherit; font-weight: 400; color: var(--text); background: var(--surface-2);
+  border: 1.5px solid var(--line); border-radius: 8px; padding: 8px 10px; width: 100%; min-width: 0;
+}
+.check { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; margin-block: 4px 12px; cursor: pointer; }
+.check input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--accent); }
+.check small { grid-column: 2; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="s-herz" viewBox="0 0 24 24"><path d="M12 21.3C10.6 20 2.6 14.2 2.1 8.9 1.7 5.4 4.2 2.8 7.2 2.8c2.1 0 3.7 1.2 4.8 3 1.1-1.8 2.7-3 4.8-3 3 0 5.5 2.6 5.1 6.1-.5 5.3-8.5 11.1-9.9 12.4z"/></symbol>
+    <symbol id="s-karo" viewBox="0 0 24 24"><path d="M12 1.5C13.7 5.6 16.6 9 20.8 12 16.6 15 13.7 18.4 12 22.5 10.3 18.4 7.4 15 3.2 12 7.4 9 10.3 5.6 12 1.5z"/></symbol>
+    <symbol id="s-pik" viewBox="0 0 24 24"><path d="M12 1.8C10.4 4.6 2.6 9.4 2.6 14.1c0 2.8 2.2 4.6 4.6 4.6 1.8 0 3.1-.8 3.9-1.9-.3 2.2-1.3 3.9-3.1 5.4h8c-1.8-1.5-2.8-3.2-3.1-5.4.8 1.1 2.1 1.9 3.9 1.9 2.4 0 4.6-1.8 4.6-4.6 0-4.7-7.8-9.5-9.4-12.3z"/></symbol>
+    <symbol id="s-kreuz" viewBox="0 0 24 24"><circle cx="12" cy="6.6" r="4.5"/><circle cx="6.6" cy="13.4" r="4.5"/><circle cx="17.4" cy="13.4" r="4.5"/><circle cx="12" cy="12" r="3"/><path d="M10.7 12h2.6l.4 4.6c.4 2.4 1.5 4.1 3.3 5.4H7c1.8-1.3 2.9-3 3.3-5.4z"/></symbol>
+    <symbol id="eye" viewBox="0 0 48 44">
+      <path d="M24 3 45 41H3Z" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/>
+      <path d="M12.5 29Q24 18.5 35.5 29 24 38.5 12.5 29Z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/>
+      <circle cx="24" cy="29" r="3.7" fill="currentColor"/>
+      <path d="M24 12v4.5M18 15.5l2 3M30 15.5l-2 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="start" id="start"></div>
+
+<div class="app" id="game" hidden>
+  <header class="top">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 48 44" aria-hidden="true"><use href="#eye"/></svg>
+      <h1>Illuminati <span>13</span></h1>
+    </div>
+    <nav>
+      <button type="button" class="btn ghost" data-act="rules">Regeln</button>
+      <button type="button" class="btn" data-act="home">Startseite</button>
+    </nav>
+  </header>
+
+  <section class="scores" id="scores" aria-label="Punkte"></section>
+
+  <main class="table">
+    <div class="play">
+      <section class="opp" id="opp" aria-label="Gegenüber"></section>
+      <section class="board" id="board" aria-label="Vier Ablagestapel"></section>
+      <p class="lastmove" id="lastmove" aria-live="polite"></p>
+      <section class="hand" id="hand" aria-label="Deine Handkarten"></section>
+      <div class="actionbar" id="actions"></div>
+      <p class="toast" id="toast" aria-live="polite"></p>
+    </div>
+    <aside class="log" aria-label="Protokoll">
+      <h2>Protokoll</h2>
+      <ol id="log"></ol>
+    </aside>
+  </main>
+</div>
+
+<div class="overlay" id="overlay" hidden>
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title"></div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---------- Regeln & Daten ----------
+  // Reihenfolge wie auf dem Spielplan: Herz, Pik, Karo, Kreuz
+  const SUITS = [
+    { key: 'herz', name: 'Herz' },
+    { key: 'pik', name: 'Pik' },
+    { key: 'karo', name: 'Karo' },
+    { key: 'kreuz', name: 'Kreuz' },
+  ];
+  // Die ersten vier sind die Regeln aus der Anleitung, danach folgen zusätzliche für den eigenen Regel-Modus
+  const RULES = {
+    plus:   { label: 'Stapel + Hand',          short: 'S + H',     calc: (s, h) => s + h,                   show: (s, h) => `${s} + ${h}` },
+    minus:  { label: 'Stapel − Hand',          short: 'S − H',     calc: (s, h) => s - h,                   show: (s, h) => `${s} − ${h}` },
+    copy:   { label: 'Hand kopiert Stapel',    short: '= Stapel',  calc: (s) => s,                          show: (s) => `= ${s}` },
+    max:    { label: 'Maximum(Stapel, Hand)',  short: 'max(S, H)', calc: (s, h) => Math.max(s, h),          show: (s, h) => `max(${s}, ${h})` },
+    min:    { label: 'Minimum(Stapel, Hand)',  short: 'min(S, H)', calc: (s, h) => Math.min(s, h),          show: (s, h) => `min(${s}, ${h})` },
+    rminus: { label: 'Hand − Stapel',          short: 'H − S',     calc: (s, h) => h - s,                   show: (s, h) => `${h} − ${s}` },
+    dist:   { label: 'Abstand(Stapel, Hand)',  short: '|S − H|',   calc: (s, h) => Math.abs(s - h),         show: (s, h) => `|${s} − ${h}|` },
+    mirror: { label: '13 − Hand',              short: '13 − H',    calc: (s, h) => 13 - h,                  show: (s, h) => `13 − ${h}` },
+    plain:  { label: 'Hand bleibt Hand',       short: '= Hand',    calc: (s, h) => h,                       show: (s, h) => `= ${h}` },
+    mean:   { label: 'Mittelwert (abgerundet)', short: 'Ø(S, H)',  calc: (s, h) => Math.floor((s + h) / 2), show: (s, h) => `Ø(${s}, ${h})` },
+  };
+  const START_RULES = ['plus', 'minus', 'copy', 'max'];
+  const DEFAULTS = {
+    mode: 'cpu', names: ['Du', ''], variant: false, dir: 'rechts', showValues: true,
+    ruleMode: 'classic', customRules: START_RULES.slice(),
+  };
+
+  // ---------- Hilfsfunktionen ----------
+  const $ = (s) => document.querySelector(s);
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const num = (n) => (n < 0 ? '−' + Math.abs(n) : String(n));
+  const pts = (n) => `${n} ${n === 1 ? 'Punkt' : 'Punkte'}`;
+  const store = {
+    get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* egal */ } },
+  };
+  function shuffle(a) {
+    for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+    return a;
+  }
+  const pick = (a) => a[Math.floor(Math.random() * a.length)];
+  const randomRules = () => shuffle(Object.keys(RULES)).slice(0, 4);
+
+  let S = null;
+  let timer = null;
+  let shownOverlay = null;
+  const ui = {
+    view: 'start', selected: [], order: null, error: '', hint: [], overlay: null, overDismissed: false,
+    rotFlash: false, focusId: null, draftRules: null, anim: null, dealt: [],
+  };
+
+  const cur = () => S.players[S.current];
+  const handOwner = () => (S.set.mode === 'hotseat' ? S.current : 0);
+  function loadSettings() {
+    const s = Object.assign({}, DEFAULTS, store.get('illu13-settings') || {});
+    if (!Array.isArray(s.customRules) || s.customRules.length !== 4 || !s.customRules.every((k) => RULES[k])) s.customRules = START_RULES.slice();
+    return s;
+  }
+
+  // Wahrer Wert einer Handkarte nach der Regel ihres Stapels
+  function trueValue(c, piles = S.piles, ruleOf = S.ruleOf) {
+    const pile = piles[c.suit];
+    if (!pile.length) return { v: c.rank, f: 'Stapel leer', empty: true };
+    const top = pile[pile.length - 1].rank;
+    const R = RULES[ruleOf[c.suit]];
+    return { v: R.calc(top, c.rank), f: R.show(top, c.rank) };
+  }
+  function rotated(r) {
+    return r.map((_, i) => (S.set.dir === 'rechts' ? r[(i + 3) % 4] : r[(i + 1) % 4]));
+  }
+  function findCombos(hand, piles = S.piles, ruleOf = S.ruleOf) {
+    const vals = hand.map((c) => trueValue(c, piles, ruleOf).v);
+    const out = [];
+    for (let m = 1; m < (1 << hand.length); m++) {
+      let sum = 0; const set = [];
+      for (let i = 0; i < hand.length; i++) if (m & (1 << i)) { sum += vals[i]; set.push(hand[i]); }
+      if (sum === 13) out.push(set);
+    }
+    return out;
+  }
+  function bestCombo(hand, piles, ruleOf) {
+    const combos = findCombos(hand, piles, ruleOf);
+    if (!combos.length) return null;
+    const max = Math.max(...combos.map((c) => c.length));
+    return pick(combos.filter((c) => c.length === max));
+  }
+
+  // ---------- Darstellung einzelner Teile ----------
+  function suitSvg(i) {
+    return `<svg class="si s${i}" viewBox="0 0 24 24" aria-hidden="true"><use href="#s-${SUITS[i].key}"/></svg>`;
+  }
+  function chip(c) {
+    return `<span class="chip s${c.suit}" title="${SUITS[c.suit].name} ${c.rank}">${suitSvg(c.suit)}${c.rank}</span>`;
+  }
+  function backHtml() {
+    return '<div class="back" aria-hidden="true"><svg viewBox="0 0 48 44"><use href="#eye"/></svg></div>';
+  }
+  function cardHtml(c, o = {}) {
+    const s = SUITS[c.suit];
+    const r = c.rank;
+    const inner =
+      `<span class="corner tl">${r}${suitSvg(c.suit)}</span>` +
+      `<span class="big">${r}</span><span class="pip">${suitSvg(c.suit)}</span>` +
+      `<span class="corner br">${r}${suitSvg(c.suit)}</span>` +
+      (o.tv != null ? `<span class="tv" aria-hidden="true">${num(o.tv)}</span>` : '');
+    const cls = `card s${c.suit}${o.sel ? ' sel' : ''}${o.hint ? ' hint' : ''}`;
+    const label = `${s.name} ${r}`;
+    if (o.button) {
+      return `<button type="button" class="${cls}" data-id="${c.id}" aria-pressed="${!!o.sel}" aria-label="${label}${o.tv != null ? ', wahrer Wert ' + num(o.tv) : ''}"${o.disabled ? ' disabled' : ''}>${inner}</button>`;
+    }
+    return `<div class="${cls}" role="img" aria-label="${label}">${inner}</div>`;
+  }
+  function partHtml(p) {
+    let calc;
+    if (p.empty) calc = `${num(p.v)}`;
+    else if (p.f.startsWith('=')) calc = p.f;
+    else calc = `${p.f} = ${num(p.v)}`;
+    return `${chip(p.c)} <span class="calc">(${calc})</span>`;
+  }
+  function ruleExample(key) {
+    const R = RULES[key];
+    const f = R.show(6, 4);
+    return `Beispiel: Stapel 6, Hand 4 → ${f.startsWith('=') ? f.slice(2) : `${f} = ${num(R.calc(6, 4))}`}`;
+  }
+  // Sätze für "Du" (eigene Person) oder dritte Person
+  function say(p, third, second) {
+    return p.you ? `<b>Du</b> ${second}` : `<b>${esc(p.name)}</b> ${third}`;
+  }
+  function addLog(html, cls = '') { S.log.push({ html, cls }); }
+
+  // ---------- Ansichten ----------
+  function showView(v) {
+    ui.view = v;
+    $('#start').hidden = v !== 'start';
+    $('#game').hidden = v !== 'game';
+    if (v === 'start') { renderStart(); syncOverlay(); } else render();
+    window.scrollTo(0, 0);
+  }
+
+  // ---------- Spielablauf ----------
+  function newGame(set) {
+    clearTimeout(timer);
+    const deck = [];
+    let id = 0;
+    for (let s = 0; s < 4; s++) for (let r = 1; r <= 13; r++) deck.push({ id: id++, suit: s, rank: r });
+    shuffle(deck);
+    const n = set.mode === 'solo' ? 1 : 2;
+    const players = [];
+    for (let i = 0; i < n; i++) {
+      const cpu = set.mode === 'cpu' && i === 1;
+      let name;
+      if (cpu) name = 'Computer';
+      else if (set.mode === 'hotseat') name = (set.names[i] || '').trim() || `Spieler*in ${i + 1}`;
+      else name = (set.names[0] || '').trim() || 'Du';
+      players.push({ name, cpu, you: !cpu && set.mode !== 'hotseat', hand: deck.splice(0, 5), points: 0, combos: 0 });
+    }
+    const ruleOf = set.ruleMode === 'custom' ? set.customRules.slice() : set.ruleMode === 'random' ? randomRules() : START_RULES.slice();
+    S = {
+      set: Object.assign({}, set), deck, piles: [[], [], [], []], ruleOf, rotations: 0,
+      players, current: n > 1 ? Math.floor(Math.random() * n) : 0, finalLeft: null, phase: 'play', log: [], lastMove: '',
+    };
+    Object.assign(ui, { selected: [], order: null, error: '', hint: [], overlay: null, overDismissed: false, rotFlash: false, anim: null, dealt: [] });
+    addLog('Das Deck ist gemischt, die vier Stapel sind leer. Solange ein Stapel leer ist, zählt jede Karte ihrer Farbe einfach ihre Zahl.', 'sys');
+    if (set.ruleMode !== 'classic') {
+      addLog(`${set.ruleMode === 'random' ? 'Ausgeloste' : 'Eigene'} Regeln: ` +
+        SUITS.map((s, i) => `<span class="suittxt s${i}">${s.name}</span> ${RULES[ruleOf[i]].label}`).join(' · '), 'sys');
+    }
+    if (set.variant) addLog(`Variante aktiv: Jede 13, die auf einem Stapel landet, verschiebt die Regeln um eine Position nach ${set.dir}.`, 'sys');
+    if (n > 1) addLog(say(cur(), 'beginnt.', 'beginnst.'));
+    ui.view = 'game';
+    $('#start').hidden = true;
+    $('#game').hidden = false;
+    window.scrollTo(0, 0);
+    startTurn();
+  }
+
+  function startTurn() {
+    ui.selected = []; ui.error = ''; ui.order = null; ui.hint = [];
+    const p = cur();
+    if (!p.hand.length) {
+      addLog(say(p, 'hat keine Karten mehr und setzt aus.', 'hast keine Karten mehr und setzt aus.'), 'sys');
+      return endTurn();
+    }
+    if (p.cpu) {
+      S.phase = 'cpu';
+      render();
+      if (ui.view === 'game') timer = setTimeout(cpuMove, 1200);
+      return;
+    }
+    S.phase = S.set.mode === 'hotseat' ? 'handoff' : 'play';
+    render();
+  }
+
+  function endTurn() {
+    if (S.finalLeft !== null) S.finalLeft--;
+    else if (!S.deck.length) {
+      S.finalLeft = S.players.length;
+      addLog(S.players.length > 1
+        ? 'Der Nachziehstapel ist leer. Jetzt hat jede*r noch einen letzten Zug.'
+        : 'Der Nachziehstapel ist leer. Du hast noch einen letzten Zug.', 'sys');
+    }
+    if (S.finalLeft === 0) return gameOver();
+    S.current = (S.current + 1) % S.players.length;
+    startTurn();
+  }
+
+  function place(c) {
+    S.piles[c.suit].push(c);
+    if (S.set.variant && c.rank === 13) {
+      S.ruleOf = rotated(S.ruleOf);
+      S.rotations++;
+      ui.rotFlash = true;
+      return true;
+    }
+    return false;
+  }
+  function refill(p, target) {
+    while (p.hand.length < target && S.deck.length) p.hand.push(S.deck.pop());
+  }
+  function logRotations(n) {
+    addLog(`Eine 13 liegt oben – die Weltordnung verschiebt sich${n > 1 ? ` (${n}×)` : ''}! Alle Regeln wandern nach ${S.set.dir}.`, 'sys');
+  }
+
+  function applyProof(p, cards, topPick) {
+    const parts = cards.map((c) => Object.assign({ c }, trueValue(c)));
+    p.points += cards.length;
+    p.combos++;
+    const ids = new Set(cards.map((c) => c.id));
+    p.hand = p.hand.filter((h) => !ids.has(h.id));
+    // gewählte oberste Karte jeder Farbe kommt zuletzt auf den Stapel
+    const ordered = cards.slice().sort((a, b) => (topPick[a.suit] === a.id) - (topPick[b.suit] === b.id));
+    let rot = 0;
+    const steps = [];
+    ordered.forEach((c) => {
+      if (place(c)) rot++;
+      steps.push({ c, ruleOf: S.ruleOf.slice(), rotations: S.rotations });
+    });
+    const drawn = refillTracked(p, 5);
+    const html = `${say(p, 'beweist die 13:', 'beweist die 13:')} ${parts.map(partHtml).join(' + ')} = 13 · <b>+${pts(cards.length)}</b>`;
+    addLog(html, 'proof');
+    S.lastMove = html;
+    if (rot) logRotations(rot);
+    return { steps, drawn };
+  }
+
+  function applyDiscard(p, c) {
+    p.hand = p.hand.filter((h) => h.id !== c.id);
+    const target = p.hand.length + 1;
+    const rot = place(c);
+    const steps = [{ c, ruleOf: S.ruleOf.slice(), rotations: S.rotations }];
+    const drawn = refillTracked(p, target);
+    const html = `${say(p, 'findet noch keine 13 und wirft', 'findest noch keine 13 und wirfst')} ${chip(c)} auf den ${SUITS[c.suit].name}-Stapel ab.`;
+    addLog(html);
+    S.lastMove = html;
+    if (rot) logRotations(1);
+    return { steps, drawn };
+  }
+  function refillTracked(p, target) {
+    const before = new Set(p.hand.map((h) => h.id));
+    refill(p, target);
+    return p.hand.filter((h) => !before.has(h.id)).map((h) => h.id);
+  }
+
+  // ---------- Animation: Karten nacheinander ablegen ----------
+  // Der Zug wird sofort berechnet; die Anzeige zeigt so lange den Stand davor,
+  // bis jede Karte einzeln auf ihrem Stapel gelandet ist.
+  function playMove(p, apply, rects) {
+    const before = {
+      points: S.players.map((x) => x.points), combos: S.players.map((x) => x.combos), deck: S.deck.length,
+      ruleOf: S.ruleOf.slice(), rotations: S.rotations, logLen: S.log.length,
+    };
+    const { steps, drawn } = apply();
+    const anim = Object.assign(before, { who: S.players.indexOf(p), pending: steps.map((s) => s.c.id), landed: [], hide: drawn });
+    ui.anim = anim;
+    ui.selected = []; ui.hint = []; ui.error = ''; ui.dealt = []; ui.rotFlash = false;
+    render();
+    let i = 0;
+    const next = () => {
+      if (ui.anim !== anim) return;
+      if (i >= steps.length) {
+        setTimeout(() => {
+          if (ui.anim !== anim) return;
+          ui.anim = null;
+          ui.dealt = drawn;
+          endTurn();
+        }, p.cpu ? 800 : 250);
+        return;
+      }
+      const st = steps[i];
+      const target = document.querySelector(`#board .pile.s${st.c.suit} .stack`);
+      fly(st.c, rects[st.c.id], target && target.getBoundingClientRect(), () => {
+        if (ui.anim !== anim) return;
+        anim.pending = anim.pending.filter((id) => id !== st.c.id);
+        anim.landed.push(st.c);
+        if (st.rotations !== anim.rotations) ui.rotFlash = true;
+        anim.ruleOf = st.ruleOf;
+        anim.rotations = st.rotations;
+        render();
+        i++;
+        setTimeout(next, p.cpu ? 450 : 300);
+      });
+    };
+    setTimeout(next, 120);
+  }
+
+  function fly(c, from, to, done) {
+    const still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (still || !to || ui.view !== 'game') { setTimeout(done, 450); return; }
+    const el = document.createElement('div');
+    el.className = 'flying';
+    el.style.cssText = `left:${to.left}px;top:${to.top}px;width:${to.width}px;--cw:${to.width}px`;
+    el.innerHTML = cardHtml(c);
+    document.body.appendChild(el);
+    const f = from || { left: to.left, top: to.top - 90, width: to.width, height: to.height };
+    const dx = f.left + f.width / 2 - (to.left + to.width / 2);
+    const dy = f.top + f.height / 2 - (to.top + to.height / 2);
+    const sc = f.width / to.width;
+    const anim = el.animate([
+      { transform: `translate(${dx}px, ${dy}px) scale(${sc}) rotate(-6deg)`, opacity: from ? 1 : 0 },
+      { transform: `translate(${dx * 0.35}px, ${dy * 0.35 - 28}px) scale(${((sc + 1) / 2) * 1.08}) rotate(4deg)`, opacity: 1, offset: 0.6 },
+      { transform: 'none', opacity: 1 },
+    ], { duration: 700, easing: 'cubic-bezier(.3, .7, .3, 1)' });
+    anim.onfinish = () => { el.remove(); done(); };
+  }
+
+  // Was gerade sichtbar ist: während der Animation fehlen die noch fliegenden Karten
+  function visPiles() {
+    if (!ui.anim) return S.piles;
+    return S.piles.map((p) => p.filter((c) => !ui.anim.pending.includes(c.id)));
+  }
+  const visRules = () => (ui.anim ? ui.anim.ruleOf : S.ruleOf);
+  const visHand = (p) => (ui.anim ? p.hand.filter((c) => !ui.anim.hide.includes(c.id)) : p.hand);
+  function handRects(cards) {
+    const m = {};
+    cards.forEach((c) => {
+      const el = document.querySelector(`#hand [data-id="${c.id}"]`);
+      if (el) m[c.id] = el.getBoundingClientRect();
+    });
+    return m;
+  }
+
+  function gameOver() {
+    S.phase = 'over';
+    ui.overDismissed = false;
+    const ranked = rank();
+    if (S.players.length === 1) {
+      const best = store.get('illu13-best-solo') || 0;
+      S.soloBest = best;
+      if (S.players[0].points > best) store.set('illu13-best-solo', S.players[0].points);
+    }
+    addLog(S.players.length === 1 ? `Spielende: ${pts(S.players[0].points)}.` : `Spielende. ${ranked.tie ? 'Gleichstand!' : esc(ranked.list[0].name) + ' hat die Wahrheit am klarsten bewiesen.'}`, 'sys');
+    render();
+  }
+  function rank() {
+    const list = S.players.slice().sort((a, b) => b.points - a.points || b.combos - a.combos);
+    const tie = list.length > 1 && list[0].points === list[1].points && list[0].combos === list[1].combos;
+    const byCombos = list.length > 1 && !tie && list[0].points === list[1].points;
+    return { list, tie, byCombos };
+  }
+
+  // ---------- Computer ----------
+  function cpuMove() {
+    if (!S || S.phase !== 'cpu' || ui.anim) return;
+    const p = cur();
+    // die Karten fliegen von den verdeckten Karten des Computers los
+    const backs = [...document.querySelectorAll('#opp .back')];
+    const rectsFor = (cards) => {
+      const m = {};
+      cards.forEach((c, k) => { if (backs[k]) m[c.id] = backs[k].getBoundingClientRect(); });
+      return m;
+    };
+    const best = bestCombo(p.hand);
+    if (best) {
+      const topPick = {};
+      const bySuit = {};
+      best.forEach((c) => (bySuit[c.suit] = bySuit[c.suit] || []).push(c));
+      Object.keys(bySuit).forEach((s) => { topPick[s] = pick(bySuit[s]).id; });
+      playMove(p, () => applyProof(p, best, topPick), rectsFor(best));
+    } else {
+      // Abwerfen: die Karte wählen, nach der die eigene Resthand die größte 13 bilden könnte
+      let bestScore = -1, cands = [];
+      p.hand.forEach((c) => {
+        const piles = S.piles.map((x) => x.slice());
+        piles[c.suit].push(c);
+        const ruleOf = S.set.variant && c.rank === 13 ? rotated(S.ruleOf) : S.ruleOf;
+        const rest = p.hand.filter((h) => h.id !== c.id);
+        const combos = findCombos(rest, piles, ruleOf);
+        const score = combos.length ? Math.max(...combos.map((x) => x.length)) * 10 + Math.min(combos.length, 9) : 0;
+        if (score > bestScore) { bestScore = score; cands = [c]; } else if (score === bestScore) cands.push(c);
+      });
+      const c = pick(cands);
+      playMove(p, () => applyDiscard(p, c), rectsFor([c]));
+    }
+  }
+
+  // ---------- Startseite ----------
+  function renderStart() {
+    const s = loadSettings();
+    ui.draftRules = s.customRules.slice();
+    const running = S && S.phase !== 'over';
+    const r = (name, v, cur, t, d) => `<label><input type="radio" name="${name}" value="${v}"${cur === v ? ' checked' : ''}><b>${t}</b><small>${d}</small></label>`;
+    const fan = [[0, 5, '-9deg', '10px'], [1, 2, '-3deg', '0px'], [2, 13, '3deg', '-4px'], [3, 8, '9deg', '6px']]
+      .map(([suit, rank, rot, y], i) => `<div class="fanslot" style="--r:${rot};--y:${y}">${cardHtml({ id: 100 + i, suit, rank })}</div>`).join('');
+    $('#start').innerHTML = `
+      <section class="hero">
+        <svg class="logo" viewBox="0 0 48 44" aria-hidden="true"><use href="#eye"/></svg>
+        <h1>Illuminati <span>13</span></h1>
+        <p class="lead">Ihr seid Verschwörungstheoretiker*innen auf der Suche nach dem ultimativen Beweis: der Zahl 13. Verrechnet eure Karten mit den Stapeln und bildet immer wieder die 13. Je mehr Karten ein Beweis braucht, desto mehr Punkte gibt es.</p>
+        <div class="fan" aria-hidden="true">${fan}</div>
+        <p class="quote">„Wenn du 5 addierst, aber von der 2 das Herz abziehst – was bekommst du? Natürlich 13!“</p>
+      </section>
+      <form class="setup" id="setup">
+        <fieldset class="panel"><legend class="h">Wer spielt?</legend>
+          <div class="seg">
+            ${r('mode', 'cpu', s.mode, 'Gegen den Computer', 'Du gegen eine Maschine, die auch an die 13 glaubt.')}
+            ${r('mode', 'hotseat', s.mode, 'Zu zweit', 'Abwechselnd an einem Gerät, die Karten bleiben bis zur Übergabe verdeckt.')}
+            ${r('mode', 'solo', s.mode, 'Allein', 'Wie viele Punkte schaffst du mit einem Deck?')}
+          </div>
+          <div class="names">
+            <label class="field" for="name1"><span id="name1-label">Dein Name</span><input id="name1" type="text" maxlength="20" autocomplete="off" value="${esc(s.names[0] || '')}"></label>
+            <label class="field" for="name2" id="name2-wrap">Name Spieler*in 2<input id="name2" type="text" maxlength="20" autocomplete="off" value="${esc(s.names[1] || '')}"></label>
+          </div>
+        </fieldset>
+        <fieldset class="panel"><legend class="h">Regeln der Stapel</legend>
+          <div class="seg">
+            ${r('rulemode', 'classic', s.ruleMode, 'Klassisch', 'Die vier Regeln aus der Anleitung.')}
+            ${r('rulemode', 'custom', s.ruleMode, 'Eigene Zuordnung', 'Du legst fest, welcher Stapel welche Regel hat.')}
+            ${r('rulemode', 'random', s.ruleMode, 'Zufällig', 'Jedes Spiel lost vier verschiedene Regeln aus.')}
+          </div>
+          <div id="rule-area"></div>
+        </fieldset>
+        <fieldset class="panel"><legend class="h">Optionen</legend>
+          <label class="check" for="opt-values"><input type="checkbox" id="opt-values"${s.showValues ? ' checked' : ''}><span><b>Wahre Werte anzeigen</b></span><small>Ausgeschaltet rechnest du selbst im Kopf, wie am echten Tisch.</small></label>
+          <label class="check" for="opt-variant"><input type="checkbox" id="opt-variant"${s.variant ? ' checked' : ''}><span><b>Variante „Wenn die Weltordnung sich verschiebt“</b></span><small>Landet eine 13 auf einem Stapel, wandern alle vier Regeln eine Position weiter.</small></label>
+          <label class="field" for="opt-dir" id="dir-wrap">Richtung der Verschiebung
+            <select id="opt-dir">
+              <option value="rechts"${s.dir === 'rechts' ? ' selected' : ''}>nach rechts (Herz → Pik → Karo → Kreuz → Herz)</option>
+              <option value="links"${s.dir === 'links' ? ' selected' : ''}>nach links (Herz → Kreuz → Karo → Pik → Herz)</option>
+            </select>
+          </label>
+        </fieldset>
+        <div class="startactions">
+          <button type="button" class="btn ghost" data-act="rules">Regeln lesen</button>
+          ${running ? '<button type="button" class="btn" data-act="resume">Weiterspielen</button>' : ''}
+          <button type="submit" class="btn primary btn-lg">Spiel starten</button>
+        </div>
+      </form>`;
+    syncSetupForm();
+    renderRuleArea();
+  }
+
+  function syncSetupForm() {
+    const f = $('#setup');
+    if (!f) return;
+    const mode = f.querySelector('input[name="mode"]:checked').value;
+    $('#name2-wrap').hidden = mode !== 'hotseat';
+    $('#name1-label').textContent = mode === 'hotseat' ? 'Name Spieler*in 1' : 'Dein Name';
+    $('#name1').placeholder = mode === 'hotseat' ? 'Spieler*in 1' : 'Du';
+    $('#name2').placeholder = 'Spieler*in 2';
+    $('#dir-wrap').hidden = !$('#opt-variant').checked;
+  }
+
+  function renderRuleArea() {
+    const mode = $('#setup input[name="rulemode"]:checked').value;
+    const el = $('#rule-area');
+    if (mode === 'random') {
+      el.innerHTML = `<p class="note">Ausgelost wird aus ${Object.keys(RULES).length} Regeln, die Zuordnung siehst du dann über den Stapeln. Mit der Variante wandern auch ausgeloste Regeln weiter.</p>`;
+      return;
+    }
+    const rules = mode === 'custom' ? ui.draftRules : START_RULES;
+    el.innerHTML = '<div class="rulerows">' + SUITS.map((s, i) => {
+      const control = mode === 'custom'
+        ? `<select id="rule-${i}" aria-label="Regel für ${s.name}">${Object.keys(RULES).map((k) => `<option value="${k}"${rules[i] === k ? ' selected' : ''}>${RULES[k].label}</option>`).join('')}</select>`
+        : `<span class="fixed">${RULES[rules[i]].label}</span>`;
+      return `<div class="rulerow s${i}"><span class="suitname suittxt">${suitSvg(i)}${s.name}</span>${control}<small id="rule-ex-${i}">${ruleExample(rules[i])}</small></div>`;
+    }).join('') + '</div>' +
+      (mode === 'custom' ? '<div class="ruletools"><button type="button" class="btn small" data-act="rules-random">Zufällig verteilen</button><button type="button" class="btn small ghost" data-act="rules-classic">Wie klassisch</button></div>' : '');
+  }
+
+  function readSetup() {
+    const f = $('#setup');
+    return {
+      mode: f.querySelector('input[name="mode"]:checked').value,
+      names: [$('#name1').value.trim(), $('#name2').value.trim()],
+      showValues: $('#opt-values').checked,
+      variant: $('#opt-variant').checked,
+      dir: $('#opt-dir').value,
+      ruleMode: f.querySelector('input[name="rulemode"]:checked').value,
+      customRules: ui.draftRules.slice(),
+    };
+  }
+
+  // ---------- Rendern ----------
+  function render() {
+    if (!S) return;
+    renderScores();
+    renderOpp();
+    renderBoard();
+    renderLast();
+    renderHand();
+    ui.dealt = [];
+    renderActions();
+    renderLog();
+    syncOverlay();
+    ui.rotFlash = false;
+    if (ui.focusId != null) {
+      const el = document.querySelector(`#hand [data-id="${ui.focusId}"]`);
+      if (el && !el.disabled) el.focus({ preventScroll: true });
+      ui.focusId = null;
+    }
+  }
+
+  function renderScores() {
+    const over = S.phase === 'over';
+    const a = ui.anim;
+    const html = S.players.map((p, i) => {
+      const active = i === S.current && !over && S.players.length > 1;
+      const points = a ? a.points[i] : p.points;
+      const combos = a ? a.combos[i] : p.combos;
+      return `<div class="score${active ? ' active' : ''}">
+        <span class="pname">${esc(p.name)}${active ? '<span class="turnmark">am Zug</span>' : ''}</span>
+        <span class="pts">${points}</span>
+        <span class="sub">${points === 1 ? 'Punkt' : 'Punkte'}<br>${combos}× die 13</span>
+      </div>`;
+    }).join('');
+    const tags = [];
+    if (S.finalLeft !== null && !over) tags.push(`<span class="tag warn">Letzte Runde · noch ${S.finalLeft} ${S.finalLeft === 1 ? 'Zug' : 'Züge'}</span>`);
+    if (S.set.ruleMode === 'custom') tags.push('<span class="tag">Eigene Regeln</span>');
+    if (S.set.ruleMode === 'random') tags.push('<span class="tag">Ausgeloste Regeln</span>');
+    if (S.set.variant) tags.push(`<span class="tag">Weltordnung ${a ? a.rotations : S.rotations}× verschoben</span>`);
+    $('#scores').innerHTML = html + `<div class="meta">${tags.join('')}
+      <div class="deckinfo">${backHtml()}<b>${a ? a.deck : S.deck.length}</b><small>Karten im<br>Nachziehstapel</small></div></div>`;
+  }
+
+  function renderOpp() {
+    const el = $('#opp');
+    const owner = handOwner();
+    const others = S.players.map((_, i) => i).filter((i) => i !== owner);
+    if (!others.length) { el.hidden = true; el.innerHTML = ''; return; }
+    el.hidden = false;
+    el.innerHTML = others.map((i) => {
+      const p = S.players[i];
+      const thinking = p.cpu && S.phase === 'cpu' && !ui.anim ? ' <span class="thinking">überlegt<span>.</span><span>.</span><span>.</span></span>' : '';
+      return `<div class="opprow"><span class="oppname">${esc(p.name)}${thinking}</span><div class="backs">${visHand(p).map(backHtml).join('')}</div></div>`;
+    }).join('');
+  }
+
+  function renderBoard() {
+    const piles = visPiles(), ruleOf = visRules();
+    $('#board').innerHTML = SUITS.map((s, i) => {
+      const pile = piles[i];
+      const top = pile[pile.length - 1];
+      const R = RULES[ruleOf[i]];
+      return `<div class="pile s${i}">
+        <div class="rule${ui.rotFlash ? ' shift' : ''}"><span class="long">${R.label}</span><span class="short">${R.short}</span></div>
+        <div class="stack${pile.length ? '' : ' empty'}">${pile.length > 1 ? '<div class="under"></div>' : ''}${top ? cardHtml(top) : suitSvg(i)}</div>
+        <div class="pcount"><b>${s.name}</b> · ${pile.length ? pile.length + (pile.length === 1 ? ' Karte' : ' Karten') : 'leer'}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderLast() {
+    const a = ui.anim;
+    if (a) {
+      const p = S.players[a.who];
+      $('#lastmove').innerHTML = `${say(p, 'legt ab', 'legst ab')}${a.landed.length ? ': ' + a.landed.map(chip).join(' ') : ' …'}`;
+      return;
+    }
+    $('#lastmove').innerHTML = S.lastMove ? `<span class="calc">Zuletzt:</span> ${S.lastMove}` : '';
+  }
+
+  function selectedCards() {
+    const hand = cur().hand;
+    return ui.selected.map((id) => hand.find((c) => c.id === id)).filter(Boolean);
+  }
+
+  function renderHand() {
+    const el = $('#hand');
+    const o = handOwner();
+    const p = S.players[o];
+    const hand = visHand(p);
+    if (S.phase === 'handoff') { el.innerHTML = hand.map(backHtml).join(''); return; }
+    if (!hand.length) { el.innerHTML = '<p class="toast">Keine Handkarten mehr.</p>'; return; }
+    const interactive = S.phase === 'play' && o === S.current && !p.cpu && !ui.anim;
+    const show = S.set.showValues;
+    const piles = visPiles(), ruleOf = visRules();
+    el.innerHTML = hand.map((c) => {
+      const t = trueValue(c, piles, ruleOf);
+      let html = cardHtml(c, { button: true, sel: ui.selected.includes(c.id), hint: ui.hint.includes(c.id), tv: show ? t.v : null, disabled: !interactive });
+      if (ui.dealt.includes(c.id)) html = html.replace('class="card ', 'class="card dealt ');
+      return `<div class="slot">${html}<span class="formula">${show ? t.f : '&nbsp;'}</span></div>`;
+    }).join('');
+  }
+
+  // Der eine Knopf: grau ohne Auswahl, sonst 13 beweisen, Karte abwerfen oder Hinweis auf die Summe
+  function mainState() {
+    const sel = selectedCards();
+    const n = sel.length;
+    if (!n) return { label: 'Ablegen', disabled: true };
+    if (!S.set.showValues) return { label: 'Ablegen' };
+    const sum = sel.reduce((a, c) => a + trueValue(c).v, 0);
+    if (sum === 13) return { label: `13 beweisen · +${pts(n)}`, win: true };
+    if (n === 1) return { label: 'Karte abwerfen' };
+    return { label: `Ergibt ${num(sum)}, keine 13`, disabled: true };
+  }
+
+  function renderActions() {
+    let html;
+    if (ui.anim) {
+      html = '<button type="button" class="btn ghost" disabled>Tipp</button><button type="button" class="btn primary" disabled>Wird abgelegt …</button>';
+    } else if (S.phase === 'over') {
+      html = '<button type="button" class="btn ghost" data-act="home">Andere Einstellungen</button><button type="button" class="btn primary" data-act="results">Ergebnis ansehen</button>';
+    } else if (S.phase === 'play') {
+      const m = mainState();
+      html = `<button type="button" class="btn ghost" data-act="hint">Tipp</button><button type="button" class="btn primary${m.win ? ' win' : ''}" data-act="main"${m.disabled ? ' disabled' : ''}>${m.label}</button>`;
+    } else {
+      const label = S.phase === 'cpu' ? `${esc(cur().name)} ist am Zug …` : 'Ablegen';
+      html = `<button type="button" class="btn ghost" disabled>Tipp</button><button type="button" class="btn primary" disabled>${label}</button>`;
+    }
+    $('#actions').innerHTML = html;
+    $('#toast').textContent = ui.error;
+  }
+
+  function renderLog() {
+    $('#log').innerHTML = S.log.slice(0, ui.anim ? ui.anim.logLen : S.log.length).reverse().map((e) => `<li${e.cls ? ` class="${e.cls}"` : ''}>${e.html}</li>`).join('');
+  }
+
+  // ---------- Fenster ----------
+  function syncOverlay() {
+    let want = ui.overlay;
+    if (!want && S && ui.view === 'game') {
+      if (S.phase === 'order') want = 'order';
+      else if (S.phase === 'handoff') want = 'handoff';
+      else if (S.phase === 'over' && !ui.overDismissed) want = 'over';
+    }
+    const ov = $('#overlay');
+    if (!want) { ov.hidden = true; shownOverlay = null; return; }
+    if (want === shownOverlay && !ov.hidden) return;
+    shownOverlay = want;
+    $('#sheet').innerHTML = ({ rules: rulesHtml, handoff: handoffHtml, over: overHtml, order: orderHtml })[want]();
+    ov.hidden = false;
+    const focusEl = $('#sheet button.primary') || $('#sheet button');
+    if (focusEl) focusEl.focus({ preventScroll: true });
+  }
+
+  function orderHtml() {
+    const sel = selectedCards();
+    const groups = [0, 1, 2, 3].filter((s) => sel.filter((c) => c.suit === s).length > 1);
+    return `<h2 id="sheet-title">Welche Karte liegt oben?</h2>
+      <p>Du legst mehrere Karten derselben Farbe ab. Die oberste bestimmt die nächsten wahren Werte dieser Farbe.</p>` +
+      groups.map((s) => `<div class="pick s${s}"><span class="pickname">${SUITS[s].name}</span>${sel.filter((c) => c.suit === s).map((c) =>
+        `<button type="button" class="pickcard${ui.order[s] === c.id ? ' on' : ''}" data-top="${s}:${c.id}" aria-pressed="${ui.order[s] === c.id}" aria-label="${SUITS[s].name} ${c.rank} oben">${cardHtml(c)}</button>`).join('')}</div>`).join('') +
+      '<div class="actions"><button type="button" class="btn ghost" data-act="order-back">Zurück</button><button type="button" class="btn primary win" data-act="order-ok">Ablegen und nachziehen</button></div>';
+  }
+
+  function rulesHtml() {
+    const inGame = S && ui.view === 'game';
+    const ruleOf = inGame ? S.ruleOf : START_RULES;
+    const rows = SUITS.map((s, i) => `<tr><td class="suittd s${i}">${suitSvg(i)} ${s.name}</td><td>${RULES[ruleOf[i]].label}</td></tr>`).join('');
+    const extra = Object.keys(RULES).filter((k) => !START_RULES.includes(k));
+    return `<h2 id="sheet-title">So funktioniert Illuminati 13</h2>
+      <p class="quote">„Wenn du 5 addierst, aber von der 2 das Herz abziehst – was bekommst du? Natürlich 13!“</p>
+      <h3>Ziel</h3>
+      <p>Bilde aus deinen Handkarten immer wieder die 13. Jede Karte in einer gültigen Kombination bringt einen Punkt. Wer am Ende die meisten Punkte hat, gewinnt.</p>
+      <h3>1. Die wahren Werte entschlüsseln</h3>
+      <p>Jede Handkarte wird einzeln mit der obersten Karte des gleichfarbigen Stapels verrechnet. ${inGame ? 'In diesem Spiel gilt gerade:' : 'Klassisch gilt:'}</p>
+      <table class="ruletable">${rows}</table>
+      <p>Ist ein Stapel noch leer, zählt die Karte ihre Zahl. Das Deck hat 52 Karten: jede Farbe von 1 bis 13, jede im selben Farbton wie ihr Stapel.</p>
+      <h3>2. Ablegen</h3>
+      <ul>
+        <li><b>Du findest die 13:</b> Wähle beliebig viele Karten, deren wahre Werte zusammen genau 13 ergeben. Der Knopf zeigt dann „13 beweisen“. Du bekommst so viele Punkte, wie du Karten verwendet hast, und ziehst auf 5 Karten nach. Bei mehreren Karten derselben Farbe wählst du, welche oben liegt.</li>
+        <li><b>Noch keine Erleuchtung:</b> Wähle eine einzelne Karte. Der Knopf zeigt „Karte abwerfen“. Sie kommt auf ihren Stapel, und du ziehst eine neue.</li>
+      </ul>
+      <h3>3. Das Ende der Offenbarung</h3>
+      <p>Ist der Nachziehstapel leer, spielt jede*r noch einen letzten Zug. Bei Punktgleichstand gewinnt, wer mehr 13er-Kombinationen gefunden hat.</p>
+      <h3>Eigene oder zufällige Regeln</h3>
+      <p>Auf der Startseite kannst du jedem Stapel eine Regel zuordnen oder sie auslosen lassen. Zusätzlich zu den vier klassischen gibt es:</p>
+      <table class="ruletable">${extra.map((k) => `<tr><td><b>${RULES[k].label}</b></td><td class="calc">${ruleExample(k)}</td></tr>`).join('')}</table>
+      <h3>Variante: Wenn die Weltordnung sich verschiebt</h3>
+      <p>Landet eine 13 auf einem Stapel, rotieren die vier Regeln um eine Position in die vereinbarte Richtung.</p>
+      <div class="actions"><button type="button" class="btn primary" data-act="close">Verstanden</button></div>`;
+  }
+
+  function handoffHtml() {
+    const p = cur();
+    return `<h2 id="sheet-title">${esc(p.name)} ist an der Reihe</h2>
+      ${S.lastMove ? `<p class="calc">Der Rechenweg aus dem letzten Zug:</p><p>${S.lastMove}</p>` : ''}
+      <p>Gib das Gerät an ${esc(p.name)} weiter. Die Karten bleiben verdeckt, bis du auf „Karten aufdecken“ tippst.</p>
+      <div class="actions"><button type="button" class="btn primary" data-act="reveal">Karten aufdecken</button></div>`;
+  }
+
+  function overHtml() {
+    const r = rank();
+    let title, sub = '';
+    if (S.players.length === 1) {
+      const p = S.players[0];
+      title = pts(p.points);
+      sub = `Du hast die 13 ${p.combos}-mal gefunden.` + (S.soloBest ? (p.points > S.soloBest ? ` Neuer Bestwert! Bisher waren es ${S.soloBest}.` : ` Dein Bestwert: ${S.soloBest}.`) : '');
+    } else if (r.tie) {
+      title = 'Gleichstand';
+      sub = 'Gleich viele Punkte und gleich viele 13er. Die Wahrheit bleibt geteilt.';
+    } else {
+      const w = r.list[0];
+      title = w.you ? 'Du gewinnst!' : `${esc(w.name)} gewinnt!`;
+      sub = r.byCombos ? 'Punktgleich, aber mit mehr gefundenen 13er-Kombinationen.' : 'Die Wahrheit wurde am klarsten bewiesen.';
+    }
+    const rows = S.players.length > 1 ? `<table class="results"><tr><th>Name</th><th>Punkte</th><th>13er</th></tr>${r.list.map((p, i) =>
+      `<tr class="${i === 0 && !r.tie ? 'win' : ''}"><td>${esc(p.name)}</td><td class="num">${p.points}</td><td class="num">${p.combos}</td></tr>`).join('')}</table>` : '';
+    return `<h2 id="sheet-title">${title}</h2><p>${sub}</p>${rows}
+      <div class="actions">
+        <button type="button" class="btn ghost" data-act="peek">Tisch ansehen</button>
+        <button type="button" class="btn" data-act="home">Startseite</button>
+        <button type="button" class="btn primary" data-act="again">Nochmal spielen</button>
+      </div>`;
+  }
+
+  // ---------- Eingaben ----------
+  function toggle(id) {
+    if (S.phase !== 'play' || ui.anim) return;
+    ui.error = ''; ui.hint = [];
+    const i = ui.selected.indexOf(id);
+    if (i >= 0) ui.selected.splice(i, 1); else ui.selected.push(id);
+    ui.focusId = id;
+    render();
+  }
+
+  function act(a) {
+    // Aktionen der Startseite und allgemeine
+    switch (a) {
+      case 'rules': ui.overlay = 'rules'; return syncOverlay();
+      case 'close': ui.overlay = null; return syncOverlay();
+      case 'home': ui.overlay = null; clearTimeout(timer); return showView('start');
+      case 'resume': showView('game'); if (S.phase === 'cpu' && !ui.anim) timer = setTimeout(cpuMove, 900); return;
+      case 'rules-random': ui.draftRules = randomRules(); return renderRuleArea();
+      case 'rules-classic': ui.draftRules = START_RULES.slice(); return renderRuleArea();
+    }
+    if (!S || ui.anim) return;
+    const p = cur();
+    switch (a) {
+      case 'hint': {
+        if (S.phase !== 'play') return;
+        const best = bestCombo(p.hand);
+        if (!best) { ui.error = 'Hier verbirgt sich keine 13. Wähle eine Karte zum Abwerfen.'; ui.selected = []; ui.hint = []; }
+        else { ui.error = ''; ui.selected = best.map((c) => c.id); ui.hint = ui.selected.slice(); }
+        break;
+      }
+      case 'main': {
+        if (S.phase !== 'play') return;
+        const sel = selectedCards();
+        if (!sel.length) return;
+        const sum = sel.reduce((s, c) => s + trueValue(c).v, 0);
+        if (sum === 13) {
+          const order = {};
+          sel.forEach((c) => { order[c.suit] = c.id; });
+          const needsOrder = [0, 1, 2, 3].some((s) => sel.filter((c) => c.suit === s).length > 1);
+          if (needsOrder) { ui.order = order; S.phase = 'order'; break; }
+          return playMove(p, () => applyProof(p, sel, order), handRects(sel));
+        }
+        if (sel.length === 1) {
+          return playMove(p, () => applyDiscard(p, sel[0]), handRects(sel));
+        }
+        ui.error = `Deine Auswahl ergibt ${num(sum)}, nicht 13. Wähle eine 13 oder eine einzelne Karte zum Abwerfen.`;
+        break;
+      }
+      case 'order-back': ui.order = null; S.phase = 'play'; break;
+      case 'order-ok': {
+        const sel = selectedCards();
+        const order = ui.order;
+        const rects = handRects(sel);
+        ui.order = null; S.phase = 'play';
+        return playMove(p, () => applyProof(p, sel, order), rects);
+      }
+      case 'reveal': S.phase = 'play'; break;
+      case 'results': ui.overDismissed = false; break;
+      case 'peek': ui.overDismissed = true; break;
+      case 'again': return newGame(S.set);
+      default: return;
+    }
+    render();
+  }
+
+  document.addEventListener('click', (e) => {
+    const card = e.target.closest('#hand [data-id]');
+    if (card) return toggle(Number(card.dataset.id));
+    const top = e.target.closest('[data-top]');
+    if (top && ui.order) {
+      const [s, id] = top.dataset.top.split(':').map(Number);
+      ui.order[s] = id;
+      shownOverlay = null;
+      render();
+      return;
+    }
+    const a = e.target.closest('[data-act]');
+    if (a) return act(a.dataset.act);
+    if (e.target.id === 'overlay' && ui.overlay) { ui.overlay = null; syncOverlay(); }
+  });
+  document.addEventListener('change', (e) => {
+    if (!e.target.closest('#setup')) return;
+    if (e.target.name === 'rulemode') return renderRuleArea();
+    const m = /^rule-(\d)$/.exec(e.target.id);
+    if (m) {
+      ui.draftRules[+m[1]] = e.target.value;
+      $(`#rule-ex-${m[1]}`).textContent = ruleExample(e.target.value);
+      return;
+    }
+    syncSetupForm();
+  });
+  document.addEventListener('submit', (e) => {
+    if (e.target.id !== 'setup') return;
+    e.preventDefault();
+    const set = readSetup();
+    store.set('illu13-settings', set);
+    ui.overlay = null;
+    newGame(set);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    if (ui.overlay) { ui.overlay = null; syncOverlay(); }
+    else if (S && S.phase === 'order') act('order-back');
+  });
+
+  // ---------- Start (mit Erhalt des Spielstands bei Aktualisierungen) ----------
+  function boot(data) {
+    if (data && data.S) {
+      S = data.S;
+      const wasAnimating = !!(data.ui && data.ui.anim);
+      Object.assign(ui, data.ui || {}, { overlay: null, focusId: null, anim: null, dealt: [] });
+      showView(ui.view === 'game' ? 'game' : 'start');
+      // ein unterbrochenes Ablegen ist im Spielstand schon erledigt, also einfach weiter
+      if (wasAnimating) endTurn();
+      else if (ui.view === 'game' && S.phase === 'cpu') timer = setTimeout(cpuMove, 900);
+    } else {
+      showView('start');
+    }
+  }
+  if (window.claude && window.claude.hot && window.claude.hot.snapshot) {
+    window.claude.hot.snapshot(() => ({ S, ui: Object.assign({}, ui) }));
+  }
+  if (window.claude && window.claude.hot && window.claude.hot.ready) window.claude.hot.ready(boot);
+  else boot((window.claude && window.claude.hot && window.claude.hot.data) || {});
+})();
+</script>

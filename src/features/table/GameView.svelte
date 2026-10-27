@@ -1,0 +1,58 @@
+<script lang="ts">
+import type { GameState } from '../../core/game';
+import Actions from './Actions.svelte';
+import Board from './Board.svelte';
+import GameLog from './GameLog.svelte';
+import Hand from './Hand.svelte';
+import LastMove from './LastMove.svelte';
+import Opponents from './Opponents.svelte';
+import ScoreBoard from './ScoreBoard.svelte';
+import TopBar from './TopBar.svelte';
+
+/** Der Spieltisch: oben die Punkte, in der Mitte die Stapel, unten die Hand; daneben das Protokoll. */
+let { game }: { game: GameState } = $props();
+</script>
+
+<div class="game">
+  <TopBar />
+  <ScoreBoard {game} />
+  <main class="table">
+    <div class="play">
+      <Opponents {game} />
+      <Board />
+      <LastMove {game} />
+      <Hand {game} />
+      <Actions {game} />
+    </div>
+    <GameLog {game} />
+  </main>
+</div>
+
+<style>
+  .game {
+    max-width: 1180px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .table {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+
+  @media (min-width: 980px) {
+    .table {
+      grid-template-columns: minmax(0, 1fr) 290px;
+    }
+  }
+
+  .play {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+  }
+</style>

@@ -1,0 +1,28 @@
+{
+  "name": "illuminati13",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Das Kartenspiel Illuminati 13 als Web-App – gegen den Computer, zu zweit an einem Gerät oder allein.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && node scripts/build-artifact.mjs",
+    "preview": "vite preview",
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "verify": "npm run check && npm run lint && npm test && npm run build"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.15",
+    "@sveltejs/vite-plugin-svelte": "^7.3.1",
+    "@tsconfig/svelte": "^5.0.8",
+    "svelte": "^5.57.3",
+    "svelte-check": "^4.7.7",
+    "typescript": "^6.0.3",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.4"
+  }
+}
