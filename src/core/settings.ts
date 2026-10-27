@@ -9,9 +9,13 @@ export type RuleMode = 'classic' | 'custom' | 'random';
  * oder welche Karten es sind.
  */
 export type HintLevel = 'off' | 'nudge' | 'full';
+/** Wie gut der Computer Kombinationen erkennt (siehe ai.ts). */
+export type CpuLevel = 'easy' | 'medium' | 'hard';
 
 export interface Settings {
   mode: GameMode;
+  /** Stärke des Computers – nur im Spiel gegen den Computer */
+  cpuLevel: CpuLevel;
   /** Name 1 (bzw. „Du“) und Name 2 für das Spiel zu zweit */
   names: [string, string];
   showValues: boolean;
@@ -28,6 +32,7 @@ export interface Settings {
 
 export const DEFAULT_SETTINGS: Settings = {
   mode: 'cpu',
+  cpuLevel: 'medium',
   names: ['Du', ''],
   showValues: true,
   variant: false,
@@ -51,6 +56,7 @@ export function normalizeSettings(raw: unknown): Settings {
   const d = DEFAULT_SETTINGS;
   return {
     mode: oneOf(data.mode, ['cpu', 'hotseat', 'solo'], d.mode),
+    cpuLevel: oneOf(data.cpuLevel, ['easy', 'medium', 'hard'], d.cpuLevel),
     names: [
       typeof names[0] === 'string' ? names[0] : d.names[0],
       typeof names[1] === 'string' ? names[1] : d.names[1],

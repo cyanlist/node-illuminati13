@@ -45,7 +45,7 @@ src/
     combos.ts        13er-Kombinationen finden
     settings.ts      Einstellungen und deren Prüfung
     game/            Spielzustand: types, new-game, moves (Beweis/Abwurf), turns (Rundenablauf), hints (Tipp), ranking
-    ai.ts            Zugwahl des Computers
+    ai.ts            Zugwahl des Computers in drei Stärken (übersieht Kombinationen wie ein Mensch)
   state/           Zustand und Ablauf der Oberfläche
     table.svelte.ts  was der Tisch zeigt (Spiel, Phase, Auswahl, laufende Ablege-Animation)
     flow.ts          Rundenablauf: Spiel starten, Computerzug, nächster Zug, Wertung
