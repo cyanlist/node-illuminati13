@@ -212,7 +212,7 @@ async function presentProof(
  * vom Nachziehstapel genau dorthin – in die eigene Hand offen, zum Gegenüber verdeckt (außer mit offenen Karten).
  */
 async function drawUp(player: number, running: () => boolean): Promise<boolean> {
-  const hidden = player !== table.handOwner || table.phase === 'handoff';
+  const hidden = player !== table.viewer;
   const faceDown = hidden && !table.game?.settings.openHands;
   for (const card of table.anim?.drawn ?? []) {
     const anim = table.anim;

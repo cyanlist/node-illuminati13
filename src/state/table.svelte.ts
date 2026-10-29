@@ -91,9 +91,16 @@ class TableState {
 
   /* ---------- abgeleitete Ansichten ---------- */
 
-  /** Wessen Hand unten liegt: zu zweit die der Person am Zug, sonst die eigene. */
-  get handOwner(): number {
-    return this.game?.settings.mode === 'hotseat' ? this.game.current : 0;
+  /**
+   * Wessen Karten gerade als ganze Hand gezeigt werden – offen, mit wahren Werten und auswählbar.
+   * Gegen den Computer und allein immer die eigene; zu zweit die der Person am Zug, während der
+   * Übergabe niemandes (-1). Die Plätze am Tisch bleiben dabei fest: Spieler*in 1 unten, 2 oben.
+   */
+  get viewer(): number {
+    const game = this.game;
+    if (!game) return -1;
+    if (game.settings.mode !== 'hotseat') return 0;
+    return this.phase === 'handoff' ? -1 : game.current;
   }
 
   get selectedCards(): Card[] {

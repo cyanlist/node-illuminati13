@@ -4,12 +4,14 @@ import Actions from './Actions.svelte';
 import Board from './Board.svelte';
 import GameLog from './GameLog.svelte';
 import GameStatus from './GameStatus.svelte';
-import Hand from './Hand.svelte';
-import Opponents from './Opponents.svelte';
+import PlayerSeat from './PlayerSeat.svelte';
 import ProofStage from './ProofStage.svelte';
 import TopBar from './TopBar.svelte';
 
-/** Der Spieltisch: oben das Gegenüber, in der Mitte die Stapel, unten die eigene Hand; daneben das Protokoll. */
+/**
+ * Der Spieltisch mit festen Plätzen: oben Spieler*in 2 bzw. der Computer, in der Mitte die Stapel,
+ * unten Spieler*in 1 mit den Knöpfen; daneben das Protokoll.
+ */
 let { game }: { game: GameState } = $props();
 </script>
 
@@ -18,12 +20,12 @@ let { game }: { game: GameState } = $props();
   <GameStatus {game} />
   <main class="table">
     <div class="play">
-      <Opponents {game} />
+      {#if game.players.length > 1}<PlayerSeat {game} index={1} />{/if}
       <div class="board-area">
         <Board />
         <ProofStage {game} />
       </div>
-      <Hand {game} />
+      <PlayerSeat {game} index={0} />
       <Actions {game} />
     </div>
     <GameLog {game} />
