@@ -12,9 +12,12 @@ export interface Rule {
   calc(stack: number, hand: number): number;
   /** Rechenweg ohne Ergebnis, z. B. „4 + 5“ */
   show(stack: number, hand: number): string;
-  /** Stapel und Hand für das Beispiel im Regelfenster, falls 6 und 4 die Regel schlecht zeigen */
-  example?: [stack: number, hand: number];
+  /** Der Rechenweg in Alltagssprache, z. B. „Zähle beide Zahlen zusammen: 4 und 5 sind 9.“ */
+  explain(stack: number, hand: number): string;
 }
+
+/** Zahl mit echtem Minuszeichen, z. B. „−3“. */
+export const signed = (n: number): string => (n < 0 ? `−${Math.abs(n)}` : String(n));
 
 /** Gibt die Regel unverändert zurück – sorgt nur dafür, dass jede Regeldatei typgeprüft ist. */
 export const defineRule = (rule: Rule): Rule => rule;

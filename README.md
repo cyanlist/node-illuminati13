@@ -84,6 +84,7 @@ mehrere Geräte nutzen: Züge werden übertragen und auf jedem Gerät gleich ang
      short: 'H × 2',
      calc: (_stack, hand) => hand * 2,
      show: (_stack, hand) => `${hand} × 2`,
+     explain: (_stack, hand) => `Verdopple deine Zahl: ${hand} und noch einmal ${hand} sind ${hand * 2}.`,
    });
    ```
 

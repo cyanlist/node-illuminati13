@@ -6,4 +6,5 @@ export const plus = defineRule({
   short: 'S + H',
   calc: (stack, hand) => stack + hand,
   show: (stack, hand) => `${stack} + ${hand}`,
+  explain: (stack, hand) => `Zähle beide Zahlen zusammen: ${stack} und ${hand} sind ${stack + hand}.`,
 });

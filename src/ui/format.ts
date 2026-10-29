@@ -1,9 +1,9 @@
 import type { LogEntry, ProofPart } from '../core/game';
-import { RULES, type RuleKey } from '../core/rules';
+import { RULES, type RuleKey, signed } from '../core/rules';
 import type { TrueValue } from '../core/values';
 
 /** Zahl mit echtem Minuszeichen. */
-export const num = (n: number): string => (n < 0 ? `−${Math.abs(n)}` : String(n));
+export const num = signed;
 
 export const pts = (n: number): string => `${n} ${n === 1 ? 'Punkt' : 'Punkte'}`;
 
@@ -22,9 +22,17 @@ export function calcText(part: ProofPart): string {
   return `${part.formula} = ${num(part.value)}`;
 }
 
+/**
+ * Die Beispielkarten für alle Regeln. Mit Stapel 6 zeigt diese Hand jede Regel samt Sonderfällen:
+ * kleiner, gleich und größer als der Stapel – also auch 0, negative Werte, Abrunden und Reste.
+ */
+export const RULE_EXAMPLE = { stack: 6, hand: [2, 4, 6, 9, 13] } as const;
+
+/** Ein Beispiel in einer Zeile fürs Regelfenster – mit der 9, die bei den meisten Regeln etwas Besonderes zeigt. */
 export function ruleExample(key: RuleKey): string {
   const rule = RULES[key];
-  const [stack, hand] = rule.example ?? [6, 4];
+  const { stack } = RULE_EXAMPLE;
+  const hand = 9;
   const value = num(rule.calc(stack, hand));
   return `Beispiel: Stapel ${stack}, Hand ${hand} → ${rule.direct ? value : `${rule.show(stack, hand)} = ${value}`}`;
 }

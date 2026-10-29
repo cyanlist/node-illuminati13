@@ -7,4 +7,6 @@ export const copy = defineRule({
   direct: true,
   calc: (stack) => stack,
   show: (stack) => `${stack}`,
+  explain: (stack) =>
+    `Deine Karte zählt genau so viel wie die Stapelkarte: ${stack}. Deine eigene Zahl spielt keine Rolle.`,
 });

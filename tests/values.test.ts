@@ -87,6 +87,22 @@ describe('Regeln', () => {
   });
 });
 
+describe('Erklärungen', () => {
+  it('jede Regel erklärt ihr Beispiel in Worten', () => {
+    for (const key of RULE_KEYS) expect(RULES[key].explain(6, 4)).toMatch(/\.$/);
+  });
+
+  it('Modulo erklärt Rest, glatte Teilung und kleinere Handkarte', () => {
+    expect(RULES.mod.explain(4, 11)).toBe('Die 4 passt 2-mal in die 11 (2 × 4 = 8). Übrig bleiben 3.');
+    expect(RULES.mod.explain(4, 12)).toBe(
+      'Die 4 passt 3-mal in die 12 (3 × 4 = 12). Es bleibt nichts übrig, also 0.',
+    );
+    expect(RULES.mod.explain(8, 3)).toBe(
+      'Die 8 passt kein einziges Mal in die 3 – also bleibt die 3 ganz übrig.',
+    );
+  });
+});
+
 describe('Regelpakete', () => {
   it('liefern vier gültige Regeln und erkennen sich selbst wieder', () => {
     for (const pack of RULE_PACKS) {

@@ -7,4 +7,6 @@ export const plain = defineRule({
   direct: true,
   calc: (_stack, hand) => hand,
   show: (_stack, hand) => `${hand}`,
+  explain: (_stack, hand) =>
+    `Deine Karte zählt einfach ihre eigene Zahl: ${hand}. Der Stapel spielt keine Rolle.`,
 });

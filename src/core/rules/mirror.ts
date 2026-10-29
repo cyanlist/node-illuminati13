@@ -6,4 +6,6 @@ export const mirror = defineRule({
   short: '13 − H',
   calc: (_stack, hand) => 13 - hand,
   show: (_stack, hand) => `13 − ${hand}`,
+  explain: (_stack, hand) =>
+    `Deine Zahl wird an der 13 gespiegelt: 13 weniger ${hand} sind ${13 - hand}. Der Stapel spielt keine Rolle.`,
 });

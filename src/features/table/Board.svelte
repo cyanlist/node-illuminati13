@@ -14,7 +14,7 @@ import RuleLabel from './RuleLabel.svelte';
 
 <section class="board" aria-label="Vier Ablagestapel und Nachziehstapel">
   {#each table.columns as suit, column (column)}
-    <div class="rule" style:grid-column={column + 1}><RuleLabel ruleKey={table.rules[suit]} /></div>
+    <div class="rule" style:grid-column={column + 1} style:--column={column}><RuleLabel ruleKey={table.rules[suit]} {suit} /></div>
   {/each}
   {#each table.columns as suit (suit)}
     <div class="slot" animate:flip={{ duration: 700, easing: cubicInOut }}>
@@ -25,12 +25,16 @@ import RuleLabel from './RuleLabel.svelte';
 </section>
 
 <style>
+  /* --board-pad und --board-gap braucht auch das Rechenbeispiel, um sich unter seine Spalte zu schieben */
   .board {
+    --board-pad: clamp(12px, 2.4vw, 22px);
+    --board-gap: clamp(6px, 2vw, 18px);
+    position: relative;
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
-    column-gap: clamp(6px, 2vw, 18px);
+    column-gap: var(--board-gap);
     row-gap: 8px;
-    padding: clamp(12px, 2.4vw, 22px);
+    padding: var(--board-pad);
     background: var(--surface);
     border-radius: 16px;
     box-shadow: 0 1px 3px var(--shadow);

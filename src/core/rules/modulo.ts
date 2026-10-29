@@ -9,5 +9,13 @@ export const modulo = defineRule({
   short: 'H mod S',
   calc: (stack, hand) => hand % stack,
   show: (stack, hand) => `${hand} mod ${stack}`,
-  example: [4, 11],
+  explain: (stack, hand) => {
+    if (hand < stack)
+      return `Die ${stack} passt kein einziges Mal in die ${hand} – also bleibt die ${hand} ganz übrig.`;
+    const times = Math.floor(hand / stack);
+    const rest = hand % stack;
+    // geschützte Leerzeichen: die Klammer bricht nicht mitten in der Rechnung um
+    const fit = `Die ${stack} passt ${times}-mal in die ${hand} (${times} × ${stack} = ${times * stack}).`;
+    return rest === 0 ? `${fit} Es bleibt nichts übrig, also 0.` : `${fit} Übrig bleiben ${rest}.`;
+  },
 });
