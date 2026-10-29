@@ -23,8 +23,11 @@ const TIMING = {
   afterValue: 200,
   /** So lange bleibt „= 13“ stehen */
   solved: 1000,
-  /** Abstand der Karten von der Bühne zu den Stapeln */
-  stageToPile: 150,
+  /**
+   * Versatz, mit dem die Karten von der Bühne starten – fürs Auge gleichzeitig, aber bei gleicher Farbe
+   * landet so die gewählte Karte zuverlässig oben
+   */
+  stageToPileStagger: 60,
   betweenDraws: 80,
   afterMove: 250,
   afterMoveCpu: 800,
@@ -187,17 +190,19 @@ async function presentProof(
   anim.combos[player] = (anim.combos[player] ?? 0) + 1;
   await stageWait(TIMING.solved);
 
-  // 4. ablegen: von der Bühne auf die Stapel, in der gewählten Reihenfolge
+  // 4. ablegen: Die Bühne löst sich auf und alle Karten fliegen gleichzeitig auf ihre Stapel,
+  //    damit keine Karte allein in der Luft hängt. Sie landen in der gewählten Reihenfolge.
   proof.clearing = true;
-  for (const step of steps) {
-    if (!running()) return false;
-    const from = stageRect(step.card.id);
-    proof.left.push(step.card.id);
-    await flyCard(step.card, from, pileRect(step.card.suit));
-    if (!running()) return false;
-    landOnPile(anim, step);
-    await stageWait(TIMING.stageToPile);
-  }
+  await Promise.all(
+    steps.map(async (step, i) => {
+      await wait(i * TIMING.stageToPileStagger);
+      if (!running()) return;
+      const from = stageRect(step.card.id);
+      proof.left.push(step.card.id);
+      await flyCard(step.card, from, pileRect(step.card.suit));
+      if (running()) landOnPile(anim, step);
+    }),
+  );
   anim.proof = null;
   return running();
 }
