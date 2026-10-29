@@ -23,7 +23,7 @@ const winner = $derived(entry.kind === 'end' && game.players.length > 1 ? rankin
   {#each SUIT_INDICES as suit, i (suit)}{#if i > 0}{' · '}{/if}<span class="suit-text suit-{suit}">{SUITS[suit].name}</span>
     {ruleLabel(entry.rules[suit])}{/each}
 {:else if entry.kind === 'variant'}
-  Variante aktiv: Jede 13, die auf einem Stapel landet, verschiebt die Regeln um eine Position nach {entry.dir}.
+  Variante aktiv: Jede 13, die auf einem Stapel landet, lässt alle Stapel eine Position nach {entry.dir} weiterrücken.
 {:else if entry.kind === 'begins'}
   <Subject player={playerAt(game, entry.player)} third="beginnt." second="beginnst." />
 {:else if entry.kind === 'proof'}
@@ -35,8 +35,8 @@ const winner = $derived(entry.kind === 'end' && game.players.length > 1 ? rankin
   <Subject player={playerAt(game, entry.player)} third="findet noch keine 13 und wirft" second="findest noch keine 13 und wirfst" />
   <Chip card={entry.card} /> auf den {SUITS[entry.card.suit].name}-Stapel ab.
 {:else if entry.kind === 'rotation'}
-  Eine 13 liegt oben – die Weltordnung verschiebt sich{entry.count > 1 ? ` (${entry.count}×)` : ''}! Alle Regeln wandern
-  nach {entry.dir}.
+  Eine 13 liegt oben – die Weltordnung verschiebt sich{entry.count > 1 ? ` (${entry.count}×)` : ''}! Alle Stapel rücken
+  nach {entry.dir} weiter, die Regeln bleiben stehen.
 {:else if entry.kind === 'skip'}
   <Subject
     player={playerAt(game, entry.player)}

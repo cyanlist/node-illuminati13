@@ -2,9 +2,9 @@
  * Zustand der Oberfläche: das laufende Spiel und alles, was nur die Anzeige betrifft
  * (Auswahl, Fenster, laufende Ablege-Animation). Geändert wird er über flow.ts und actions.ts.
  */
-import type { Card, SuitIndex } from '../core/cards';
+import { type Card, SUIT_INDICES, type SuitIndex } from '../core/cards';
 import { currentPlayer, type GameState, type LogEntry, type ProofPart } from '../core/game';
-import type { RuleKey } from '../core/rules';
+import { pileColumn, type RuleKey } from '../core/rules';
 
 export type View = 'start' | 'game';
 
@@ -125,6 +125,13 @@ class TableState {
 
   get rotations(): number {
     return this.anim?.rotations ?? this.game?.rotations ?? 0;
+  }
+
+  /** Die Farben in der Reihenfolge, in der ihre Stapel gerade auf dem Board liegen (Spalte 0 zuerst). */
+  get columns(): SuitIndex[] {
+    const dir = this.game?.settings.dir ?? 'rechts';
+    const at = (suit: SuitIndex) => pileColumn(suit, this.rotations, dir, SUIT_INDICES.length);
+    return [...SUIT_INDICES].sort((a, b) => at(a) - at(b));
   }
 
   get deckCount(): number {

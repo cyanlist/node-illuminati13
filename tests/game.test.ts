@@ -89,10 +89,10 @@ describe('Züge', () => {
     expect(game.deck.length).toBe(deckBefore - 1);
   });
 
-  it('Variante: eine 13 auf dem Stapel verschiebt die Regeln', () => {
+  it('Variante: eine 13 auf dem Stapel lässt die Stapel weiterrücken', () => {
     const game = exampleGame({ variant: true, dir: 'rechts' });
     const result = applyMove(game, { type: 'discard', cardId: card(2, 13).id });
-    expect(game.rules).toEqual(['max', 'plus', 'minus', 'copy']);
+    expect(game.rules).toEqual(['minus', 'copy', 'max', 'plus']);
     expect(game.rotations).toBe(1);
     expect(result.steps[0]?.rotated).toBe(true);
     expect(game.log.at(-1)).toMatchObject({ kind: 'rotation', count: 1 });

@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { bestCombo, findCombos } from '../src/core/combos';
-import { CLASSIC_RULES, isRuleKey, RULE_KEYS, RULE_PACKS, RULES, rotateRules } from '../src/core/rules';
+import {
+  CLASSIC_RULES,
+  isRuleKey,
+  pileColumn,
+  RULE_KEYS,
+  RULE_PACKS,
+  RULES,
+  rotateRules,
+} from '../src/core/rules';
 import { sumOfValues, trueValue } from '../src/core/values';
 import { card, seededRng } from './helpers';
 
@@ -46,9 +54,19 @@ describe('wahre Werte', () => {
 });
 
 describe('Regeln', () => {
-  it('verschiebt die Regeln nach rechts und nach links', () => {
-    expect(rotateRules(CLASSIC_RULES, 'rechts')).toEqual(['max', 'plus', 'minus', 'copy']);
-    expect(rotateRules(CLASSIC_RULES, 'links')).toEqual(['minus', 'copy', 'max', 'plus']);
+  it('rückt die Stapel nach rechts und nach links weiter', () => {
+    expect(rotateRules(CLASSIC_RULES, 'rechts')).toEqual(['minus', 'copy', 'max', 'plus']);
+    expect(rotateRules(CLASSIC_RULES, 'links')).toEqual(['max', 'plus', 'minus', 'copy']);
+  });
+
+  it('jede Farbe liegt nach dem Weiterrücken unter der Regel, die sie dann bekommt', () => {
+    const rules = rotateRules(CLASSIC_RULES, 'rechts');
+    expect(pileColumn(0, 1, 'rechts', 4)).toBe(1);
+    expect(pileColumn(3, 1, 'rechts', 4)).toBe(0);
+    expect(pileColumn(0, 1, 'links', 4)).toBe(3);
+    for (const suit of [0, 1, 2, 3]) {
+      expect(rules[suit]).toBe(CLASSIC_RULES[pileColumn(suit, 1, 'rechts', 4)]);
+    }
   });
 
   it('rechnet alle zehn Regeln mit Stapel 6 und Hand 4', () => {

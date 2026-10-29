@@ -22,13 +22,13 @@ let { draft = $bindable() }: { draft: Settings } = $props();
   {/if}
   <CheckOption
     title="Variante „Wenn die Weltordnung sich verschiebt“"
-    description="Landet eine 13 auf einem Stapel, wandern alle vier Regeln eine Position weiter."
+    description="Landet eine 13 auf einem Stapel, rücken alle vier Stapel eine Position weiter und gelten dann nach der Regel ihres neuen Platzes."
     bind:checked={draft.variant}
   />
 
   {#if draft.variant}
     <label class="field">
-      Richtung der Verschiebung
+      Richtung, in die die Stapel rücken
       <select bind:value={draft.dir}>
         <option value="rechts">nach rechts (Herz → Pik → Karo → Kreuz → Herz)</option>
         <option value="links">nach links (Herz → Kreuz → Karo → Pik → Herz)</option>

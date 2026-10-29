@@ -88,7 +88,11 @@ const close = (): void => {
   </p>
 
   <h3>Variante: Wenn die Weltordnung sich verschiebt</h3>
-  <p>Landet eine 13 auf einem Stapel, rotieren die vier Regeln um eine Position in die vereinbarte Richtung.</p>
+  <p>
+    Landet eine 13 auf einem Stapel, rücken alle vier Stapel eine Position in die vereinbarte Richtung weiter – der
+    letzte wieder an den Anfang. Die Regeln bleiben an ihrem Platz: Jeder Stapel gilt ab jetzt nach der Regel, unter der er
+    nun liegt.
+  </p>
 
   {#snippet actions()}
     <button type="button" class="btn btn--primary" onclick={close}>Verstanden</button>

@@ -1,31 +1,20 @@
 <script lang="ts">
 import { type Card as CardData, SUITS, type SuitIndex } from '../../core/cards';
-import { RULES, type RuleKey } from '../../core/rules';
 import Card from '../../ui/Card.svelte';
 import { cardCount } from '../../ui/format';
 import SuitIcon from '../../ui/SuitIcon.svelte';
 
-/** Ein Ablagestapel: oben die Regel, darunter die oberste Karte (oder ein leerer Rahmen). */
+/** Ein Ablagestapel: die oberste Karte (oder ein leerer Rahmen), darunter die Farbe. Die Regel steht im Board darüber. */
 interface Props {
   suit: SuitIndex;
   cards: CardData[];
-  ruleKey: RuleKey | undefined;
-  /** Wie oft sich die Regeln verschoben haben – bei jeder Änderung wackelt die Beschriftung kurz */
-  rotations: number;
 }
-let { suit, cards, ruleKey, rotations }: Props = $props();
+let { suit, cards }: Props = $props();
 
 const top = $derived(cards.at(-1));
-const rule = $derived(ruleKey ? RULES[ruleKey] : null);
 </script>
 
 <div class="pile suit-{suit}">
-  {#key rotations}
-    <div class="rule" class:shifted={rotations > 0}>
-      <span class="long">{rule?.label}</span><span class="short">{rule?.short}</span>
-    </div>
-  {/key}
-
   <div class="stack" class:empty={!top} data-pile={suit}>
     {#if cards.length > 1}<div class="under"></div>{/if}
     {#if top}
@@ -46,51 +35,6 @@ const rule = $derived(ruleKey ? RULES[ruleKey] : null);
     align-items: center;
     gap: 8px;
     min-width: 0;
-  }
-
-  .rule {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 2.4em;
-    font-size: clamp(12px, 1.6vw, 14px);
-    font-weight: 700;
-    line-height: 1.2;
-    text-align: center;
-    color: var(--muted);
-    overflow-wrap: break-word;
-  }
-
-  .short {
-    display: none;
-  }
-
-  @media (max-width: 620px) {
-    .long {
-      display: none;
-    }
-
-    .short {
-      display: inline;
-    }
-  }
-
-  .shifted {
-    animation: shift 1.4s ease-out;
-  }
-
-  @keyframes shift {
-    0% {
-      color: var(--text);
-      transform: translateX(-12px);
-    }
-    40% {
-      color: var(--text);
-      transform: translateX(3px);
-    }
-    100% {
-      transform: none;
-    }
   }
 
   .stack {

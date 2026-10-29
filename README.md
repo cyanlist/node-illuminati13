@@ -6,7 +6,7 @@ die 13 bildet, bekommt pro Karte einen Punkt.
 
 - **Spielarten:** gegen den Computer, zu zweit an einem Gerät (Karten bleiben bis zur Übergabe verdeckt) oder allein.
 - **Regeln der Stapel:** klassisch (wie in der Anleitung), eigene Zuordnung aus zehn Regeln oder ausgelost.
-- **Variante „Wenn die Weltordnung sich verschiebt“:** Landet eine 13 auf einem Stapel, wandern alle Regeln weiter.
+- **Variante „Wenn die Weltordnung sich verschiebt“:** Landet eine 13 auf einem Stapel, rücken alle Stapel unter die nächste Regel weiter.
 - Abgelegte Karten fliegen nacheinander auf ihre Stapel, damit man sieht, was das Gegenüber spielt.
 
 ## Schnellstart
