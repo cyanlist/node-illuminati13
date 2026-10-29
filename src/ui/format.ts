@@ -24,8 +24,9 @@ export function calcText(part: ProofPart): string {
 
 export function ruleExample(key: RuleKey): string {
   const rule = RULES[key];
-  const value = num(rule.calc(6, 4));
-  return `Beispiel: Stapel 6, Hand 4 → ${rule.direct ? value : `${rule.show(6, 4)} = ${value}`}`;
+  const [stack, hand] = rule.example ?? [6, 4];
+  const value = num(rule.calc(stack, hand));
+  return `Beispiel: Stapel ${stack}, Hand ${hand} → ${rule.direct ? value : `${rule.show(stack, hand)} = ${value}`}`;
 }
 
 export const ruleLabel = (key: RuleKey | undefined): string => (key ? RULES[key].label : '');

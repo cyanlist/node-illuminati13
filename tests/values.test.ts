@@ -69,7 +69,7 @@ describe('Regeln', () => {
     }
   });
 
-  it('rechnet alle zehn Regeln mit Stapel 6 und Hand 4', () => {
+  it('rechnet alle elf Regeln mit Stapel 6 und Hand 4', () => {
     const results = Object.fromEntries(RULE_KEYS.map((key) => [key, RULES[key].calc(6, 4)]));
     expect(results).toEqual({
       plus: 10,
@@ -82,6 +82,7 @@ describe('Regeln', () => {
       mirror: 9,
       plain: 4,
       mean: 5,
+      mod: 4,
     });
   });
 });

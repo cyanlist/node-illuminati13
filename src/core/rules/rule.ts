@@ -12,6 +12,8 @@ export interface Rule {
   calc(stack: number, hand: number): number;
   /** Rechenweg ohne Ergebnis, z. B. „4 + 5“ */
   show(stack: number, hand: number): string;
+  /** Stapel und Hand für das Beispiel im Regelfenster, falls 6 und 4 die Regel schlecht zeigen */
+  example?: [stack: number, hand: number];
 }
 
 /** Gibt die Regel unverändert zurück – sorgt nur dafür, dass jede Regeldatei typgeprüft ist. */

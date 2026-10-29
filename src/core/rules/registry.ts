@@ -7,6 +7,7 @@ import { mean } from './mean';
 import { min } from './min';
 import { minus } from './minus';
 import { mirror } from './mirror';
+import { modulo } from './modulo';
 import { plain } from './plain';
 import { plus } from './plus';
 import type { Rule } from './rule';
@@ -28,6 +29,7 @@ export const RULES = {
   mirror,
   plain,
   mean,
+  mod: modulo,
 } satisfies Record<string, Rule>;
 
 export type RuleKey = keyof typeof RULES;
