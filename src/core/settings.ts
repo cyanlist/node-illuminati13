@@ -1,7 +1,7 @@
 import { CLASSIC_RULES, isRuleKey, type RotationDir, type RuleKey, sameRules } from './rules';
 
-/** Wer spielt: gegen den Computer, zu zweit an einem Gerät oder allein. */
-export type GameMode = 'cpu' | 'hotseat' | 'solo';
+/** Wer spielt: gegen den Computer, zu zweit an einem Gerät, zu zweit an zwei Geräten oder allein. */
+export type GameMode = 'cpu' | 'hotseat' | 'online' | 'solo';
 /** Woher die Regeln der Stapel kommen. */
 export type RuleMode = 'classic' | 'custom' | 'random';
 /**
@@ -16,7 +16,7 @@ export interface Settings {
   mode: GameMode;
   /** Stärke des Computers – nur im Spiel gegen den Computer */
   cpuLevel: CpuLevel;
-  /** Name 1 und Name 2; leer heißt „Du“ bzw. „Spieler*in 1/2“ */
+  /** Name 1 und Name 2; leer heißt „Du“ bzw. „Spieler*in 1/2“. An zwei Geräten: Gastgeber*in und Gast */
   names: [string, string];
   showValues: boolean;
   /** Mit offenen Karten: Die Hand des Gegenübers liegt offen, zu zweit entfällt die Übergabe */
@@ -58,7 +58,7 @@ export function normalizeSettings(raw: unknown): Settings {
   const rules = data.customRules;
   const d = DEFAULT_SETTINGS;
   return {
-    mode: oneOf(data.mode, ['cpu', 'hotseat', 'solo'], d.mode),
+    mode: oneOf(data.mode, ['cpu', 'hotseat', 'online', 'solo'], d.mode),
     cpuLevel: oneOf(data.cpuLevel, ['easy', 'medium', 'hard'], d.cpuLevel),
     names: [
       // früher stand „Du“ als Name im Feld – zu zweit wurde daraus „Du ist an der Reihe“

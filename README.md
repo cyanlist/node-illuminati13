@@ -4,7 +4,11 @@ Das Kartenspiel aus dem Game-Design-Kurs (Semester 6) als Web-App: Karten 1–13
 wird nach ihrer eigenen „Illuminati-Regel“ mit ihrem Stapel verrechnet. Wer aus den wahren Werten seiner Hand
 die 13 bildet, bekommt pro Karte einen Punkt.
 
-- **Spielarten:** gegen den Computer, zu zweit an einem Gerät (Karten bleiben bis zur Übergabe verdeckt) oder allein.
+- **Spielarten:** gegen den Computer, zu zweit an einem Gerät (Karten bleiben bis zur Übergabe verdeckt), zu zweit an
+  zwei Geräten oder allein.
+- **Zwei Geräte ohne Server:** Die Geräte verbinden sich direkt (WebRTC). Den Verbindungsaufbau tauschen sie per QR-Code
+  oder als Code bzw. Link über einen Messenger aus. Am zuverlässigsten im selben WLAN; die Kamera braucht eine
+  https-Adresse (als Claude-Artifact geht nur das Einfügen des Codes).
 - **Regeln der Stapel:** klassisch (wie in der Anleitung), eigene Zuordnung aus elf Regeln oder ausgelost.
 - **Variante „Wenn die Weltordnung sich verschiebt“:** Landet eine 13 auf einem Stapel, rücken alle Stapel unter die nächste Regel weiter.
 - Abgelegte Karten fliegen nacheinander auf ihre Stapel, damit man sieht, was das Gegenüber spielt.
@@ -52,9 +56,17 @@ src/
     move-animation.ts  einen Zug Karte für Karte abspielen: Beweis-Bühne, Ablegen, Nachziehen
     actions.ts       Eingaben: Karten wählen, Tipp, ablegen, Reihenfolge, aufdecken
     buttons.ts       Beschriftung und Zustand von Tipp- und Ablegen-Knopf
+    online.svelte.ts  Verbindung zu einem 2. Gerät: Rolle, Aufbau, Codes
+    online-flow.ts    Spielablauf an zwei Geräten: Züge empfangen, der Reihe nach abspielen, Stände abgleichen
     flights.svelte.ts, positions.ts   fliegende Karten und ihre Start-/Zielpunkte
     snapshot.svelte.ts                Spielstand über neue Artifact-Versionen hinweg
+  net/             direkte Verbindung zweier Browser, ohne Svelte
+    signal.ts        Verbindungsdaten (SDP) ↔ kurzer Code für QR-Code und Link
+    peer.ts          WebRTC-Datenkanal für Gastgeber*in und Gast
+    messages.ts      was die Geräte einander schicken
+    qr.ts, link.ts   QR-Code zeigen und per Kamera lesen; Einladungs-Link
   features/
+    online/          Verbindungsfenster: ConnectSheet, CodeShare (QR + Teilen), CodeInput (Kamera + Einfügen)
     start/           Startseite: Hero, PlayersPanel, RulesPanel, HintsPanel, OptionsPanel, ChoiceGroup, Segmented, CheckOption, Panel
     table/           Spieltisch: TopBar, GameStatus, PlayerSeat (Seat + HandCards oder SmallCards), Board, Pile, DrawPile, ProofStage, HandCard, Actions, GameLog, …
     sheets/          Fenster: Regeln, Übergabe, Reihenfolge, Ergebnis

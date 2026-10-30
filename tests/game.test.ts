@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { chooseCpuMove } from '../src/core/ai';
-import { applyMove, finishTurn, type GameState, HAND_SIZE, newGame, ranking } from '../src/core/game';
+import {
+  applyMove,
+  finishTurn,
+  type GameState,
+  HAND_SIZE,
+  markYou,
+  newGame,
+  ranking,
+} from '../src/core/game';
 import { CLASSIC_RULES } from '../src/core/rules';
 import { normalizeSettings, resolveRuleMode, settingsForEditing } from '../src/core/settings';
 import { card, seededRng, settings } from './helpers';
@@ -99,6 +107,35 @@ describe('Züge', () => {
   });
 });
 
+describe('Zwei Geräte', () => {
+  it('beide Geräte behalten über ein ganzes Spiel denselben Stand, wenn sie nur die Züge austauschen', () => {
+    const rng = seededRng(11);
+    const host = newGame(settings({ mode: 'online', names: ['Anna', 'Ben'], variant: true }), rng);
+    const guest: GameState = JSON.parse(JSON.stringify(host));
+    markYou(host, 0);
+    markYou(guest, 1);
+    while (!host.over) {
+      const move = chooseCpuMove(host, rng);
+      applyMove(host, move);
+      applyMove(guest, JSON.parse(JSON.stringify(move)));
+      finishTurn(host);
+      finishTurn(guest);
+    }
+    expect(guest.over).toBe(true);
+    // bis auf „du“ (jedes Gerät meint sich selbst) ist alles gleich
+    markYou(guest, 0);
+    expect(guest).toEqual(host);
+  });
+
+  it('jedes Gerät spricht nur die eigene Person mit „Du“ an und nennt die andere beim Namen', () => {
+    const game = newGame(settings({ mode: 'online', names: ['Anna', ''] }), seededRng(1));
+    expect(game.players.map((p) => p.name)).toEqual(['Anna', 'Spieler*in 2']);
+    markYou(game, 1);
+    expect(game.players.map((p) => p.you)).toEqual([false, true]);
+    expect(game.players.every((p) => !p.cpu)).toBe(true);
+  });
+});
+
 describe('Rundenablauf', () => {
   it('nach leerem Nachziehstapel hat jede*r noch einen Zug', () => {
     const game = newGame(settings({ mode: 'hotseat' }), seededRng(2));
@@ -156,7 +193,7 @@ describe('Rundenablauf', () => {
 
 describe('Einstellungen', () => {
   it('repariert kaputte oder veraltete Daten', () => {
-    expect(normalizeSettings({ mode: 'online', customRules: ['plus'], showValues: 'ja' })).toEqual(
+    expect(normalizeSettings({ mode: 'netz', customRules: ['plus'], showValues: 'ja' })).toEqual(
       settings({ customRules: [...CLASSIC_RULES] }),
     );
     expect(normalizeSettings(null)).toEqual(settings());

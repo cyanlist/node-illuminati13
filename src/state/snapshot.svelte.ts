@@ -34,7 +34,8 @@ const isSnapshot = (data: unknown): data is Snapshot =>
 
 /** Übernimmt einen Schnappschuss (falls vorhanden) und setzt den Spielablauf fort. */
 export function restoreSnapshot(data: unknown): void {
-  if (!isSnapshot(data)) return;
+  // ein Spiel an zwei Geräten lebt von der Verbindung – die übersteht eine neue Version nicht
+  if (!isSnapshot(data) || data.game.settings.mode === 'online') return;
   table.game = data.game;
   table.view = data.view;
   table.phase = data.phase;

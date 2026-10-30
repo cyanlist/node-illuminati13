@@ -2,10 +2,11 @@
  * Was die Person am Gerät tun kann: Karten markieren, Tipp holen, ablegen, Reihenfolge wählen, aufdecken.
  */
 import type { SuitIndex } from '../core/cards';
-import { canTakeHint, takeHint } from '../core/game';
+import { canTakeHint, type GameState, takeHint } from '../core/game';
 import { sumOfValues, TARGET } from '../core/values';
 import { cardCount, num } from '../ui/format';
 import { playTurn } from './flow';
+import { send } from './online.svelte';
 import { requireGame, table } from './table.svelte';
 
 /** Nur am Zug und nicht, während noch Karten fliegen. */
@@ -29,7 +30,10 @@ export function showHint(): void {
   const game = requireGame();
   if (table.hintTaken === null) {
     if (!canTakeHint(game)) return;
+    const at = game.log.length;
     table.hintTaken = takeHint(game)?.map((card) => card.id) ?? [];
+    // kostet der Tipp einen Punkt, muss das andere Gerät ihn ebenso abziehen
+    if (game.settings.mode === 'online' && game.settings.hintCost) send({ type: 'hint', at });
   }
   const combo = table.hintTaken;
 
@@ -70,6 +74,11 @@ export function playSelection(): void {
   } else {
     table.message = `Deine Auswahl ergibt ${num(sum)}, nicht 13. Wähle eine 13 oder eine einzelne Karte zum Abwerfen.`;
   }
+}
+
+/** Das andere Gerät hat einen Tipp geholt: hier genauso verrechnen, damit beide Stände gleich bleiben. */
+export function applyHint(game: GameState): void {
+  if (game.settings.hintCost) takeHint(game);
 }
 
 export function chooseTop(suit: SuitIndex, cardId: number): void {

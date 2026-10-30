@@ -12,6 +12,7 @@ export type View = 'start' | 'game';
 export type Phase =
   | 'play' // die Person am Gerät wählt Karten
   | 'cpu' // der Computer überlegt
+  | 'remote' // an zwei Geräten: das andere Gerät ist am Zug
   | 'handoff' // zu zweit: Gerät weitergeben, Karten noch verdeckt
   | 'order' // Fenster: welche Karte einer Farbe oben liegt
   | 'over';
@@ -71,6 +72,8 @@ export interface ProofStage {
 class TableState {
   view = $state<View>('start');
   game = $state<GameState | null>(null);
+  /** Welche Person an diesem Gerät sitzt – nur an zwei Geräten nicht immer 0 */
+  me = $state(0);
   phase = $state<Phase>('play');
   /** ids der markierten Handkarten */
   selected = $state<number[]>([]);
@@ -93,14 +96,23 @@ class TableState {
 
   /**
    * Wessen Karten gerade als ganze Hand gezeigt werden – offen, mit wahren Werten und auswählbar.
-   * Gegen den Computer und allein immer die eigene; zu zweit die der Person am Zug, während der
-   * Übergabe niemandes (-1). Die Plätze am Tisch bleiben dabei fest: Spieler*in 1 unten, 2 oben.
+   * Gegen den Computer und allein immer die eigene, an zwei Geräten die der Person an diesem Gerät;
+   * zu zweit an einem Gerät die der Person am Zug, während der Übergabe niemandes (-1).
    */
   get viewer(): number {
     const game = this.game;
     if (!game) return -1;
+    if (game.settings.mode === 'online') return this.me;
     if (game.settings.mode !== 'hotseat') return 0;
     return this.phase === 'handoff' ? -1 : game.current;
+  }
+
+  /**
+   * Wer unten sitzt. Die Plätze bleiben fest: zu zweit an einem Gerät Spieler*in 1 unten, 2 oben;
+   * an zwei Geräten jeweils die eigene Person unten.
+   */
+  get bottom(): number {
+    return this.game?.settings.mode === 'online' ? this.me : 0;
   }
 
   get selectedCards(): Card[] {

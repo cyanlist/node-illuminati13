@@ -1,6 +1,10 @@
 import { mount } from 'svelte';
 import App from './App.svelte';
+import { codeFromAddress } from './net/link';
+import { online } from './state/online.svelte';
+import './state/online-flow';
 import { restoreSnapshot, takeSnapshot } from './state/snapshot.svelte';
+import { loadSettings, saveSettings } from './storage';
 import './styles/global.css';
 
 /** Schnittstelle des Claude-Artifact-Viewers, über die der Spielstand eine neue Version übersteht. */
@@ -16,8 +20,22 @@ declare global {
   }
 }
 
+/** Über einen Einladungs-Link geöffnet: Startseite auf „2. Gerät“ und gleich beitreten. */
+function acceptInviteLink(): void {
+  const code = codeFromAddress();
+  if (!code) return;
+  const settings = { ...loadSettings(), mode: 'online' as const };
+  saveSettings(settings);
+  online.myName = settings.names[0].trim();
+  online.linkCode = code;
+  online.sheetOpen = true;
+}
+
 function start(data?: unknown): void {
   restoreSnapshot(data);
+  acceptInviteLink();
+  // Link geöffnet, während die App in diesem Tab schon lief: Dann ändert sich nur die Adresse hinter dem #
+  window.addEventListener('hashchange', acceptInviteLink);
   mount(App, { target: document.getElementById('app') as HTMLElement });
 }
 

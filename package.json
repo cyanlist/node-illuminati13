@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Das Kartenspiel Illuminati 13 als Web-App – gegen den Computer, zu zweit an einem Gerät oder allein.",
+  "description": "Das Kartenspiel Illuminati 13 als Web-App – gegen den Computer, zu zweit an einem oder zwei Geräten oder allein.",
   "scripts": {
     "dev": "vite",
     "build": "vite build && node scripts/build-artifact.mjs",
@@ -24,5 +24,9 @@
     "typescript": "^6.0.3",
     "vite": "^8.3.4",
     "vitest": "^5.0.4"
+  },
+  "dependencies": {
+    "jsqr": "^1.4.0",
+    "qrcode-generator": "^2.0.4"
   }
 }

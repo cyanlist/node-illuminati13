@@ -1,17 +1,19 @@
 <script lang="ts">
 import type { CpuLevel, GameMode, Settings } from '../../core/settings';
+import OnlineStatus from './OnlineStatus.svelte';
 import Panel from './Panel.svelte';
 import Segmented from './Segmented.svelte';
 
 /**
  * Wer spielt: zwei Plätze. Du gibst deinen Namen ein, das Gegenüber ist der Computer (mit Stärke),
- * ein Mensch am selben Gerät – oder niemand, dann spielst du allein.
+ * ein Mensch am selben Gerät, ein Mensch an einem 2. Gerät – oder niemand, dann spielst du allein.
  */
 let { draft = $bindable() }: { draft: Settings } = $props();
 
 const opponents: { value: GameMode; label: string }[] = [
   { value: 'cpu', label: 'Computer' },
   { value: 'hotseat', label: 'Mensch' },
+  { value: 'online', label: '2. Gerät' },
   { value: 'solo', label: 'Niemand' },
 ];
 
@@ -56,6 +58,8 @@ const level = $derived(levels.find((option) => option.value === draft.cpuLevel))
           <input type="text" maxlength="20" autocomplete="off" placeholder="Spieler*in 2" bind:value={draft.names[1]} />
           <small>Abwechselnd an einem Gerät, die Karten bleiben bis zur Übergabe verdeckt.</small>
         </label>
+      {:else if draft.mode === 'online'}
+        <OnlineStatus name={draft.names[0]} />
       {:else}
         <small class="detail">Allein: Wie viele Punkte schaffst du mit einem Deck?</small>
       {/if}

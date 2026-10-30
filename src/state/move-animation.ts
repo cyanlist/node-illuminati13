@@ -71,7 +71,8 @@ export function skipProof(): void {
 export async function animateMove(move: Move): Promise<boolean> {
   const game = requireGame();
   const player = game.current;
-  const isCpu = currentPlayer(game).cpu;
+  // Züge, die man nur zusieht (Computer, anderes Gerät), laufen etwas gemächlicher
+  const watched = currentPlayer(game).cpu || player !== table.viewer;
   // was die Anzeige bis zum Ende der Animation zeigt: der Stand direkt vor dem Zug
   const before = {
     rules: [...game.rules],
@@ -105,9 +106,9 @@ export async function animateMove(move: Move): Promise<boolean> {
   const laid =
     result.parts.length > 0
       ? await presentProof(result.parts, result.steps, player, running)
-      : await layDown(result.steps, player, isCpu, running);
+      : await layDown(result.steps, player, watched, running);
   if (!laid || !(await drawUp(player, running))) return false;
-  await wait(isCpu ? TIMING.afterMoveCpu : TIMING.afterMove);
+  await wait(watched ? TIMING.afterMoveCpu : TIMING.afterMove);
   if (!running()) return false;
 
   table.anim = null;
@@ -119,7 +120,7 @@ export async function animateMove(move: Move): Promise<boolean> {
 async function layDown(
   steps: PlacementStep[],
   player: number,
-  isCpu: boolean,
+  watched: boolean,
   running: () => boolean,
 ): Promise<boolean> {
   for (const step of steps) {
@@ -132,7 +133,7 @@ async function layDown(
     if (!running()) return false;
 
     landOnPile(anim, step);
-    await wait(isCpu ? TIMING.betweenCardsCpu : TIMING.betweenCards);
+    await wait(watched ? TIMING.betweenCardsCpu : TIMING.betweenCards);
   }
   return running();
 }

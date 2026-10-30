@@ -11,7 +11,11 @@ let { game }: { game: GameState } = $props();
 const main = $derived(mainButton());
 const hint = $derived(hintButton());
 const waitingLabel = $derived(
-  table.anim ? 'Wird abgelegt …' : table.phase === 'cpu' ? `${currentPlayer(game).name} ist am Zug …` : 'Ablegen',
+  table.anim
+    ? 'Wird abgelegt …'
+    : table.phase === 'cpu' || table.phase === 'remote'
+      ? `${currentPlayer(game).name} ist am Zug …`
+      : 'Ablegen',
 );
 </script>
 

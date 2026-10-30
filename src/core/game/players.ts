@@ -7,7 +7,8 @@ export function createPlayer(settings: Settings, index: number, hand: Card[]): P
   return {
     name: playerName(settings, index, cpu),
     cpu,
-    you: !cpu && settings.mode !== 'hotseat',
+    // an zwei Geräten setzt jedes Gerät „du“ für sich selbst (markYou)
+    you: !cpu && settings.mode !== 'hotseat' && (settings.mode !== 'online' || index === 0),
     hand,
     points: 0,
     combos: 0,
@@ -16,8 +17,16 @@ export function createPlayer(settings: Settings, index: number, hand: Card[]): P
 
 function playerName(settings: Settings, index: number, cpu: boolean): string {
   if (cpu) return 'Computer';
-  if (settings.mode === 'hotseat') return settings.names[index]?.trim() || `Spieler*in ${index + 1}`;
+  if (settings.mode === 'hotseat' || settings.mode === 'online')
+    return settings.names[index]?.trim() || `Spieler*in ${index + 1}`;
   return settings.names[0].trim() || 'Du';
+}
+
+/** An zwei Geräten: Jedes Gerät spricht die eigene Person mit „Du“ an. */
+export function markYou(state: GameState, me: number): void {
+  state.players.forEach((player, index) => {
+    player.you = index === me;
+  });
 }
 
 export function playerAt(state: GameState, index: number): Player {

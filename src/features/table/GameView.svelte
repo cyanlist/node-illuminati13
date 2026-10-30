@@ -1,7 +1,9 @@
 <script lang="ts">
 import type { GameState } from '../../core/game';
 import Actions from './Actions.svelte';
+import { table } from '../../state/table.svelte';
 import Board from './Board.svelte';
+import ConnectionBanner from './ConnectionBanner.svelte';
 import GameLog from './GameLog.svelte';
 import GameStatus from './GameStatus.svelte';
 import PlayerSeat from './PlayerSeat.svelte';
@@ -10,22 +12,25 @@ import TopBar from './TopBar.svelte';
 
 /**
  * Der Spieltisch mit festen Plätzen: oben Spieler*in 2 bzw. der Computer, in der Mitte die Stapel,
- * unten Spieler*in 1 mit den Knöpfen; daneben das Protokoll.
+ * unten Spieler*in 1 mit den Knöpfen; daneben das Protokoll. An zwei Geräten sitzt jede*r unten.
  */
 let { game }: { game: GameState } = $props();
+
+const bottom = $derived(table.bottom);
 </script>
 
 <div class="game">
   <TopBar />
   <GameStatus {game} />
+  {#if game.settings.mode === 'online'}<ConnectionBanner />{/if}
   <main class="table">
     <div class="play">
-      {#if game.players.length > 1}<PlayerSeat {game} index={1} />{/if}
+      {#if game.players.length > 1}<PlayerSeat {game} index={1 - bottom} position="top" />{/if}
       <div class="board-area">
         <Board />
         <ProofStage {game} />
       </div>
-      <PlayerSeat {game} index={0} />
+      <PlayerSeat {game} index={bottom} position="bottom" />
       <Actions {game} />
     </div>
     <GameLog {game} />
