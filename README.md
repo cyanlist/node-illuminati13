@@ -33,6 +33,24 @@ HTML-Grundgerüst, zum Veröffentlichen als Claude-Artifact.
 | `npm run lint` / `npm run format` | Biome: prüfen / automatisch formatieren |
 | `npm run verify` | Typprüfung + Lint + Tests + Build in einem Rutsch |
 
+## Veröffentlichen auf GitHub Pages
+
+Für das Spielen an zwei Handys braucht die App eine eigene https-Adresse – nur dann dürfen Kamera und
+Einladungs-Links genutzt werden. Das erledigt GitHub Pages kostenlos:
+[`.github/workflows/pages.yml`](.github/workflows/pages.yml) prüft und baut bei jedem Push auf `main` und stellt
+`dist/index.html` online.
+
+Einmalig einrichten:
+
+1. Auf GitHub im Repository **Settings → Pages** öffnen und unter **Build and deployment → Source** „GitHub Actions“
+   wählen.
+2. Den Stand auf `main` pushen. Unter **Actions** läuft dann „GitHub Pages“ (etwa eine Minute).
+3. Danach ist das Spiel unter **https://cyanlist.github.io/node-illuminati13/** erreichbar. Diese Adresse auf beiden
+   Handys öffnen – oder nur auf einem und die Einladung als Link schicken.
+
+Schlägt der Workflow fehl, steht unter **Actions** beim jeweiligen Lauf, welcher Schritt (Typprüfung, Lint, Tests,
+Build) gescheitert ist – dieselben Prüfungen laufen lokal mit `npm run verify`.
+
 ## Technik
 
 TypeScript · [Svelte 5](https://svelte.dev) (Oberfläche) · [Vite](https://vite.dev) (Build) · Vitest (Tests) ·
