@@ -1,13 +1,14 @@
 <script lang="ts">
-import type { Card } from '../../core/cards';
+import type { Card, SuitIndex } from '../../core/cards';
 import Logo from '../Logo.svelte';
 import CardFace from './CardFace.svelte';
+import EmptySlot from './EmptySlot.svelte';
 
 /**
  * Design „Pinnwand“: vergilbte Notizzettel mit Handschrift-Zahl und Pinnnadel in der Farbe der Farbe;
  * die Rückseite ist Kork mit eingebranntem Auge. Den roten Faden zieht die Beweis-Bühne.
  */
-let { card }: { card?: Card } = $props();
+let { card, slot }: { card?: Card; slot?: SuitIndex } = $props();
 </script>
 
 {#if card}
@@ -15,6 +16,13 @@ let { card }: { card?: Card } = $props();
     <span class="pin" aria-hidden="true"></span>
     <CardFace {card} />
   </div>
+{:else if slot !== undefined}
+  <EmptySlot
+    suit={slot}
+    line="color-mix(in srgb, var(--suit) 70%, #e9d9a8)"
+    fill="rgba(239, 224, 180, 0.07)"
+    pin
+  />
 {:else}
   <div class="back"><Logo size="60%" /></div>
 {/if}

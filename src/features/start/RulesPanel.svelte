@@ -3,7 +3,7 @@ import { SUIT_INDICES, SUITS } from '../../core/cards';
 import { RULE_KEYS, RULE_PACKS, RULES, type RulePack } from '../../core/rules';
 import type { Settings } from '../../core/settings';
 import { ruleExample } from '../../ui/format';
-import SuitIcon from '../../ui/SuitIcon.svelte';
+import SuitSymbol from '../../ui/SuitSymbol.svelte';
 import CheckOption from './CheckOption.svelte';
 import Panel from './Panel.svelte';
 
@@ -41,7 +41,7 @@ function applyPack(pack: RulePack): void {
     {#each SUIT_INDICES as suit (suit)}
       {@const key = draft.customRules[suit] ?? 'plus'}
       <div class="row">
-        <span class="suit suit-text suit-{suit}"><SuitIcon {suit} size="18px" />{SUITS[suit].name}</span>
+        <span class="suit suit-text suit-{suit}"><SuitSymbol {suit} size="18px" />{SUITS[suit].name}</span>
         <select aria-label="Regel für {SUITS[suit].name}" disabled={rerolled} bind:value={draft.customRules[suit]}>
           {#each RULE_KEYS as option (option)}
             <option value={option}>{RULES[option].label}</option>

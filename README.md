@@ -91,10 +91,12 @@ src/
     start/           Startseite: Hero, PlayersPanel, SettingsSummary (Kurzfassung) mit SettingsSheet für RulesPanel, HintsPanel, OptionsPanel, ChoiceGroup, Segmented, CheckOption, Panel
     table/           Spieltisch: TopBar, GameStatus, PlayerSeat (Seat + HandCards oder SmallCards), Board, Pile, DrawPile, ProofStage, HandCard, Actions, GameLog, …
     sheets/          Fenster: Regeln, Übergabe, Reihenfolge, Ergebnis
-  ui/              gemeinsame Bausteine: Card, CardBack, Avatar, Chip, SuitIcon, Logo, Sheet, Subject, Scramble, format.ts,
+  ui/              gemeinsame Bausteine: Card, CardBack, CardSlot (leerer Platz), SuitSymbol, Avatar, Chip, SuitIcon, Logo, Sheet,
+                   Subject, Scramble, format.ts,
                    deck.svelte.ts und theme.svelte.ts (Kartendesign und Farbschema dieses Geräts)
     decks/           ein Kartendesign pro Datei (Klassisch, Pinnwand, Dollarnote, Geheimakte, Entschlüsselt, Okkult),
-                     CardFace für die gemeinsame Anordnung, index.ts trägt sie ein
+                     CardFace für die gemeinsame Anordnung, EmptySlot für leere Stapel, index.ts trägt sie ein,
+                     symbols.ts nennt Designs mit eigenen Farbsymbolen
   styles/global.css  Design-Tokens (hell/dunkel), Knöpfe, Formularfelder – alles andere steht in den Komponenten
   storage.ts       Einstellungen und Bestwert im Browser-Speicher
   App.svelte, main.ts

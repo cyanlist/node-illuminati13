@@ -1,10 +1,13 @@
 <script lang="ts">
 import { type Card as CardData, SUITS, type SuitIndex } from '../../core/cards';
 import Card from '../../ui/Card.svelte';
+import CardSlot from '../../ui/CardSlot.svelte';
 import { cardCount } from '../../ui/format';
-import SuitIcon from '../../ui/SuitIcon.svelte';
 
-/** Ein Ablagestapel: die oberste Karte (oder ein leerer Rahmen), darunter die Farbe. Die Regel steht im Board darüber. */
+/**
+ * Ein Ablagestapel: die oberste Karte, darunter lugt die vorige hervor – oder ein leerer Platz im Stil des
+ * Kartendesigns. Darunter steht die Farbe; die Regel steht im Board darüber.
+ */
 interface Props {
   suit: SuitIndex;
   cards: CardData[];
@@ -12,15 +15,16 @@ interface Props {
 let { suit, cards }: Props = $props();
 
 const top = $derived(cards.at(-1));
+const below = $derived(cards.at(-2));
 </script>
 
 <div class="pile suit-{suit}">
-  <div class="stack" class:empty={!top} data-pile={suit}>
-    {#if cards.length > 1}<div class="under"></div>{/if}
+  <div class="stack" data-pile={suit}>
+    {#if below}<div class="under"><Card card={below} /></div>{/if}
     {#if top}
       <div class="top"><Card card={top} /></div>
     {:else}
-      <SuitIcon {suit} size="40%" />
+      <CardSlot {suit} />
     {/if}
   </div>
 
@@ -44,27 +48,16 @@ const top = $derived(cards.at(-1));
     aspect-ratio: 5 / 7;
   }
 
-  .empty {
-    display: grid;
-    place-items: center;
-    border: 2px dashed var(--suit);
-    border-radius: 10px;
-    background: color-mix(in srgb, var(--suit) 6%, transparent);
-    opacity: 0.85;
-  }
-
   .top {
     position: absolute;
     inset: 0;
   }
 
   /* angedeutete Karten darunter */
+  /* die vorige Karte, leicht verdreht unter der obersten */
   .under {
     position: absolute;
     inset: 0;
-    border: 2px solid var(--suit);
-    border-radius: 10px;
-    background: color-mix(in srgb, var(--suit) 10%, var(--surface));
     transform: translate(3px, 3px) rotate(2.5deg);
   }
 

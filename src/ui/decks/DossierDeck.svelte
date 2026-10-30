@@ -1,12 +1,13 @@
 <script lang="ts">
-import type { Card } from '../../core/cards';
+import type { Card, SuitIndex } from '../../core/cards';
 import CardFace from './CardFace.svelte';
+import EmptySlot from './EmptySlot.svelte';
 
 /**
  * Design „Geheimakte“: Aktendeckel-Karton mit Schreibmaschinen-Zahl, die Farbe als Reiter oben rechts und
  * ein roter Stempel „GEHEIM“; die Rückseite ist der geschlossene Aktendeckel mit „Streng geheim“.
  */
-let { card }: { card?: Card } = $props();
+let { card, slot }: { card?: Card; slot?: SuitIndex } = $props();
 </script>
 
 {#if card}
@@ -15,6 +16,13 @@ let { card }: { card?: Card } = $props();
     <CardFace {card} pip={false} />
     <span class="stamp" aria-hidden="true">GEHEIM</span>
   </div>
+{:else if slot !== undefined}
+  <EmptySlot
+    suit={slot}
+    line="color-mix(in srgb, var(--suit) 40%, #c9a868)"
+    fill="rgba(217, 189, 128, 0.1)"
+    tab
+  />
 {:else}
   <div class="back"><span class="stamp big" aria-hidden="true">STRENG<br />GEHEIM</span></div>
 {/if}

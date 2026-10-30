@@ -1,25 +1,25 @@
 <script lang="ts">
-import type { Card } from '../../core/cards';
+import type { Card, SuitIndex } from '../../core/cards';
 import Logo from '../Logo.svelte';
 import CardFace from './CardFace.svelte';
-import OccultSymbol from './OccultSymbol.svelte';
+import EmptySlot from './EmptySlot.svelte';
 
 /**
  * Design „Okkult“: nachtviolette Karten mit goldenem Doppelrahmen, die Farben als alchemistische Zeichen;
  * die Rückseite zeigt das goldene Auge zwischen Sternen.
  */
-let { card }: { card?: Card } = $props();
+let { card, slot }: { card?: Card; slot?: SuitIndex } = $props();
 
 /** Juwelentöne je Farbe – hell genug für den dunklen Grund */
-const JEWEL = ['#ff8a9a', '#c6b2ff', '#ffc46b', '#7fe0b0'];
+const JEWEL = ['#ff8a9a', '#c6b2ff', '#ffc46b', '#7fe0b0'] as const;
 </script>
 
 {#if card}
   <div class="front" style:--jewel={JEWEL[card.suit]}>
-    <CardFace {card}>
-      {#snippet symbol(size: string)}<OccultSymbol suit={card.suit} {size} />{/snippet}
-    </CardFace>
+    <CardFace {card} />
   </div>
+{:else if slot !== undefined}
+  <EmptySlot suit={slot} line={JEWEL[slot]} fill="rgba(51, 37, 90, 0.45)" />
 {:else}
   <div class="back"><Logo size="56%" /></div>
 {/if}

@@ -1,13 +1,13 @@
 <script lang="ts">
 import { type Card, SUITS } from '../core/cards';
-import SuitIcon from './SuitIcon.svelte';
+import SuitSymbol from './SuitSymbol.svelte';
 
 /** Kleine Karte im Fließtext, z. B. im Protokoll. */
 let { card }: { card: Card } = $props();
 </script>
 
 <span class="chip suit-{card.suit}" title="{SUITS[card.suit].name} {card.rank}">
-  <SuitIcon suit={card.suit} size="0.8em" />{card.rank}
+  <SuitSymbol suit={card.suit} size="0.8em" />{card.rank}
 </span>
 
 <style>

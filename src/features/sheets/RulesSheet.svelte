@@ -4,7 +4,7 @@ import { CLASSIC_RULES, RULE_KEYS, RULES } from '../../core/rules';
 import { table } from '../../state/table.svelte';
 import { ruleExample, ruleLabel } from '../../ui/format';
 import Sheet from '../../ui/Sheet.svelte';
-import SuitIcon from '../../ui/SuitIcon.svelte';
+import SuitSymbol from '../../ui/SuitSymbol.svelte';
 
 /** Die Spielregeln in Kürze; zeigt im Spiel die Regeln, die gerade gelten. */
 const inGame = $derived(table.view === 'game' && table.game !== null);
@@ -34,7 +34,7 @@ const close = (): void => {
     <tbody>
       {#each SUIT_INDICES as suit (suit)}
         <tr>
-          <td class="suit suit-{suit}"><SuitIcon {suit} size="16px" /> {SUITS[suit].name}</td>
+          <td class="suit suit-{suit}"><SuitSymbol {suit} size="16px" /> {SUITS[suit].name}</td>
           <td>{ruleLabel(rules[suit])}</td>
         </tr>
       {/each}
