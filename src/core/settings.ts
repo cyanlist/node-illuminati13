@@ -36,7 +36,7 @@ export const DEFAULT_SETTINGS: Settings = {
   mode: 'cpu',
   cpuLevel: 'medium',
   names: ['', ''],
-  showValues: true,
+  showValues: false,
   openHands: false,
   variant: false,
   dir: 'rechts',
