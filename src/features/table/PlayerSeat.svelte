@@ -25,6 +25,7 @@ const showsHand = $derived(index === table.viewer);
 <Seat
   label={position === 'bottom' ? 'Platz unten' : 'Platz oben'}
   name={player.name}
+  cpu={player.cpu}
   points={table.points(index)}
   combos={table.combos(index)}
   active={index === game.current && game.players.length > 1 && table.phase !== 'over'}

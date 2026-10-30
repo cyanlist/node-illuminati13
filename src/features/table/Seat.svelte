@@ -1,86 +1,151 @@
 <script lang="ts">
 import type { Snippet } from 'svelte';
+import { hueFor } from '../../ui/avatar';
+import Avatar from '../../ui/Avatar.svelte';
 
 /**
- * Ein Platz am Tisch: eine ruhige Fläche wie das Board, in der Kopfzeile links Name und Status,
- * rechts Punkte und 13er. Darunter liegen die Karten dieser Person.
+ * Ein Platz am Tisch wie ein kleines Profil in einer Zeile: Avatar mit Ring in der Farbe der Person, Name,
+ * gleich daneben die Punkte und wie oft die 13 gefunden wurde. Wer am Zug ist, bekommt einen leuchtenden
+ * Rahmen in seiner Farbe. Darunter liegen die Karten dieser Person.
  */
 interface Props {
   name: string;
+  cpu: boolean;
   points: number;
   combos: number;
-  /** Diese Person ist am Zug – der Platz bekommt einen Rahmen */
+  /** Diese Person ist am Zug */
   active: boolean;
-  /** Der Computer überlegt gerade */
+  /** Der Computer bzw. das andere Gerät überlegt gerade */
   thinking?: boolean;
-  /** Beschriftung für Screenreader, z. B. „Gegenüber“ */
+  /** Beschriftung für Screenreader, z. B. „Platz oben“ */
   label: string;
   children: Snippet;
 }
-let { name, points, combos, active, thinking = false, label, children }: Props = $props();
+let { name, cpu, points, combos, active, thinking = false, label, children }: Props = $props();
 </script>
 
-<section class="seat" class:active aria-label={label}>
+<section class="seat" class:active class:cpu style:--hue={hueFor(name)} aria-label={label}>
   <header>
-    <span class="name">
-      {name}
-      {#if thinking}
-        <span class="status thinking">überlegt<span>.</span><span>.</span><span>.</span></span>
-      {:else if active}
-        <span class="status">am Zug</span>
-      {/if}
+    <Avatar {name} {cpu} size="44px" />
+    <span class="name">{name}</span>
+    {#if active}<span class="sr-only">ist am Zug</span>{/if}
+    <span class="score" aria-label="{points} {points === 1 ? 'Punkt' : 'Punkte'}">
+      {#key points}<b class="points">{points}</b>{/key}
+      <span class="unit">{points === 1 ? 'Punkt' : 'Punkte'}</span>
     </span>
-    <span class="score"><b>{points}</b> {points === 1 ? 'Punkt' : 'Punkte'} · {combos}× die 13</span>
+    <span class="combos" aria-label="{combos}-mal die 13" title="{combos}-mal die 13 gefunden">
+      <span class="token">13</span><span class="times">×{combos}</span>
+    </span>
+    {#if thinking}
+      <span class="thinking">überlegt<span>.</span><span>.</span><span>.</span></span>
+    {/if}
   </header>
   {@render children()}
 </section>
 
 <style>
   .seat {
-    padding: 10px clamp(12px, 2.4vw, 22px) 14px;
-    background: var(--surface);
+    /* die Farbe dieser Person; der Computer bleibt neutral */
+    --player: hsl(var(--hue) var(--player-s) var(--player-l));
+    padding: 12px clamp(12px, 2.4vw, 22px) 14px;
+    background:
+      linear-gradient(100deg, color-mix(in srgb, var(--player) 14%, transparent), transparent 45%),
+      var(--surface);
     border-radius: 16px;
     box-shadow: 0 1px 3px var(--shadow);
-    transition: box-shadow 0.2s;
+    transition: box-shadow 0.25s;
   }
 
-  /* Rahmen nach innen, damit sich beim Zugwechsel nichts verschiebt */
+  .cpu {
+    --player: var(--accent);
+  }
+
+  /* am Zug: Rahmen und sanfter Schein in der eigenen Farbe – nach innen, damit sich nichts verschiebt */
   .active {
     box-shadow:
-      inset 0 0 0 2px var(--accent),
+      inset 0 0 0 2px var(--player),
+      0 0 0 4px color-mix(in srgb, var(--player) 22%, transparent),
       0 1px 3px var(--shadow);
   }
 
   header {
     display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 2px 12px;
-    margin-bottom: 8px;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    margin-bottom: 12px;
+  }
+
+  /* Ring um den Avatar in der Spielerfarbe */
+  header :global(.avatar) {
+    box-shadow:
+      0 0 0 3px var(--surface),
+      0 0 0 5px var(--player);
+    margin-right: 4px;
   }
 
   .name {
-    display: inline-flex;
-    align-items: baseline;
-    gap: 8px;
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     font-weight: 700;
+    font-size: 17px;
   }
 
-  .status {
+  /* Punkte als farbiges Feld gleich neben dem Namen */
+  .score {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 5px;
+    flex: none;
+    padding: 3px 10px 4px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--player) 18%, transparent);
+  }
+
+  .points {
+    display: inline-block;
+    color: var(--player);
+    font-size: 22px;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    animation: pop 0.45s ease-out;
+  }
+
+  .unit {
     color: var(--muted);
     font-size: 12px;
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
+  }
+
+  /* wie oft die 13 gefunden wurde: eine Marke mit Zahl, nichts zum Abzählen */
+  .combos {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    flex: none;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .token {
+    padding: 0 5px;
+    border: 1.5px solid currentColor;
+    border-radius: 6px;
+    font-size: 11px;
+    line-height: 1.4;
   }
 
   .thinking {
+    margin-left: auto;
+    flex: none;
+    color: var(--muted);
     font-size: 13px;
-    font-weight: 400;
     font-style: italic;
-    text-transform: none;
-    letter-spacing: 0;
   }
 
   .thinking span {
@@ -105,16 +170,24 @@ let { name, points, combos, active, thinking = false, label, children }: Props =
     }
   }
 
-  .score {
-    color: var(--muted);
-    font-size: 13px;
-    white-space: nowrap;
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
   }
 
-  .score b {
-    color: var(--text);
-    font-size: 20px;
-    line-height: 1;
-    font-variant-numeric: tabular-nums;
+  /* neue Punkte: die Zahl springt kurz an (nur Größe – bleibt sichtbar, auch wenn nichts animiert wird) */
+  @keyframes pop {
+    0% {
+      transform: scale(1);
+    }
+    35% {
+      transform: scale(1.35);
+    }
+    100% {
+      transform: scale(1);
+    }
   }
 </style>

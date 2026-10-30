@@ -25,6 +25,9 @@
   --pik: #6a3fb8;
   --karo: #b35c00;
   --kreuz: #17784a;
+  /* Spielerfarbe: Farbton kommt pro Person aus dem Namen (--hue), Sättigung und Helligkeit vom Design */
+  --player-s: 50%;
+  --player-l: 38%;
 
   --font-title: "Kalam", "Segoe Print", "Bradley Hand", cursive;
   --font-body: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -53,6 +56,8 @@
     --pik: #b9a0ff;
     --karo: #ffb347;
     --kreuz: #5fd39a;
+    --player-s: 65%;
+    --player-l: 68%;
     color-scheme: dark;
   }
 }
@@ -77,6 +82,8 @@
   --pik: #b9a0ff;
   --karo: #ffb347;
   --kreuz: #5fd39a;
+  --player-s: 65%;
+  --player-l: 68%;
   color-scheme: dark;
 }
 
