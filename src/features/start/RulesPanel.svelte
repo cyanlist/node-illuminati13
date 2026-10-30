@@ -11,7 +11,7 @@ import Panel from './Panel.svelte';
  * Welche Regel welcher Stapel hat: vier Auswahlfelder, darüber Regelpakete, die alle vier auf einmal füllen.
  * Wahlweise wird bei jedem Spiel neu ausgelost – dann sind die Felder gesperrt.
  */
-let { draft = $bindable() }: { draft: Settings } = $props();
+let { draft = $bindable(), plain = false }: { draft: Settings; plain?: boolean } = $props();
 
 const rerolled = $derived(draft.ruleMode === 'random');
 
@@ -21,7 +21,7 @@ function applyPack(pack: RulePack): void {
 }
 </script>
 
-<Panel title="Regeln der Stapel">
+<Panel title="Regeln der Stapel" {plain}>
   <div class="packs">
     {#each RULE_PACKS as pack (pack.id)}
       <button

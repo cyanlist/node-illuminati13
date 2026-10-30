@@ -17,7 +17,8 @@ const fan: { card: CardData; rotate: string; lift: string }[] = [
   <h1>Illuminati <span>13</span></h1>
   <p class="lead">
     Ihr seid Verschwörungstheoretiker*innen auf der Suche nach dem ultimativen Beweis: der Zahl 13. Verrechnet eure Karten
-    mit den Stapeln und bildet immer wieder die 13. Je mehr Karten ein Beweis braucht, desto mehr Punkte gibt es.
+    mit den Stapeln und bildet immer wieder die 13.
+    <span class="more">Je mehr Karten ein Beweis braucht, desto mehr Punkte gibt es.</span>
   </p>
   <div class="fan" aria-hidden="true">
     {#each fan as { card, rotate, lift } (card.id)}
@@ -74,6 +75,34 @@ const fan: { card: CardData; rotate: string; lift: string }[] = [
 
   .slot + .slot {
     margin-left: calc(var(--cw) * -0.26);
+  }
+
+  /*
+   * Auf dem Handy: Logo und Titel nebeneinander, darunter nur der Kurztext – Fächer und Zitat entfallen,
+   * damit „Wer spielt?“ und „Spiel starten“ ohne langes Scrollen in Sicht kommen.
+   */
+  @media (max-width: 919px) {
+    .hero {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: center;
+      gap: 10px 14px;
+    }
+
+    h1 {
+      font-size: clamp(38px, 11vw, 56px);
+    }
+
+    .lead {
+      grid-column: 1 / -1;
+      font-size: 15px;
+    }
+
+    .fan,
+    .quote,
+    .more {
+      display: none;
+    }
   }
 
   .quote {

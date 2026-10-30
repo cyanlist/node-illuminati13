@@ -9,9 +9,16 @@ import HintsPanel from './HintsPanel.svelte';
 import OptionsPanel from './OptionsPanel.svelte';
 import PlayersPanel from './PlayersPanel.svelte';
 import RulesPanel from './RulesPanel.svelte';
+import SettingsSheet from './SettingsSheet.svelte';
+import SettingsSummary from './SettingsSummary.svelte';
+import type { Section } from './settings-summary';
 
-/** Startseite: links der Titel, rechts die Einstellungen für das nächste Spiel. */
+/**
+ * Startseite: links der Titel, rechts das nächste Spiel. Sichtbar ist nur, wer spielt; Regeln, Tipps und Extras
+ * stehen als Kurzfassung da und öffnen sich bei Bedarf in einem Fenster.
+ */
 let draft = $state(settingsForEditing(loadSettings()));
+let section = $state<Section | null>(null);
 
 const running = $derived(table.game !== null && table.phase !== 'over');
 const onlineMode = $derived(draft.mode === 'online');
@@ -40,11 +47,7 @@ function onsubmit(event: SubmitEvent): void {
   <Hero />
   <form {onsubmit}>
     <PlayersPanel bind:draft />
-    {#if !guest}
-      <RulesPanel bind:draft />
-      <HintsPanel bind:draft />
-      <OptionsPanel bind:draft />
-    {/if}
+    {#if !guest}<SettingsSummary {draft} onopen={(open) => (section = open)} />{/if}
     <div class="actions">
       <button type="button" class="btn btn--ghost" onclick={() => (table.rulesOpen = true)}>Regeln lesen</button>
       {#if running}<button type="button" class="btn" onclick={resume}>Weiterspielen</button>{/if}
@@ -52,6 +55,14 @@ function onsubmit(event: SubmitEvent): void {
     </div>
   </form>
 </div>
+
+{#if section === 'rules'}
+  <SettingsSheet title="Regeln der Stapel" onclose={() => (section = null)}><RulesPanel bind:draft plain /></SettingsSheet>
+{:else if section === 'hints'}
+  <SettingsSheet title="Tipps" onclose={() => (section = null)}><HintsPanel bind:draft plain /></SettingsSheet>
+{:else if section === 'extras'}
+  <SettingsSheet title="Extras" onclose={() => (section = null)}><OptionsPanel bind:draft plain /></SettingsSheet>
+{/if}
 
 <style>
   .start {

@@ -87,7 +87,7 @@ src/
     qr.ts, link.ts   QR-Code zeigen und per Kamera lesen; Einladungs-Links und eingegebene Codes erkennen
   features/
     online/          Verbindungsfenster: ConnectSheet, CodeShare (QR + Teilen), CodeInput (Kamera + Einfügen)
-    start/           Startseite: Hero, PlayersPanel, RulesPanel, HintsPanel, OptionsPanel, ChoiceGroup, Segmented, CheckOption, Panel
+    start/           Startseite: Hero, PlayersPanel, SettingsSummary (Kurzfassung) mit SettingsSheet für RulesPanel, HintsPanel, OptionsPanel, ChoiceGroup, Segmented, CheckOption, Panel
     table/           Spieltisch: TopBar, GameStatus, PlayerSeat (Seat + HandCards oder SmallCards), Board, Pile, DrawPile, ProofStage, HandCard, Actions, GameLog, …
     sheets/          Fenster: Regeln, Übergabe, Reihenfolge, Ergebnis
   ui/              gemeinsame Bausteine: Card, CardBack, Chip, SuitIcon, Logo, Sheet, Subject, format.ts

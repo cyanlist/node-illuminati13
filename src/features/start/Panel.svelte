@@ -1,11 +1,14 @@
 <script lang="ts">
 import type { Snippet } from 'svelte';
 
-/** Ein Einstellungsbereich der Startseite mit Überschrift. */
-let { title, children }: { title: string; children: Snippet } = $props();
+/**
+ * Ein Einstellungsbereich der Startseite mit Überschrift. `plain`: ohne eigenen Kasten, z. B. in einem Fenster,
+ * das schon eine Überschrift hat – die Legende bleibt dann nur für Screenreader.
+ */
+let { title, plain = false, children }: { title: string; plain?: boolean; children: Snippet } = $props();
 </script>
 
-<fieldset>
+<fieldset class:plain>
   <legend>{title}</legend>
   {@render children()}
 </fieldset>
@@ -36,5 +39,19 @@ let { title, children }: { title: string; children: Snippet } = $props();
 
   legend + :global(*) {
     clear: both;
+  }
+
+  .plain {
+    padding: 0;
+    background: none;
+    box-shadow: none;
+  }
+
+  .plain legend {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
   }
 </style>

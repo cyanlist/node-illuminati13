@@ -5,7 +5,7 @@ import ChoiceGroup, { type Choice } from './ChoiceGroup.svelte';
 import Panel from './Panel.svelte';
 
 /** Wie viel der Tipp verrät und ob er einen Punkt kostet. */
-let { draft = $bindable() }: { draft: Settings } = $props();
+let { draft = $bindable(), plain = false }: { draft: Settings; plain?: boolean } = $props();
 
 const levels: Choice<HintLevel>[] = [
   { value: 'off', title: 'Aus', description: 'Kein Tipp-Knopf – du findest jede 13 selbst.' },
@@ -14,7 +14,7 @@ const levels: Choice<HintLevel>[] = [
 ];
 </script>
 
-<Panel title="Tipps">
+<Panel title="Tipps" {plain}>
   <ChoiceGroup name="hints" options={levels} bind:value={draft.hints} />
   {#if draft.hints !== 'off'}
     <div class="cost">

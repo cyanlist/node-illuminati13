@@ -4,10 +4,10 @@ import CheckOption from './CheckOption.svelte';
 import Panel from './Panel.svelte';
 
 /** Wahre Werte anzeigen, offene Karten und die Variante „Wenn die Weltordnung sich verschiebt“. */
-let { draft = $bindable() }: { draft: Settings } = $props();
+let { draft = $bindable(), plain = false }: { draft: Settings; plain?: boolean } = $props();
 </script>
 
-<Panel title="Optionen">
+<Panel title="Extras" {plain}>
   <CheckOption
     title="Wahre Werte anzeigen"
     description="Ausgeschaltet rechnest du selbst im Kopf, wie am echten Tisch."
