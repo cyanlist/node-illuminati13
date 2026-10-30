@@ -1,13 +1,14 @@
 <script lang="ts">
 import type { HTMLAttributes } from 'svelte/elements';
 import { type Card, SUITS } from '../core/cards';
+import { deckInfo, useDeck } from './deck.svelte';
+import { DECK_COMPONENTS } from './decks';
 import { num } from './format';
-import SuitIcon from './SuitIcon.svelte';
 
 /**
- * Eine Spielkarte: Zahl groß in der Mitte, klein in den Ecken, getönt im Farbton ihrer Farbe.
- * Mit `onclick` wird sie zum auswählbaren Knopf (Hand), sonst ist sie ein Bild (Stapel, Fenster).
- * Die Größe kommt von außen über die CSS-Variable --cw.
+ * Eine Spielkarte. Wie sie aussieht, zeichnet das gewählte Kartendesign (ui/decks/); hier geht es um Größe,
+ * Auswahl und den wahren Wert. Mit `onclick` wird sie zum auswählbaren Knopf (Hand), sonst ist sie ein Bild
+ * (Stapel, Fenster). Die Größe kommt von außen über die CSS-Variable --cw.
  */
 interface Props extends HTMLAttributes<HTMLElement> {
   card: Card;
@@ -20,15 +21,17 @@ interface Props extends HTMLAttributes<HTMLElement> {
 }
 let { card, value = null, selected = false, hinted = false, disabled = false, onclick, ...rest }: Props = $props();
 
+const deckOf = useDeck();
+const deck = $derived(deckInfo(deckOf()));
+const Face = $derived(DECK_COMPONENTS[deck.id]);
+/** Schräglage für Notizzettel – immer gleich für dieselbe Karte */
+const tilt = $derived(deck.tilt ? `${(((card.id * 37) % 7) - 3) * 0.7}deg` : undefined);
+
 const label = $derived(`${SUITS[card.suit].name} ${card.rank}${value !== null ? `, wahrer Wert ${num(value)}` : ''}`);
-const cornerIcon = 'calc(var(--cw) * 0.12)';
 </script>
 
-{#snippet face()}
-  <span class="corner top">{card.rank}<SuitIcon suit={card.suit} size={cornerIcon} /></span>
-  <span class="rank">{card.rank}</span>
-  <span class="pip"><SuitIcon suit={card.suit} size="100%" /></span>
-  <span class="corner bottom">{card.rank}<SuitIcon suit={card.suit} size={cornerIcon} /></span>
+{#snippet content()}
+  <Face {card} />
   {#if value !== null}
     <span class="value" aria-hidden="true">{num(value)}</span>
   {/if}
@@ -38,6 +41,8 @@ const cornerIcon = 'calc(var(--cw) * 0.12)';
   <button
     type="button"
     class="card suit-{card.suit}"
+    style:border-radius={deck.radius}
+    style:rotate={tilt}
     class:selected
     class:hinted
     aria-pressed={selected}
@@ -46,11 +51,20 @@ const cornerIcon = 'calc(var(--cw) * 0.12)';
     {onclick}
     {...rest}
   >
-    {@render face()}
+    {@render content()}
   </button>
 {:else}
-  <div class="card suit-{card.suit}" class:selected class:hinted role="img" aria-label={label} {...rest}>
-    {@render face()}
+  <div
+    class="card suit-{card.suit}"
+    style:border-radius={deck.radius}
+    style:rotate={tilt}
+    class:selected
+    class:hinted
+    role="img"
+    aria-label={label}
+    {...rest}
+  >
+    {@render content()}
   </div>
 {/if}
 
@@ -62,57 +76,13 @@ const cornerIcon = 'calc(var(--cw) * 0.12)';
     aspect-ratio: 5 / 7;
     padding: 0;
     margin: 0;
-    color: var(--suit);
-    background: color-mix(in srgb, var(--suit) 9%, var(--surface));
-    border: 2px solid var(--suit);
-    border-radius: 10px;
+    color: inherit;
+    background: none;
+    border: 0;
     font-family: var(--font-body);
-    box-shadow: 0 1px 2px var(--shadow);
     transition:
       transform 0.15s,
       box-shadow 0.15s;
-  }
-
-  .corner {
-    position: absolute;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1px;
-    font-weight: 700;
-    font-size: calc(var(--cw) * 0.17);
-    line-height: 1;
-  }
-
-  .top {
-    top: 6%;
-    left: 9%;
-  }
-
-  .bottom {
-    bottom: 6%;
-    right: 9%;
-    transform: rotate(180deg);
-  }
-
-  .rank {
-    position: absolute;
-    left: 50%;
-    top: 45%;
-    transform: translate(-50%, -50%);
-    font-size: calc(var(--cw) * 0.44);
-    font-weight: 700;
-    line-height: 1;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .pip {
-    position: absolute;
-    left: 50%;
-    top: 74%;
-    width: 20%;
-    height: 20%;
-    transform: translate(-50%, -50%);
   }
 
   /* wahrer Wert im Kreis an der Ecke */
@@ -120,6 +90,7 @@ const cornerIcon = 'calc(var(--cw) * 0.12)';
     position: absolute;
     top: -10px;
     right: -10px;
+    z-index: 2;
     display: grid;
     place-items: center;
     min-width: 28px;

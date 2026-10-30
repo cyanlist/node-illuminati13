@@ -2,6 +2,7 @@
 import { goHome } from '../../state/flow';
 import { table } from '../../state/table.svelte';
 import Logo from '../../ui/Logo.svelte';
+import SettingsButton from '../settings/SettingsButton.svelte';
 </script>
 
 <header>
@@ -10,6 +11,7 @@ import Logo from '../../ui/Logo.svelte';
     <h1>Illuminati <span>13</span></h1>
   </div>
   <nav>
+    <SettingsButton />
     <button type="button" class="btn btn--ghost" onclick={() => (table.rulesOpen = true)}>Regeln</button>
     <button type="button" class="btn" onclick={goHome}>Startseite</button>
   </nav>

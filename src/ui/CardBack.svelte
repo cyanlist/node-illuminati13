@@ -1,25 +1,25 @@
 <script lang="ts">
 import type { HTMLAttributes } from 'svelte/elements';
-import Logo from './Logo.svelte';
+import { deckInfo, useDeck } from './deck.svelte';
+import { DECK_COMPONENTS } from './decks';
 
-/** Verdeckte Karte mit dem Auge. Die Größe kommt über die CSS-Variable --cw. */
+/** Verdeckte Karte; wie sie aussieht, bestimmt das gewählte Kartendesign. Die Größe kommt über --cw. */
 let props: HTMLAttributes<HTMLDivElement> = $props();
+
+const deckOf = useDeck();
+const deck = $derived(deckInfo(deckOf()));
+const Back = $derived(DECK_COMPONENTS[deck.id]);
 </script>
 
-<div class="back" aria-hidden="true" {...props}>
-  <Logo size="60%" />
+<div class="back" style:border-radius={deck.radius} aria-hidden="true" {...props}>
+  <Back />
 </div>
 
 <style>
   .back {
-    display: grid;
-    place-items: center;
+    position: relative;
     flex: none;
     width: var(--cw);
     aspect-ratio: 5 / 7;
-    color: var(--muted);
-    background: var(--surface-2);
-    border: 1.5px solid var(--line);
-    border-radius: 6px;
   }
 </style>

@@ -2,6 +2,7 @@
 import { online } from '../../state/online.svelte';
 import { table } from '../../state/table.svelte';
 import ConnectSheet from '../online/ConnectSheet.svelte';
+import SettingsView from '../settings/SettingsView.svelte';
 import HandoffSheet from './HandoffSheet.svelte';
 import OrderSheet from './OrderSheet.svelte';
 import ResultsSheet from './ResultsSheet.svelte';
@@ -11,7 +12,9 @@ import RulesSheet from './RulesSheet.svelte';
 const game = $derived(table.view === 'game' ? table.game : null);
 </script>
 
-{#if online.sheetOpen}
+{#if table.settingsOpen}
+  <SettingsView />
+{:else if online.sheetOpen}
   <ConnectSheet />
 {:else if table.rulesOpen}
   <RulesSheet />

@@ -20,7 +20,7 @@ const rows: { section: Section; label: string; summary: (draft: Settings) => str
 ];
 </script>
 
-<Panel title="Einstellungen">
+<Panel title="Dieses Spiel">
   <ul>
     {#each rows as row (row.section)}
       <li>
@@ -47,7 +47,7 @@ const rows: { section: Section; label: string; summary: (draft: Settings) => str
 
   button {
     display: grid;
-    grid-template-columns: 4.5em minmax(0, 1fr) auto;
+    grid-template-columns: 5.5em minmax(0, 1fr) auto;
     align-items: center;
     gap: 12px;
     width: 100%;

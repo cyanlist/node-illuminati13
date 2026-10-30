@@ -4,6 +4,7 @@ import { resume, startGame } from '../../state/flow';
 import { online } from '../../state/online.svelte';
 import { table } from '../../state/table.svelte';
 import { loadSettings, saveSettings } from '../../storage';
+import SettingsButton from '../settings/SettingsButton.svelte';
 import Hero from './Hero.svelte';
 import HintsPanel from './HintsPanel.svelte';
 import OptionsPanel from './OptionsPanel.svelte';
@@ -44,6 +45,7 @@ function onsubmit(event: SubmitEvent): void {
 </script>
 
 <div class="start">
+  <div class="corner"><SettingsButton /></div>
   <Hero />
   <form {onsubmit}>
     <PlayersPanel bind:draft />
@@ -66,6 +68,7 @@ function onsubmit(event: SubmitEvent): void {
 
 <style>
   .start {
+    position: relative;
     max-width: 1180px;
     margin: 0 auto;
     display: grid;
@@ -79,6 +82,14 @@ function onsubmit(event: SubmitEvent): void {
       align-items: start;
       padding-top: 24px;
     }
+  }
+
+  /* Einstellungen oben rechts, über allem anderen */
+  .corner {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 1;
   }
 
   form {

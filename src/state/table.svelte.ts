@@ -86,6 +86,8 @@ class TableState {
   /** Gewählte oberste Karte je Farbe, solange das Reihenfolge-Fenster offen ist */
   topPick = $state<Partial<Record<SuitIndex, number>> | null>(null);
   rulesOpen = $state(false);
+  /** Einstellungen dieses Geräts (Kartendesign, Farbschema) */
+  settingsOpen = $state(false);
   /** Ergebnisfenster weggeklickt, um den Tisch anzusehen */
   resultsHidden = $state(false);
   anim = $state<MoveAnimation | null>(null);

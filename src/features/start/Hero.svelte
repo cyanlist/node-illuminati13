@@ -89,8 +89,10 @@ const fan: { card: CardData; rotate: string; lift: string }[] = [
       gap: 10px 14px;
     }
 
+    /* rechts bleibt Platz für den Einstellungs-Knopf der Startseite */
     h1 {
-      font-size: clamp(38px, 11vw, 56px);
+      padding-right: 50px;
+      font-size: clamp(32px, 9vw, 56px);
     }
 
     .lead {
