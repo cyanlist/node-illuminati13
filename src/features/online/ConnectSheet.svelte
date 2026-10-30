@@ -1,13 +1,22 @@
 <script lang="ts">
-import { inviteLink } from '../../net/link';
-import { acceptAnswer, disconnect, invite, join, online, restart } from '../../state/online.svelte';
+import { offerLink, parseInvite, roomLink } from '../../net/link';
+import {
+  acceptAnswer,
+  createRoom,
+  disconnect,
+  invite,
+  join,
+  joinRoom,
+  online,
+  reconnect,
+} from '../../state/online.svelte';
 import Sheet from '../../ui/Sheet.svelte';
 import CodeInput from './CodeInput.svelte';
 import CodeShare from './CodeShare.svelte';
 
 /**
- * Zwei Geräte verbinden: Ein Gerät lädt ein und zeigt einen Code, das andere scannt ihn und zeigt
- * seinerseits einen Antwort-Code, den das erste einliest. Danach sind beide direkt verbunden.
+ * Zwei Geräte verbinden. Üblicher Weg: Ein Gerät öffnet einen Raum und zeigt einen kurzen Raum-Code, das andere
+ * gibt ihn ein. Ausweichweg ohne fremde Dienste: zwei Codes austauschen (QR-Code oder Text).
  */
 const host = $derived(online.role === 'host');
 const peer = $derived(online.peerName || 'Das andere Gerät');
@@ -22,11 +31,27 @@ const title = $derived.by(() => {
 
 // über einen Einladungs-Link geöffnet: gleich beitreten
 $effect(() => {
-  const code = online.linkCode;
-  if (!code) return;
-  online.linkCode = '';
-  void join(code, online.myName);
+  const linked = online.linkInvite;
+  if (!linked) return;
+  online.linkInvite = null;
+  if (linked.type === 'room') joinRoom(linked.room, online.myName);
+  else void join(linked.code, online.myName);
 });
+
+/** Gast: Raum-Code, Link oder langer Code – je nachdem, was es ist. */
+function enter(text: string): void {
+  const entered = parseInvite(text);
+  if (entered?.type === 'room') joinRoom(entered.room, online.myName);
+  else if (entered?.type === 'code') void join(entered.code, online.myName);
+  else online.error = 'Das sieht nicht nach einem Raum-Code aus. Er hat fünf Zeichen, z. B. K7M4X.';
+}
+
+/** Gastgeber*in beim Austausch zweier Codes: die Antwort des Gastes. */
+function answer(text: string): void {
+  const entered = parseInvite(text);
+  if (entered?.type === 'code') void acceptAnswer(entered.code);
+  else online.error = 'Das ist kein Antwort-Code. Er beginnt mit „I13~“.';
+}
 
 /** Schließt das Fenster; eine halb aufgebaute Verbindung bleibt bestehen und lässt sich wieder öffnen. */
 function close(): void {
@@ -38,10 +63,10 @@ function cancel(): void {
   close();
 }
 
-function retry(): void {
-  const wasHost = online.role === 'host';
-  restart();
-  if (wasHost) void invite(online.myName);
+function chooseGuest(): void {
+  online.role = 'guest';
+  online.method = 'room';
+  online.error = '';
 }
 </script>
 
@@ -55,18 +80,33 @@ function retry(): void {
   {:else if online.status === 'failed'}
     <p class="error">{online.error}</p>
   {:else if online.role === null}
-    <p>
-      Zwei Geräte verbinden sich direkt miteinander, ganz ohne Server. Ein Gerät lädt ein, das andere tritt bei –
-      am einfachsten am selben Tisch und im selben WLAN.
-    </p>
+    <p>Zwei Geräte verbinden sich direkt miteinander. Ein Gerät lädt ein, das andere tritt bei – egal wo ihr seid.</p>
     <div class="choices">
-      <button type="button" class="choice" onclick={() => invite(online.myName)}>
-        <b>Einladen</b><span>Dieses Gerät zeigt einen Code zum Scannen.</span>
+      <button type="button" class="choice" onclick={() => createRoom(online.myName)}>
+        <b>Einladen</b><span>Dieses Gerät öffnet einen Raum und zeigt einen kurzen Code.</span>
       </button>
-      <button type="button" class="choice" onclick={() => (online.role = 'guest')}>
-        <b>Beitreten</b><span>Das andere Gerät zeigt schon einen Code – oder du hast ihn geschickt bekommen.</span>
+      <button type="button" class="choice" onclick={chooseGuest}>
+        <b>Beitreten</b><span>Das andere Gerät zeigt schon einen Raum-Code – oder du hast ihn geschickt bekommen.</span>
       </button>
     </div>
+  {:else if host && online.method === 'room'}
+    <p>Sag dem anderen Gerät diesen Raum-Code – oder schick ihn:</p>
+    <p class="room-code" aria-label="Raum-Code {online.roomCode.split('').join(' ')}">{online.roomCode}</p>
+    <p class="muted center">Dort „2. Gerät“ → „Beitreten“ wählen und den Code eingeben – oder den QR-Code scannen.</p>
+    <CodeShare
+      code={online.roomCode}
+      link={roomLink(online.roomCode)}
+      message={`Spiel Illuminati 13 mit mir! Raum-Code: ${online.roomCode}`}
+    />
+    <p class="muted center waiting">Warte auf das andere Gerät …</p>
+    <details class="fallback">
+      <summary>Klappt nicht?</summary>
+      <p>
+        Der Raum-Code braucht öffentliche Treffpunkte im Internet. Ohne sie geht es auch: Dann tauscht ihr zwei längere
+        Codes aus, am einfachsten per QR-Code am selben Tisch.
+      </p>
+      <button type="button" class="btn btn--small" onclick={() => invite(online.myName)}>Per QR-Code verbinden</button>
+    </details>
   {:else if host}
     {#if online.status === 'preparing'}
       <p class="muted">Einladung wird erstellt …</p>
@@ -76,7 +116,7 @@ function retry(): void {
           <p><b>Zeig dem anderen Gerät diesen Code.</b> Dort „2. Gerät“ → „Beitreten“ wählen und scannen – oder schick ihn per Messenger.</p>
           <CodeShare
             code={online.code}
-            link={inviteLink(online.code)}
+            link={offerLink(online.code)}
             message="Spiel Illuminati 13 mit mir! Öffne den Link oder füge den Code unter „2. Gerät → Beitreten“ ein."
           />
         </li>
@@ -85,14 +125,15 @@ function retry(): void {
           {#if online.status === 'connecting'}
             <p class="muted">Verbinde …</p>
           {:else}
-            <CodeInput oncode={acceptAnswer} />
+            <CodeInput label="Antwort-Code" placeholder="I13~B~…" submitLabel="Übernehmen" oncode={answer} />
           {/if}
         </li>
       </ol>
     {/if}
   {:else if online.status === 'idle'}
-    <p><b>Scanne den Code des einladenden Geräts</b> – oder füge ihn ein, wenn er per Messenger kam.</p>
-    <CodeInput oncode={(code) => join(code, online.myName)} />
+    <CodeInput label="Raum-Code" placeholder="z. B. K7M4X" submitLabel="Beitreten" oncode={enter} />
+  {:else if online.method === 'room'}
+    <p class="muted center">Suche Raum {online.roomCode} …</p>
   {:else if online.status === 'preparing'}
     <p class="muted">Antwort wird erstellt …</p>
   {:else}
@@ -108,7 +149,7 @@ function retry(): void {
       <button type="button" class="btn btn--primary" onclick={close}>Weiter</button>
     {:else if online.status === 'failed'}
       <button type="button" class="btn btn--ghost" onclick={cancel}>Abbrechen</button>
-      <button type="button" class="btn btn--primary" onclick={retry}>Nochmal versuchen</button>
+      <button type="button" class="btn btn--primary" onclick={reconnect}>Nochmal versuchen</button>
     {:else}
       <button type="button" class="btn btn--ghost" onclick={cancel}>Abbrechen</button>
     {/if}
@@ -147,6 +188,29 @@ function retry(): void {
 
   .choice span {
     color: var(--muted);
+  }
+
+  .room-code {
+    margin: 10px 0;
+    font-size: clamp(36px, 11vw, 52px);
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .waiting {
+    margin-top: 12px;
+  }
+
+  .fallback {
+    margin-top: 14px;
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  .fallback summary {
+    cursor: pointer;
   }
 
   .steps {

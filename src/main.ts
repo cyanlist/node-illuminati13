@@ -1,6 +1,6 @@
 import { mount } from 'svelte';
 import App from './App.svelte';
-import { codeFromAddress } from './net/link';
+import { inviteFromAddress } from './net/link';
 import { online } from './state/online.svelte';
 import './state/online-flow';
 import { restoreSnapshot, takeSnapshot } from './state/snapshot.svelte';
@@ -22,12 +22,12 @@ declare global {
 
 /** Über einen Einladungs-Link geöffnet: Startseite auf „2. Gerät“ und gleich beitreten. */
 function acceptInviteLink(): void {
-  const code = codeFromAddress();
-  if (!code) return;
+  const invite = inviteFromAddress();
+  if (!invite) return;
   const settings = { ...loadSettings(), mode: 'online' as const };
   saveSettings(settings);
   online.myName = settings.names[0].trim();
-  online.linkCode = code;
+  online.linkInvite = invite;
   online.sheetOpen = true;
 }
 

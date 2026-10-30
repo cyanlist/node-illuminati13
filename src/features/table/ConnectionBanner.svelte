@@ -1,26 +1,27 @@
 <script lang="ts">
-import { invite, online, restart } from '../../state/online.svelte';
+import { online, reconnect } from '../../state/online.svelte';
 
-/** An zwei Geräten: Hinweis, wenn die Verbindung abgerissen ist – mit dem Weg zurück an den Tisch. */
+/**
+ * An zwei Geräten: Hinweis, wenn die Verbindung abgerissen ist – mit dem Weg zurück an den Tisch.
+ * Im Raum geht es oft von selbst weiter, sobald das andere Gerät wieder da ist.
+ */
 const peer = $derived(online.peerName || 'dem anderen Gerät');
 
-/** Nach einem Abbruch neu beginnen; läuft der Aufbau schon, nur das Fenster wieder zeigen. */
-function reconnect(): void {
-  if (online.status === 'lost' || online.status === 'failed') {
-    const host = online.role === 'host';
-    restart();
-    if (host) void invite(online.myName);
-  }
-  online.sheetOpen = true;
+/** Läuft der Aufbau schon, nur das Fenster wieder zeigen; sonst neu verbinden. */
+function resume(): void {
+  if (online.status === 'lost' || online.status === 'failed' || online.status === 'idle') reconnect();
+  else online.sheetOpen = true;
 }
 </script>
 
 {#if !online.connected}
   <div class="banner" role="status">
     <span>
-      Die Verbindung zu {peer} ist unterbrochen. Verbindet euch neu – der Spielstand bleibt erhalten.
+      Die Verbindung zu {peer} ist unterbrochen. Der Spielstand bleibt erhalten
+      {#if online.method === 'room' && online.roomCode}– tritt das andere Gerät Raum {online.roomCode} wieder bei, geht es
+        weiter{/if}.
     </span>
-    <button type="button" class="btn btn--small btn--primary" onclick={reconnect}>Neu verbinden</button>
+    <button type="button" class="btn btn--small btn--primary" onclick={resume}>Neu verbinden</button>
   </div>
 {/if}
 

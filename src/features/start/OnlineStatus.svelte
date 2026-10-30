@@ -21,8 +21,8 @@ function open(): void {
     <button type="button" class="btn btn--small btn--ghost" onclick={disconnect}>Trennen</button>
   {:else}
     <small>
-      Ihr spielt auf zwei Geräten, z. B. zwei Handys. Sie verbinden sich direkt miteinander – per QR-Code oder einem
-      Code, den du per Messenger schickst. Kein Server, keine Anmeldung.
+      Ihr spielt auf zwei Geräten, z. B. zwei Handys – auch an verschiedenen Orten. Ein Gerät öffnet einen Raum, das
+      andere gibt dessen kurzen Code ein. Keine Anmeldung nötig.
     </small>
     <button type="button" class="btn" onclick={open}>
       {online.status === 'idle' ? 'Verbinden …' : 'Verbindung fortsetzen …'}

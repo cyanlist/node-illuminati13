@@ -9,7 +9,7 @@ import { decodeSignal, encodeSignal, fromSdp, type SignalKind, toSdp } from './s
  * Ein öffentlicher STUN-Dienst verrät jedem Gerät, wie es von außen erreichbar ist – nötig, wenn die Geräte
  * nicht im selben WLAN sind. Er sieht nur die Adresse, keine Spieldaten.
  */
-const ICE_SERVERS: RTCIceServer[] = [{ urls: 'stun:stun.l.google.com:19302' }];
+export const ICE_SERVERS: RTCIceServer[] = [{ urls: 'stun:stun.l.google.com:19302' }];
 
 /** So lange sammelt der Browser höchstens Adressen, bevor der Code entsteht (ms) */
 const GATHER_LIMIT = 4000;

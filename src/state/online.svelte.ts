@@ -1,12 +1,20 @@
 /**
- * Die Verbindung zu einem zweiten Gerät: wer einlädt und wer beitritt, wie weit der Aufbau ist und
- * welcher Code gerade gezeigt wird. Was mit eingehenden Nachrichten passiert, steht in online-flow.ts.
+ * Die Verbindung zu einem zweiten Gerät: wer einlädt und wer beitritt, auf welchem Weg, wie weit der Aufbau
+ * ist und welcher Code gerade gezeigt wird. Was mit eingehenden Nachrichten passiert, steht in online-flow.ts.
+ *
+ * Zwei Wege: per Raum-Code (die Geräte finden sich über öffentliche Relays) oder – ganz ohne fremde Dienste –
+ * per Austausch zweier Codes, als QR-Code oder Text.
  */
+
+import type { Invite } from '../net/link';
 import type { Message } from '../net/messages';
 import { parseMessage } from '../net/messages';
 import { createGuest, createHost, type HostPeer, InvalidCodeError, type Peer } from '../net/peer';
+import { enterRoom } from '../net/room';
+import { newRoomCode } from '../net/room-code';
 
 export type Role = 'host' | 'guest';
+export type Method = 'room' | 'code';
 
 export type LinkStatus =
   | 'idle' // noch nichts passiert
@@ -19,19 +27,24 @@ export type LinkStatus =
 
 /** So lange dürfen sich die Geräte nach dem Austausch suchen (ms) */
 const CONNECT_LIMIT = 20000;
+/** So lange sucht ein Gast nach dem Raum, bevor er aufgibt (ms) */
+const ROOM_LIMIT = 30000;
 
 class OnlineState {
   role = $state<Role | null>(null);
+  method = $state<Method>('room');
   status = $state<LinkStatus>('idle');
-  /** Der eigene Code, den die Gegenseite scannen oder einfügen soll */
+  /** Raum-Code, z. B. „K7M4X“ – bleibt nach einer Unterbrechung für den Wiedereinstieg stehen */
+  roomCode = $state('');
+  /** Beim Austausch zweier Codes: der eigene Code, den die Gegenseite scannen oder einfügen soll */
   code = $state('');
   myName = $state('');
   peerName = $state('');
   error = $state('');
   /** Das Verbindungsfenster ist offen */
   sheetOpen = $state(false);
-  /** Ein Einladungs-Code aus einem geöffneten Link, der gleich angenommen wird */
-  linkCode = $state('');
+  /** Eine Einladung aus einem geöffneten Link, die gleich angenommen wird */
+  linkInvite = $state<Invite | null>(null);
 
   get connected(): boolean {
     return this.status === 'connected';
@@ -86,9 +99,37 @@ function connectedNow(): void {
   opened();
 }
 
-/** Gastgeber*in: Einladung erstellen. */
+/** Gastgeber*in: Raum öffnen und auf das andere Gerät warten. */
+export function createRoom(name: string, code = newRoomCode()): void {
+  reset('host', name, 'room');
+  online.roomCode = code;
+  try {
+    peer = enterRoom(code, handlersFor(generation));
+    online.status = 'waiting';
+  } catch (error) {
+    fail(describe(error));
+  }
+}
+
+/** Gast: dem Raum mit diesem Code beitreten. */
+export function joinRoom(code: string, name: string): void {
+  reset('guest', name, 'room');
+  online.roomCode = code;
+  try {
+    peer = enterRoom(code, handlersFor(generation));
+    online.status = 'connecting';
+    waitForConnection(
+      ROOM_LIMIT,
+      `Im Raum ${code} ist niemand. Stimmt der Code, und ist das Verbindungsfenster auf dem anderen Gerät noch offen?`,
+    );
+  } catch (error) {
+    fail(describe(error));
+  }
+}
+
+/** Gastgeber*in: Einladung als Code erstellen (ohne Relays). */
 export async function invite(name: string): Promise<void> {
-  reset('host', name);
+  reset('host', name, 'code');
   try {
     const host = await createHost(handlersFor(generation));
     peer = host;
@@ -106,16 +147,19 @@ export async function acceptAnswer(code: string): Promise<void> {
     await peer.accept(code);
     online.error = '';
     online.status = 'connecting';
-    waitForConnection();
+    waitForConnection(
+      CONNECT_LIMIT,
+      'Die Verbindung kam nicht zustande. Am zuverlässigsten klappt es, wenn beide Geräte im selben WLAN sind.',
+    );
   } catch (error) {
     // ein falscher Code ist kein Grund, alles neu zu beginnen
     online.error = describe(error);
   }
 }
 
-/** Gast: Einladung annehmen und den Antwort-Code erzeugen. */
+/** Gast: Einladung als Code annehmen und den Antwort-Code erzeugen. */
 export async function join(code: string, name: string): Promise<void> {
-  reset('guest', name);
+  reset('guest', name, 'code');
   online.status = 'preparing';
   try {
     peer = await createGuest(code, handlersFor(generation));
@@ -127,29 +171,46 @@ export async function join(code: string, name: string): Promise<void> {
   }
 }
 
-/** Neu beginnen, z. B. nach einer Unterbrechung – die Rolle bleibt. */
-export function restart(): void {
-  const role = online.role;
-  close();
-  online.role = role;
-  online.status = 'idle';
-  online.code = '';
-  online.error = '';
+/**
+ * Nach einer Unterbrechung oder einem Fehlschlag wieder zueinanderfinden – auf demselben Weg wie zuvor.
+ * Ein offener Raum bleibt einfach offen: Kommt das andere Gerät zurück, geht es von selbst weiter.
+ */
+export function reconnect(): void {
+  const { role, method, roomCode, myName } = online;
+  if (method === 'room' && role === 'host' && peer) {
+    online.status = 'waiting';
+    online.error = '';
+  } else if (method === 'room' && role === 'host') {
+    createRoom(myName, roomCode || undefined);
+  } else if (method === 'room' && role === 'guest' && roomCode) {
+    joinRoom(roomCode, myName);
+  } else if (role === 'host') {
+    void invite(myName);
+  } else {
+    close();
+    online.status = 'idle';
+    online.code = '';
+    online.error = '';
+  }
+  online.sheetOpen = true;
 }
 
 /** Verbindung beenden und alles vergessen. */
 export function disconnect(): void {
   close();
   online.role = null;
+  online.method = 'room';
+  online.roomCode = '';
   online.status = 'idle';
   online.code = '';
   online.peerName = '';
   online.error = '';
 }
 
-function reset(role: Role, name: string): void {
+function reset(role: Role, name: string, method: Method): void {
   close();
   online.role = role;
+  online.method = method;
   online.myName = name;
   online.status = 'preparing';
   online.code = '';
@@ -164,14 +225,11 @@ function close(): void {
   old?.close();
 }
 
-function waitForConnection(): void {
+function waitForConnection(limit: number, message: string): void {
   clearTimeout(connectTimer);
   connectTimer = setTimeout(() => {
-    if (online.status === 'connecting')
-      fail(
-        'Die Verbindung kam nicht zustande. Am zuverlässigsten klappt es, wenn beide Geräte im selben WLAN sind.',
-      );
-  }, CONNECT_LIMIT);
+    if (online.status === 'connecting') fail(message);
+  }, limit);
 }
 
 function fail(message: string): void {
