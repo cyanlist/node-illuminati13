@@ -55,6 +55,7 @@ export function enterGame(game: GameState, me: number): void {
   table.game = game;
   table.anim = null;
   table.rulesOpen = false;
+  table.logOpen = false;
   table.resultsHidden = false;
   table.view = 'game';
   window.scrollTo(0, 0);
@@ -127,6 +128,7 @@ export function afterMove(): void {
 export function goHome(): void {
   stopCpu();
   table.rulesOpen = false;
+  table.logOpen = false;
   table.view = 'start';
   window.scrollTo(0, 0);
 }

@@ -46,7 +46,8 @@ const interactive = $derived(
     min-height: 80px;
     /* Platz für den Wert-Kreis und angehobene Karten */
     padding-top: 16px;
-    /* etwas kleiner als auf dem Board, damit fünf Karten auch auf dem Handy in eine Reihe passen */
-    --cw: clamp(54px, 15vw, 96px);
+    /* etwas kleiner als auf dem Board, damit fünf Karten auch auf dem Handy in eine Reihe passen;
+       auf niedrigen Bildschirmen nie größer, als die Höhe erlaubt (--fit, siehe GameView) */
+    --cw: min(clamp(54px, 15vw, 96px), var(--fit, 96px));
   }
 </style>

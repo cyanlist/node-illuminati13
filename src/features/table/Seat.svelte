@@ -6,7 +6,8 @@ import Avatar from '../../ui/Avatar.svelte';
 /**
  * Ein Platz am Tisch wie ein kleines Profil in einer Zeile: Avatar mit Ring in der Farbe der Person, Name,
  * gleich daneben die Punkte und wie oft die 13 gefunden wurde. Wer am Zug ist, bekommt einen leuchtenden
- * Rahmen in seiner Farbe. Darunter liegen die Karten dieser Person.
+ * Rahmen in seiner Farbe. Darunter liegen die Karten dieser Person – kompakt (`compact`) rücken kleine
+ * Karten neben den Avatar unter den Namen, damit der Platz wenig Höhe braucht.
  */
 interface Props {
   name: string;
@@ -17,16 +18,18 @@ interface Props {
   active: boolean;
   /** Der Computer bzw. das andere Gerät überlegt gerade */
   thinking?: boolean;
+  /** Kleine Karten neben dem Avatar statt in einer eigenen Reihe */
+  compact?: boolean;
   /** Beschriftung für Screenreader, z. B. „Platz oben“ */
   label: string;
   children: Snippet;
 }
-let { name, cpu, points, combos, active, thinking = false, label, children }: Props = $props();
+let { name, cpu, points, combos, active, thinking = false, compact = false, label, children }: Props = $props();
 </script>
 
-<section class="seat" class:active class:cpu style:--hue={hueFor(name)} aria-label={label}>
+<section class="seat" class:active class:cpu class:compact style:--hue={hueFor(name)} aria-label={label}>
+  <Avatar {name} {cpu} size="44px" />
   <header>
-    <Avatar {name} {cpu} size="44px" />
     <span class="name">{name}</span>
     {#if active}<span class="sr-only">ist am Zug</span>{/if}
     <span class="score" aria-label="{points} {points === 1 ? 'Punkt' : 'Punkte'}">
@@ -40,7 +43,7 @@ let { name, cpu, points, combos, active, thinking = false, label, children }: Pr
       <span class="thinking">überlegt<span>.</span><span>.</span><span>.</span></span>
     {/if}
   </header>
-  {@render children()}
+  <div class="cards">{@render children()}</div>
 </section>
 
 <style>
@@ -54,6 +57,29 @@ let { name, cpu, points, combos, active, thinking = false, label, children }: Pr
     border-radius: 16px;
     box-shadow: 0 1px 3px var(--shadow);
     transition: box-shadow 0.25s;
+    /* Avatar links neben der Kopfzeile, die Karten darunter über die ganze Breite */
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      "avatar head"
+      "cards cards";
+    align-items: center;
+    column-gap: 14px;
+    row-gap: 12px;
+  }
+
+  @media (max-width: 620px) {
+    .seat {
+      row-gap: 8px;
+    }
+  }
+
+  /* kompakt: die kleinen Karten stehen unter dem Namen, der Avatar mittig daneben */
+  .compact {
+    grid-template-areas:
+      "avatar head"
+      "avatar cards";
+    row-gap: 6px;
   }
 
   .cpu {
@@ -69,19 +95,24 @@ let { name, cpu, points, combos, active, thinking = false, label, children }: Pr
   }
 
   header {
+    grid-area: head;
     display: flex;
     align-items: center;
     gap: 10px;
     min-width: 0;
-    margin-bottom: 12px;
+  }
+
+  .cards {
+    grid-area: cards;
+    min-width: 0;
   }
 
   /* Ring um den Avatar in der Spielerfarbe */
-  header :global(.avatar) {
+  .seat > :global(.avatar) {
+    grid-area: avatar;
     box-shadow:
       0 0 0 3px var(--surface),
       0 0 0 5px var(--player);
-    margin-right: 4px;
   }
 
   .name {

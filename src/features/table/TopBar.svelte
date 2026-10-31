@@ -3,15 +3,18 @@ import { goHome } from '../../state/flow';
 import { table } from '../../state/table.svelte';
 import Logo from '../../ui/Logo.svelte';
 import SettingsButton from '../settings/SettingsButton.svelte';
+import LogButton from './LogButton.svelte';
 </script>
 
+<!-- auf dem Handy alles in einer Zeile: nur das Logo, kleinere Knöpfe und das Protokoll als Knopf -->
 <header>
   <div class="brand">
-    <Logo size="40px" />
+    <Logo size="var(--logo, 40px)" />
     <h1>Illuminati <span>13</span></h1>
   </div>
   <nav>
     <SettingsButton />
+    <LogButton />
     <button type="button" class="btn btn--ghost" onclick={() => (table.rulesOpen = true)}>Regeln</button>
     <button type="button" class="btn" onclick={goHome}>Startseite</button>
   </nav>
@@ -48,5 +51,32 @@ import SettingsButton from '../settings/SettingsButton.svelte';
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
+  }
+
+  @media (max-width: 620px) {
+    .brand {
+      --logo: 34px;
+    }
+
+    h1 {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+    }
+
+    nav {
+      gap: 6px;
+    }
+
+    nav .btn {
+      padding: 6px 12px;
+      font-size: 14px;
+    }
+
+    nav :global(.icon) {
+      padding: 4px 8px;
+    }
   }
 </style>

@@ -29,6 +29,7 @@ const showsHand = $derived(index === table.viewer);
   points={table.points(index)}
   combos={table.combos(index)}
   active={index === game.current && game.players.length > 1 && table.phase !== 'over'}
+  compact={!showsHand}
   thinking={((player.cpu && table.phase === 'cpu') || (index !== table.me && table.phase === 'remote')) && !table.anim}
 >
   {#if showsHand}
