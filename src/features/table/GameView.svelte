@@ -13,7 +13,7 @@ import TopBar from './TopBar.svelte';
 
 /**
  * Der Spieltisch mit festen Plätzen: oben Spieler*in 2 bzw. der Computer, in der Mitte die Stapel,
- * unten Spieler*in 1 mit den Knöpfen; daneben das Protokoll. An zwei Geräten sitzt jede*r unten.
+ * unten Spieler*in 1, darunter die Knöpfe; neben den Plätzen das Protokoll. An zwei Geräten sitzt jede*r unten.
  */
 let { game }: { game: GameState } = $props();
 
@@ -41,9 +41,9 @@ const chrome = $derived(
         <ProofStage {game} />
       </div>
       <PlayerSeat {game} index={bottom} position="bottom" />
-      <Actions {game} />
     </div>
     <GameLog {game} />
+    <div class="controls"><Actions {game} /></div>
   </main>
 </div>
 
@@ -59,12 +59,29 @@ const chrome = $derived(
   .table {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: 18px;
+    gap: 14px 18px;
   }
 
+  /* Knöpfe und Rückmeldung unter dem Tisch */
+  .controls {
+    grid-column: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  /*
+   * Breite Bildschirme: Das Protokoll steht in der ersten Zeile neben Plätzen und Board und endet damit am
+   * unteren Platz – die Knöpfe darunter bekommen ihre eigene Zeile.
+   */
   @media (min-width: 980px) {
     .table {
       grid-template-columns: minmax(0, 1fr) 290px;
+    }
+
+    .table > :global(aside) {
+      grid-column: 2;
+      grid-row: 1;
     }
   }
 
@@ -108,10 +125,17 @@ const chrome = $derived(
       flex: 1;
       min-height: 0;
       container-type: size;
+      /* der Tisch bekommt den Rest, schrumpft aber nie unter seinen Inhalt – sonst lägen die Knöpfe darüber */
+      grid-template-rows: 1fr auto;
+      row-gap: 10px;
     }
 
     .play {
-      --fit: max(44px, (100cqh - var(--chrome)) / 2.8);
+      --fit: max(40px, (100cqh - var(--chrome)) / 2.8);
+      gap: 10px;
+    }
+
+    .controls {
       gap: 10px;
     }
 

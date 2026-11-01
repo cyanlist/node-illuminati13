@@ -19,15 +19,17 @@ let { game }: { game: GameState } = $props();
     display: none;
   }
 
+  /*
+   * Neben dem Tisch: nie höher als der Tisch selbst. Mit height: 0 zählt das Protokoll nicht mit, wenn die
+   * Zeile ihre Höhe bekommt; min-height: 100% zieht es dann genau auf die Höhe des Tisches. Der Rest scrollt.
+   */
   @media (min-width: 980px) {
     aside {
       display: block;
-      position: sticky;
-      top: max(12px, env(safe-area-inset-top, 0px));
-      align-self: start;
       width: 100%;
       min-width: 0;
-      max-height: calc(100vh - 28px);
+      height: 0;
+      min-height: 100%;
       overflow: auto;
       padding: 12px 14px;
       background: var(--surface);
