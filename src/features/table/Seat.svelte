@@ -13,6 +13,8 @@ interface Props {
   name: string;
   cpu: boolean;
   points: number;
+  /** Bei „Bis 13“ das Ziel – die Punkte stehen dann als „7 / 13“ da */
+  goal?: number | null;
   combos: number;
   /** Diese Person ist am Zug */
   active: boolean;
@@ -24,7 +26,7 @@ interface Props {
   label: string;
   children: Snippet;
 }
-let { name, cpu, points, combos, active, thinking = false, compact = false, label, children }: Props = $props();
+let { name, cpu, points, goal = null, combos, active, thinking = false, compact = false, label, children }: Props = $props();
 </script>
 
 <section class="seat" class:active class:cpu class:compact style:--hue={hueFor(name)} aria-label={label}>
@@ -32,9 +34,13 @@ let { name, cpu, points, combos, active, thinking = false, compact = false, labe
   <header>
     <span class="name">{name}</span>
     {#if active}<span class="sr-only">ist am Zug</span>{/if}
-    <span class="score" aria-label="{points} {points === 1 ? 'Punkt' : 'Punkte'}">
+    <span
+      class="score"
+      class:reached={goal !== null && points >= goal}
+      aria-label={goal !== null ? `${points} von ${goal} Punkten` : `${points} ${points === 1 ? 'Punkt' : 'Punkte'}`}
+    >
       {#key points}<b class="points">{points}</b>{/key}
-      <span class="unit">{points === 1 ? 'Punkt' : 'Punkte'}</span>
+      <span class="unit">{goal !== null ? `/ ${goal}` : points === 1 ? 'Punkt' : 'Punkte'}</span>
     </span>
     <span class="combos" aria-label="{combos}-mal die 13" title="{combos}-mal die 13 gefunden">
       <span class="token">13</span><span class="times">×{combos}</span>
@@ -149,6 +155,16 @@ let { name, cpu, points, combos, active, thinking = false, compact = false, labe
     color: var(--muted);
     font-size: 12px;
     font-weight: 700;
+  }
+
+  /* „Bis 13“: Ziel erreicht – das Feld leuchtet in der vollen Farbe */
+  .reached {
+    background: var(--player);
+  }
+
+  .reached .points,
+  .reached .unit {
+    color: var(--surface);
   }
 
   /* wie oft die 13 gefunden wurde: eine Marke mit Zahl, nichts zum Abzählen */

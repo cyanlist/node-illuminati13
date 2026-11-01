@@ -5,6 +5,7 @@ import { online } from '../../state/online.svelte';
 import { table } from '../../state/table.svelte';
 import { loadSettings, saveSettings } from '../../storage';
 import SettingsButton from '../settings/SettingsButton.svelte';
+import EndingPanel from './EndingPanel.svelte';
 import Hero from './Hero.svelte';
 import HintsPanel from './HintsPanel.svelte';
 import OptionsPanel from './OptionsPanel.svelte';
@@ -15,7 +16,7 @@ import SettingsSummary from './SettingsSummary.svelte';
 import type { Section } from './settings-summary';
 
 /**
- * Startseite: links der Titel, rechts das nächste Spiel. Sichtbar ist nur, wer spielt; Regeln, Tipps und Extras
+ * Startseite: links der Titel, rechts das nächste Spiel. Sichtbar ist nur, wer spielt; Länge, Regeln, Tipps und Extras
  * stehen als Kurzfassung da und öffnen sich bei Bedarf in einem Fenster.
  */
 let draft = $state(settingsForEditing(loadSettings()));
@@ -58,7 +59,9 @@ function onsubmit(event: SubmitEvent): void {
   </form>
 </div>
 
-{#if section === 'rules'}
+{#if section === 'ending'}
+  <SettingsSheet title="Länge des Spiels" onclose={() => (section = null)}><EndingPanel bind:draft plain /></SettingsSheet>
+{:else if section === 'rules'}
   <SettingsSheet title="Regeln der Stapel" onclose={() => (section = null)}><RulesPanel bind:draft plain /></SettingsSheet>
 {:else if section === 'hints'}
   <SettingsSheet title="Tipps" onclose={() => (section = null)}><HintsPanel bind:draft plain /></SettingsSheet>

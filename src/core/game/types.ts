@@ -33,6 +33,8 @@ export type LogEntry =
   | { kind: 'skip'; player: number }
   | { kind: 'hint'; player: number; cost: number }
   | { kind: 'final'; players: number }
+  /** „Bis 13“: jemand hat das Ziel erreicht; `turnsLeft` Züge bis die Runde komplett ist */
+  | { kind: 'goal'; player: number; turnsLeft: number }
   | { kind: 'end' };
 
 export interface GameState {
@@ -47,7 +49,7 @@ export interface GameState {
   rotations: number;
   players: Player[];
   current: number;
-  /** null, solange der Nachziehstapel Karten hat; danach die noch verbleibenden Züge */
+  /** null, solange der Nachziehstapel Karten hat (und bei „Bis 13“ niemand das Ziel erreicht hat); danach die noch verbleibenden Züge */
   finalTurnsLeft: number | null;
   over: boolean;
   log: LogEntry[];

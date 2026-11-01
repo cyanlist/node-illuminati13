@@ -1,9 +1,10 @@
 <script lang="ts">
-import type { GameState } from '../../core/game';
+import { type GameState, goalOf, turnsTaken } from '../../core/game';
 import { table } from '../../state/table.svelte';
 
 /**
- * Hinweise zum Spiel oben am Tisch: letzte Runde, Regel-Modus, offene Karten, Variante.
+ * Hinweise zum Spiel oben am Tisch: letzte Runde, „Bis 13“ (allein mit Zahl der Züge), Regel-Modus, offene Karten,
+ * Variante.
  * Ohne Hinweise bleibt die Leiste weg.
  */
 let { game }: { game: GameState } = $props();
@@ -11,13 +12,22 @@ let { game }: { game: GameState } = $props();
 const turnsLeft = $derived(table.phase === 'over' ? null : game.finalTurnsLeft);
 const ruleMode = $derived(game.settings.ruleMode);
 const openHands = $derived(game.settings.openHands && game.players.length > 1);
-const visible = $derived(turnsLeft !== null || ruleMode !== 'classic' || openHands || game.settings.variant);
+const goal = $derived(goalOf(game));
+const solo = $derived(game.players.length === 1);
+/** Allein bei „Bis 13“: die bisherigen Züge – genau die werden am Ende gewertet */
+const turns = $derived(turnsTaken(game, 0));
+const visible = $derived(
+  turnsLeft !== null || goal !== null || ruleMode !== 'classic' || openHands || game.settings.variant,
+);
 </script>
 
 {#if visible}
   <section class="status" aria-label="Hinweise zum Spiel">
     {#if turnsLeft !== null}
       <span class="tag warn">Letzte Runde · noch {turnsLeft} {turnsLeft === 1 ? 'Zug' : 'Züge'}</span>
+    {/if}
+    {#if goal !== null}
+      <span class="tag">Bis {goal}{solo ? ` · ${turns} ${turns === 1 ? 'Zug' : 'Züge'}` : ' Punkte'}</span>
     {/if}
     {#if ruleMode === 'custom'}<span class="tag">Eigene Regeln</span>{/if}
     {#if ruleMode === 'random'}<span class="tag">Ausgeloste Regeln</span>{/if}

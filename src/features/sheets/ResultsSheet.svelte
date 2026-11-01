@@ -1,19 +1,27 @@
 <script lang="ts">
-import { type GameState, ranking } from '../../core/game';
+import { beatsBest, type GameState, GOAL_POINTS, goalOf, ranking, soloScore } from '../../core/game';
 import { goHome, playAgain } from '../../state/flow';
 import { table } from '../../state/table.svelte';
 import { pts } from '../../ui/format';
 import Sheet from '../../ui/Sheet.svelte';
 
-/** Ergebnis am Spielende: Siegerin oder Sieger, Gleichstand oder – allein – Punkte und Bestwert. */
+/**
+ * Ergebnis am Spielende: Siegerin oder Sieger, Gleichstand oder – allein – Punkte und Bestwert.
+ * Allein bei „Bis 13“ zählen die Züge bis zum Ziel; dort ist der Bestwert die kleinste Zahl.
+ */
 let { game }: { game: GameState } = $props();
 
 const result = $derived(ranking(game));
 const solo = $derived(game.players.length === 1);
 const winner = $derived(result.order[0]);
+const goal = $derived(goalOf(game) !== null);
+/** Allein: Punkte oder bei „Bis 13“ die Züge; null, wenn das Ziel nicht erreicht wurde */
+const score = $derived(soloScore(game));
+const turns = (n: number): string => `${n} ${n === 1 ? 'Zug' : 'Zügen'}`;
 
 const title = $derived.by(() => {
   if (!winner) return '';
+  if (solo && goal) return score !== null ? `${GOAL_POINTS} Punkte in ${turns(score)}` : pts(winner.points);
   if (solo) return pts(winner.points);
   if (result.tie) return 'Gleichstand';
   return winner.you ? 'Du gewinnst!' : `${winner.name} gewinnt!`;
@@ -21,6 +29,13 @@ const title = $derived.by(() => {
 
 const subtitle = $derived.by(() => {
   if (!winner) return '';
+  if (solo && goal) {
+    const best = table.soloBest;
+    const record = best === 0 ? '' : ` Dein Bestwert: ${GOAL_POINTS} Punkte in ${turns(best)}.`;
+    if (score === null) return `Der Stapel war leer, bevor du ${GOAL_POINTS} Punkte hattest.${record}`;
+    if (best === 0) return `Du hast die 13 ${winner.combos}-mal gefunden.`;
+    return beatsBest(game, score, best) ? `Neuer Bestwert! Bisher waren es ${turns(best)}.` : record.trim();
+  }
   if (solo) {
     const best = table.soloBest;
     const found = `Du hast die 13 ${winner.combos}-mal gefunden.`;

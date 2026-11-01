@@ -1,7 +1,7 @@
 <script lang="ts">
 import type { Settings } from '../../core/settings';
 import Panel from './Panel.svelte';
-import { extrasSummary, hintsSummary, rulesSummary, type Section } from './settings-summary';
+import { endingSummary, extrasSummary, hintsSummary, rulesSummary, type Section } from './settings-summary';
 
 /**
  * Was man selten ändert, steht hier nur als Kurzfassung – jede Zeile öffnet ihr Fenster zum Anpassen.
@@ -14,6 +14,7 @@ interface Props {
 let { draft, onopen }: Props = $props();
 
 const rows: { section: Section; label: string; summary: (draft: Settings) => string }[] = [
+  { section: 'ending', label: 'Länge', summary: endingSummary },
   { section: 'rules', label: 'Regeln', summary: rulesSummary },
   { section: 'hints', label: 'Tipps', summary: hintsSummary },
   { section: 'extras', label: 'Extras', summary: extrasSummary },

@@ -64,6 +64,12 @@ const close = (): void => {
     13er-Kombinationen gefunden hat.
   </p>
 
+  <h3>Kürzer: Bis 13</h3>
+  <p>
+    Wer zuerst 13 Punkte hat, beendet das Spiel. Die Runde wird noch zu Ende gespielt, damit alle gleich viele Züge
+    hatten – dann gewinnen die meisten Punkte. Allein zählt, in wie vielen Zügen du die 13 Punkte schaffst.
+  </p>
+
   <h3>Eigene oder zufällige Regeln</h3>
   <p>
     Auf der Startseite kannst du jedem Stapel eine Regel zuordnen oder sie auslosen lassen. Zusätzlich zu den vier

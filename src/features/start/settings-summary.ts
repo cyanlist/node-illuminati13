@@ -5,9 +5,15 @@ import { RULE_PACKS, RULES } from '../../core/rules';
 import type { Settings } from '../../core/settings';
 
 /** Die Bereiche, die auf der Startseite zusammengefasst sind und je ein eigenes Fenster haben. */
-export type Section = 'rules' | 'hints' | 'extras';
+export type Section = 'ending' | 'rules' | 'hints' | 'extras';
 
 const HINT_LABELS = { off: 'Aus', nudge: 'Andeutung', full: 'Volle Hilfe' } as const;
+
+/** Wie lange gespielt wird – allein ist „Bis 13“ ein Wettlauf gegen die eigenen Züge. */
+export function endingSummary(draft: Settings): string {
+  if (draft.ending === 'deck') return 'Ganzes Deck';
+  return draft.mode === 'solo' ? 'Bis 13 – in möglichst wenigen Zügen' : 'Bis 13 Punkte';
+}
 
 /** „Klassisch“, „Bei jedem Spiel neu ausgelost“ oder die vier eigenen Regeln in Kurzform. */
 export function rulesSummary(draft: Settings): string {

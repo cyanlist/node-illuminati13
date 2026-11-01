@@ -9,6 +9,8 @@ export type RuleMode = 'classic' | 'custom' | 'random';
  * oder welche Karten es sind.
  */
 export type HintLevel = 'off' | 'nudge' | 'full';
+/** Wann das Spiel endet: wenn der Nachziehstapel leer ist oder – kürzer – sobald jemand 13 Punkte hat. */
+export type Ending = 'deck' | 'thirteen';
 /** Wie gut der Computer Kombinationen erkennt (siehe ai.ts). */
 export type CpuLevel = 'easy' | 'medium' | 'hard';
 
@@ -30,6 +32,7 @@ export interface Settings {
   hints: HintLevel;
   /** Ein Tipp kostet einen Punkt */
   hintCost: boolean;
+  ending: Ending;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -44,6 +47,7 @@ export const DEFAULT_SETTINGS: Settings = {
   customRules: [...CLASSIC_RULES],
   hints: 'nudge',
   hintCost: false,
+  ending: 'deck',
 };
 
 const oneOf = <T extends string>(value: unknown, options: readonly T[], fallback: T): T =>
@@ -74,6 +78,7 @@ export function normalizeSettings(raw: unknown): Settings {
       Array.isArray(rules) && rules.length === 4 && rules.every(isRuleKey) ? [...rules] : [...d.customRules],
     hints: oneOf(data.hints, ['off', 'nudge', 'full'], d.hints),
     hintCost: flag(data.hintCost, d.hintCost),
+    ending: oneOf(data.ending, ['deck', 'thirteen'], d.ending),
   };
 }
 

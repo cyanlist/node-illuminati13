@@ -93,7 +93,7 @@ class TableState {
   /** Ergebnisfenster weggeklickt, um den Tisch anzusehen */
   resultsHidden = $state(false);
   anim = $state<MoveAnimation | null>(null);
-  /** Bisheriger Bestwert im Solo-Spiel, für das Ergebnisfenster */
+  /** Bisheriger Bestwert im Solo-Spiel (Punkte, bei „Bis 13“ Züge), für das Ergebnisfenster */
   soloBest = $state(0);
 
   /* ---------- abgeleitete Ansichten ---------- */

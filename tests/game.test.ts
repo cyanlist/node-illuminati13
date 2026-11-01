@@ -2,12 +2,15 @@ import { describe, expect, it } from 'vitest';
 import { chooseCpuMove } from '../src/core/ai';
 import {
   applyMove,
+  beatsBest,
   finishTurn,
   type GameState,
   HAND_SIZE,
   markYou,
   newGame,
   ranking,
+  soloScore,
+  turnsTaken,
 } from '../src/core/game';
 import { CLASSIC_RULES } from '../src/core/rules';
 import { normalizeSettings, resolveRuleMode, settingsForEditing } from '../src/core/settings';
@@ -188,6 +191,102 @@ describe('Rundenablauf', () => {
     }
     expect(game.over).toBe(true);
     expect(game.deck.length).toBe(0);
+  });
+});
+
+describe('Bis 13', () => {
+  /** Zu zweit; Person `scorer` hat gerade ihren Zug beendet und dabei `points` Punkte erreicht. */
+  function goalGame(scorer: number, points = 13): GameState {
+    const game = newGame(settings({ mode: 'hotseat', ending: 'thirteen' }), seededRng(2));
+    game.log = [{ kind: 'intro' }, { kind: 'begins', player: 0 }];
+    game.current = scorer;
+    const player = game.players[scorer];
+    if (player) player.points = points;
+    return game;
+  }
+
+  it('erreicht die beginnende Person die 13, hat die andere noch einen Zug', () => {
+    const game = goalGame(0);
+    finishTurn(game);
+    expect(game.over).toBe(false);
+    expect(game.finalTurnsLeft).toBe(1);
+    expect(game.current).toBe(1);
+    expect(game.log.at(-1)).toEqual({ kind: 'goal', player: 0, turnsLeft: 1 });
+    finishTurn(game);
+    expect(game.over).toBe(true);
+  });
+
+  it('erreicht die zweite Person die 13, ist die Runde komplett und das Spiel vorbei', () => {
+    const game = goalGame(1);
+    finishTurn(game);
+    expect(game.over).toBe(true);
+    expect(game.log.slice(-2)).toEqual([{ kind: 'goal', player: 1, turnsLeft: 0 }, { kind: 'end' }]);
+  });
+
+  it('unter 13 Punkten und ohne „Bis 13“ geht es weiter', () => {
+    const below = goalGame(1, 12);
+    finishTurn(below);
+    expect(below.over).toBe(false);
+    const fullDeck = goalGame(1);
+    fullDeck.settings.ending = 'deck';
+    finishTurn(fullDeck);
+    expect(fullDeck.over).toBe(false);
+    expect(fullDeck.finalTurnsLeft).toBe(null);
+  });
+
+  it('läuft schon die letzte Runde nach leerem Stapel, bleibt es bei der kürzeren', () => {
+    const game = goalGame(0);
+    game.finalTurnsLeft = 1;
+    finishTurn(game);
+    expect(game.over).toBe(true);
+  });
+
+  it('allein endet das Spiel mit der 13 sofort; gewertet werden die Züge', () => {
+    const game = newGame(settings({ mode: 'solo', ending: 'thirteen' }), seededRng(4));
+    const rng = seededRng(9);
+    while (!game.over) {
+      applyMove(game, chooseCpuMove(game, rng));
+      finishTurn(game);
+    }
+    const [player] = game.players;
+    const reached = game.log.find((entry) => entry.kind === 'goal');
+    if (reached) expect(player?.points).toBeGreaterThanOrEqual(13);
+    else expect(game.deck.length).toBe(0);
+    expect(turnsTaken(game, 0)).toBe(
+      game.log.filter((e) => e.kind === 'proof' || e.kind === 'discard').length,
+    );
+  });
+
+  it('Bestwert allein: Punkte im ganzen Spiel, bei „Bis 13“ die wenigsten Züge', () => {
+    const deck = newGame(settings({ mode: 'solo' }), seededRng(4));
+    if (deck.players[0]) deck.players[0].points = 20;
+    expect(soloScore(deck)).toBe(20);
+    expect(beatsBest(deck, 20, 18)).toBe(true);
+
+    const short = newGame(settings({ mode: 'solo', ending: 'thirteen' }), seededRng(4));
+    expect(soloScore(short)).toBe(null);
+    short.log.push(
+      { kind: 'discard', player: 0, card: card(0, 1) },
+      { kind: 'goal', player: 0, turnsLeft: 0 },
+    );
+    expect(soloScore(short)).toBe(1);
+    expect(beatsBest(short, 9, 0)).toBe(true);
+    expect(beatsBest(short, 9, 8)).toBe(false);
+    expect(beatsBest(short, 7, 8)).toBe(true);
+  });
+
+  it('ganze Partie Computer gegen Computer endet vor dem leeren Stapel', () => {
+    const rng = seededRng(5);
+    const game = newGame(settings({ mode: 'hotseat', ending: 'thirteen' }), rng);
+    for (let turn = 0; turn < 200 && !game.over; turn++) {
+      applyMove(game, chooseCpuMove(game, rng));
+      finishTurn(game);
+    }
+    expect(game.over).toBe(true);
+    expect(game.deck.length).toBeGreaterThan(0);
+    expect(Math.max(...game.players.map((p) => p.points))).toBeGreaterThanOrEqual(13);
+    // beide hatten gleich viele Züge
+    expect(turnsTaken(game, 0)).toBe(turnsTaken(game, 1));
   });
 });
 

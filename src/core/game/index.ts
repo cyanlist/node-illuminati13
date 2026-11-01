@@ -1,3 +1,4 @@
+export { beatsBest, GOAL_POINTS, goalOf, soloScore, turnsTaken } from './goal';
 export { canTakeHint, HINT_COST, takeHint } from './hints';
 export { applyMove } from './moves';
 export { newGame } from './new-game';

@@ -1,5 +1,5 @@
 <script lang="ts">
-import { type GameState, playerAt } from '../../core/game';
+import { type GameState, goalOf, playerAt } from '../../core/game';
 import { table } from '../../state/table.svelte';
 import HandCards from './HandCards.svelte';
 import Seat from './Seat.svelte';
@@ -27,6 +27,7 @@ const showsHand = $derived(index === table.viewer);
   name={player.name}
   cpu={player.cpu}
   points={table.points(index)}
+  goal={goalOf(game)}
   combos={table.combos(index)}
   active={index === game.current && game.players.length > 1 && table.phase !== 'over'}
   compact={!showsHand}

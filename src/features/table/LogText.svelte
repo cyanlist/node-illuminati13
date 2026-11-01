@@ -1,6 +1,6 @@
 <script lang="ts">
 import { SUIT_INDICES, SUITS } from '../../core/cards';
-import { type GameState, type LogEntry, playerAt, ranking } from '../../core/game';
+import { GOAL_POINTS, type GameState, type LogEntry, playerAt, ranking } from '../../core/game';
 import Chip from '../../ui/Chip.svelte';
 import { calcText, pts, ruleLabel } from '../../ui/format';
 import Subject from '../../ui/Subject.svelte';
@@ -50,6 +50,15 @@ const winner = $derived(entry.kind === 'end' && game.players.length > 1 ? rankin
   {entry.players > 1
     ? 'Der Nachziehstapel ist leer. Jetzt hat jede*r noch einen letzten Zug.'
     : 'Der Nachziehstapel ist leer. Du hast noch einen letzten Zug.'}
+{:else if entry.kind === 'goal'}
+  <Subject
+    player={playerAt(game, entry.player)}
+    third="hat {GOAL_POINTS} Punkte erreicht!"
+    second="hast {GOAL_POINTS} Punkte erreicht!"
+  />
+  {#if entry.turnsLeft > 0}
+    Die Runde wird noch zu Ende gespielt – {entry.turnsLeft === 1 ? 'ein letzter Zug' : `noch ${entry.turnsLeft} Züge`}.
+  {/if}
 {:else if entry.kind === 'end'}
   {#if !winner}
     Spielende: {pts(playerAt(game, 0).points)}.

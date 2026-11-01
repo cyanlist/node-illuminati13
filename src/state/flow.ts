@@ -5,13 +5,14 @@
  */
 import { chooseCpuMove } from '../core/ai';
 import {
+  beatsBest,
   currentPlayer,
   finishTurn,
   type GameState,
   type Move,
   markYou,
   newGame,
-  playerAt,
+  soloScore,
 } from '../core/game';
 import type { Settings } from '../core/settings';
 import { loadSoloBest, saveSoloBest } from '../storage';
@@ -119,9 +120,9 @@ export function afterMove(): void {
   table.phase = 'over';
   table.resultsHidden = false;
   if (game.players.length === 1) {
-    table.soloBest = loadSoloBest();
-    const { points } = playerAt(game, 0);
-    if (points > table.soloBest) saveSoloBest(points);
+    table.soloBest = loadSoloBest(game.settings.ending);
+    const score = soloScore(game);
+    if (score !== null && beatsBest(game, score, table.soloBest)) saveSoloBest(game.settings.ending, score);
   }
 }
 
