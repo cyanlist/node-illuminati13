@@ -1,14 +1,14 @@
 <script lang="ts">
-import type { Card, SuitIndex } from '../../core/cards';
 import Logo from '../Logo.svelte';
 import CardFace from './CardFace.svelte';
 import EmptySlot from './EmptySlot.svelte';
+import type { DeckProps } from './index';
 
 /**
  * Design „Dollarnote“: Gravurpapier mit Ringmuster und doppeltem Rahmen; die Rückseite zeigt das Auge in der
  * Pyramide vor grünem Strahlenkranz – wie auf dem Siegel der Ein-Dollar-Note, das voller 13en steckt.
  */
-let { card, slot }: { card?: Card; slot?: SuitIndex } = $props();
+let { card, slot }: DeckProps = $props();
 </script>
 
 {#if card}

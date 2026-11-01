@@ -2,6 +2,8 @@
 import type { Snippet } from 'svelte';
 import { hueFor } from '../../ui/avatar';
 import Avatar from '../../ui/Avatar.svelte';
+import ScoreBadge from './ScoreBadge.svelte';
+import Thinking from './Thinking.svelte';
 
 /**
  * Ein Platz am Tisch wie ein kleines Profil in einer Zeile: Avatar mit Ring in der Farbe der Person, Name,
@@ -34,20 +36,11 @@ let { name, cpu, points, goal = null, combos, active, thinking = false, compact 
   <header>
     <span class="name">{name}</span>
     {#if active}<span class="sr-only">ist am Zug</span>{/if}
-    <span
-      class="score"
-      class:reached={goal !== null && points >= goal}
-      aria-label={goal !== null ? `${points} von ${goal} Punkten` : `${points} ${points === 1 ? 'Punkt' : 'Punkte'}`}
-    >
-      {#key points}<b class="points">{points}</b>{/key}
-      <span class="unit">{goal !== null ? `/ ${goal}` : points === 1 ? 'Punkt' : 'Punkte'}</span>
-    </span>
+    <ScoreBadge {points} {goal} />
     <span class="combos" aria-label="{combos}-mal die 13" title="{combos}-mal die 13 gefunden">
       <span class="token">13</span><span class="times">×{combos}</span>
     </span>
-    {#if thinking}
-      <span class="thinking">überlegt<span>.</span><span>.</span><span>.</span></span>
-    {/if}
+    {#if thinking}<Thinking />{/if}
   </header>
   <div class="cards">{@render children()}</div>
 </section>
@@ -60,8 +53,8 @@ let { name, cpu, points, goal = null, combos, active, thinking = false, compact 
     background:
       linear-gradient(100deg, color-mix(in srgb, var(--player) 14%, transparent), transparent 45%),
       var(--surface);
-    border-radius: 16px;
-    box-shadow: 0 1px 3px var(--shadow);
+    border-radius: var(--radius-panel);
+    box-shadow: var(--shadow-panel);
     transition: box-shadow 0.25s;
     /* Avatar links neben der Kopfzeile, die Karten darunter über die ganze Breite */
     display: grid;
@@ -97,7 +90,7 @@ let { name, cpu, points, goal = null, combos, active, thinking = false, compact 
     box-shadow:
       inset 0 0 0 2px var(--player),
       0 0 0 4px color-mix(in srgb, var(--player) 22%, transparent),
-      0 1px 3px var(--shadow);
+      var(--shadow-panel);
   }
 
   header {
@@ -131,42 +124,6 @@ let { name, cpu, points, goal = null, combos, active, thinking = false, compact 
     font-size: 17px;
   }
 
-  /* Punkte als farbiges Feld gleich neben dem Namen */
-  .score {
-    display: inline-flex;
-    align-items: baseline;
-    gap: 5px;
-    flex: none;
-    padding: 3px 10px 4px;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--player) 18%, transparent);
-  }
-
-  .points {
-    display: inline-block;
-    color: var(--player);
-    font-size: 22px;
-    line-height: 1;
-    font-variant-numeric: tabular-nums;
-    animation: pop 0.45s ease-out;
-  }
-
-  .unit {
-    color: var(--muted);
-    font-size: 12px;
-    font-weight: 700;
-  }
-
-  /* „Bis 13“: Ziel erreicht – das Feld leuchtet in der vollen Farbe */
-  .reached {
-    background: var(--player);
-  }
-
-  .reached .points,
-  .reached .unit {
-    color: var(--surface);
-  }
-
   /* wie oft die 13 gefunden wurde: eine Marke mit Zahl, nichts zum Abzählen */
   .combos {
     display: inline-flex;
@@ -185,56 +142,5 @@ let { name, cpu, points, goal = null, combos, active, thinking = false, compact 
     border-radius: 6px;
     font-size: 11px;
     line-height: 1.4;
-  }
-
-  .thinking {
-    margin-left: auto;
-    flex: none;
-    color: var(--muted);
-    font-size: 13px;
-    font-style: italic;
-  }
-
-  .thinking span {
-    animation: blink 1.2s infinite;
-  }
-
-  .thinking span:nth-child(2) {
-    animation-delay: 0.2s;
-  }
-
-  .thinking span:nth-child(3) {
-    animation-delay: 0.4s;
-  }
-
-  @keyframes blink {
-    0%,
-    100% {
-      opacity: 0.2;
-    }
-    50% {
-      opacity: 1;
-    }
-  }
-
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-  }
-
-  /* neue Punkte: die Zahl springt kurz an (nur Größe – bleibt sichtbar, auch wenn nichts animiert wird) */
-  @keyframes pop {
-    0% {
-      transform: scale(1);
-    }
-    35% {
-      transform: scale(1.35);
-    }
-    100% {
-      transform: scale(1);
-    }
   }
 </style>

@@ -1,6 +1,6 @@
 /**
  * Karten im Flug: Jeder Flug wird von `FlyingCards.svelte` gezeichnet und meldet sich zurück,
- * sobald die Karte auf ihrem Stapel gelandet ist.
+ * sobald die Karte an ihrem Ziel gelandet ist – Stapel, Beweis-Bühne oder Hand.
  */
 import type { Card } from '../core/cards';
 

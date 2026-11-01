@@ -4,11 +4,11 @@
  * landet direkt beim Beitreten. Eingetippt oder eingefügt werden darf ebenso der reine Code.
  */
 import { normalizeRoomCode } from './room-code';
+import { isSignalCode } from './signal';
 
 /** #raum=K7M4X – Raum-Code; #beitreten=I13~… – langer Code ohne Relays */
 const ROOM_KEY = 'raum';
 const OFFER_KEY = 'beitreten';
-const OFFER_PREFIX = 'I13~';
 
 export type Invite = { type: 'room'; room: string } | { type: 'code'; code: string };
 
@@ -47,6 +47,6 @@ export function parseInvite(text: string): Invite | null {
 
   const room = normalizeRoomCode(roomValue ?? text);
   if (room) return { type: 'room', room };
-  if (roomValue === null && offerValue.startsWith(OFFER_PREFIX)) return { type: 'code', code: offerValue };
+  if (roomValue === null && isSignalCode(offerValue)) return { type: 'code', code: offerValue };
   return null;
 }

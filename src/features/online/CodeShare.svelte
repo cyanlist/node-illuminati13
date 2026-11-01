@@ -86,7 +86,7 @@ async function copy(): Promise<void> {
     width: 100%;
     margin-top: 6px;
     padding: 8px;
-    font: 12px/1.4 ui-monospace, Consolas, monospace;
+    font: 12px/1.4 var(--font-mono);
     color: var(--text);
     background: var(--surface-2);
     border: 1.5px solid var(--line);

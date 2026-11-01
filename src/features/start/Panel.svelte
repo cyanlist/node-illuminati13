@@ -8,8 +8,8 @@ import type { Snippet } from 'svelte';
 let { title, plain = false, children }: { title: string; plain?: boolean; children: Snippet } = $props();
 </script>
 
-<fieldset class:plain>
-  <legend>{title}</legend>
+<fieldset class="surface" class:plain>
+  <legend class="eyebrow" class:sr-only={plain}>{title}</legend>
   {@render children()}
 </fieldset>
 
@@ -19,9 +19,6 @@ let { title, plain = false, children }: { title: string; plain?: boolean; childr
     margin: 0;
     padding: 16px 18px;
     border: 0;
-    background: var(--surface);
-    border-radius: 16px;
-    box-shadow: 0 1px 3px var(--shadow);
   }
 
   /* float holt die Legende in den Kasten statt auf dessen Rand */
@@ -29,12 +26,7 @@ let { title, plain = false, children }: { title: string; plain?: boolean; childr
     float: left;
     width: 100%;
     padding: 0;
-    margin: 0 0 10px;
-    font-size: 13px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--muted);
+    margin-bottom: 10px;
   }
 
   legend + :global(*) {
@@ -45,13 +37,5 @@ let { title, plain = false, children }: { title: string; plain?: boolean; childr
     padding: 0;
     background: none;
     box-shadow: none;
-  }
-
-  .plain legend {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
   }
 </style>

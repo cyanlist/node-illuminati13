@@ -1,7 +1,7 @@
 <script lang="ts">
 import type { Settings } from '../../core/settings';
 import Panel from './Panel.svelte';
-import { endingSummary, extrasSummary, hintsSummary, rulesSummary, type Section } from './settings-summary';
+import { SECTIONS, type SectionId } from './sections';
 
 /**
  * Was man selten ändert, steht hier nur als Kurzfassung – jede Zeile öffnet ihr Fenster zum Anpassen.
@@ -9,25 +9,18 @@ import { endingSummary, extrasSummary, hintsSummary, rulesSummary, type Section 
  */
 interface Props {
   draft: Settings;
-  onopen: (section: Section) => void;
+  onopen: (section: SectionId) => void;
 }
 let { draft, onopen }: Props = $props();
-
-const rows: { section: Section; label: string; summary: (draft: Settings) => string }[] = [
-  { section: 'ending', label: 'Länge', summary: endingSummary },
-  { section: 'rules', label: 'Regeln', summary: rulesSummary },
-  { section: 'hints', label: 'Tipps', summary: hintsSummary },
-  { section: 'extras', label: 'Extras', summary: extrasSummary },
-];
 </script>
 
 <Panel title="Dieses Spiel">
   <ul>
-    {#each rows as row (row.section)}
+    {#each SECTIONS as section (section.id)}
       <li>
-        <button type="button" aria-haspopup="dialog" onclick={() => onopen(row.section)}>
-          <b>{row.label}</b>
-          <span>{row.summary(draft)}</span>
+        <button type="button" aria-haspopup="dialog" onclick={() => onopen(section.id)}>
+          <b>{section.label}</b>
+          <span>{section.summary(draft)}</span>
           <svg viewBox="0 0 8 14" aria-hidden="true"><path d="M1 1l6 6-6 6" /></svg>
         </button>
       </li>

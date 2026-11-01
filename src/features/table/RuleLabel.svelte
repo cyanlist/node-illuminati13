@@ -51,7 +51,7 @@ function onkeydown(event: KeyboardEvent) {
 
 <div class="wrap" role="group" bind:this={root} {onpointerenter} {onpointerleave} {onfocusout}>
   <button type="button" class="rule" aria-expanded={open} {onclick}>
-    <span class="long">{rule?.label}</span><span class="short">{rule?.short}</span>
+    <span class="wide-only">{rule?.label}</span><span class="phone-only" aria-hidden="true">{rule?.short}</span>
   </button>
 
   {#if open && ruleKey}
@@ -88,20 +88,6 @@ function onkeydown(event: KeyboardEvent) {
     color: var(--text);
   }
 
-  .short {
-    display: none;
-  }
-
-  @media (max-width: 620px) {
-    .long {
-      display: none;
-    }
-
-    .short {
-      display: inline;
-    }
-  }
-
   /*
    * Legt sich über die Stapel darunter. Ausgerichtet wird es am ganzen Board (das nächste positionierte
    * Element): möglichst mittig unter der eigenen Spalte (--column), aber nie über den Rand hinaus.
@@ -112,7 +98,7 @@ function onkeydown(event: KeyboardEvent) {
     --center: calc(var(--board-pad) + var(--column) * (var(--col) + var(--board-gap)) + var(--col) / 2);
     position: absolute;
     left: clamp(8px, var(--center) - var(--w) / 2, 100% - var(--w) - 8px);
-    z-index: 5;
+    z-index: var(--z-overlay);
     width: var(--w);
     margin-top: 6px;
     padding: 12px 14px;

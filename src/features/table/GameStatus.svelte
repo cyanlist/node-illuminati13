@@ -1,6 +1,7 @@
 <script lang="ts">
 import { type GameState, goalOf, turnsTaken } from '../../core/game';
 import { table } from '../../state/table.svelte';
+import { turnCount } from '../../ui/format';
 
 /**
  * Hinweise zum Spiel oben am Tisch: letzte Runde, „Bis 13“ (allein mit Zahl der Züge), Regel-Modus, offene Karten,
@@ -24,10 +25,10 @@ const visible = $derived(
 {#if visible}
   <section class="status" aria-label="Hinweise zum Spiel">
     {#if turnsLeft !== null}
-      <span class="tag warn">Letzte Runde · noch {turnsLeft} {turnsLeft === 1 ? 'Zug' : 'Züge'}</span>
+      <span class="tag warn">Letzte Runde · noch {turnCount(turnsLeft)}</span>
     {/if}
     {#if goal !== null}
-      <span class="tag">Bis {goal}{solo ? ` · ${turns} ${turns === 1 ? 'Zug' : 'Züge'}` : ' Punkte'}</span>
+      <span class="tag">Bis {goal}{solo ? ` · ${turnCount(turns)}` : ' Punkte'}</span>
     {/if}
     {#if ruleMode === 'custom'}<span class="tag">Eigene Regeln</span>{/if}
     {#if ruleMode === 'random'}<span class="tag">Ausgeloste Regeln</span>{/if}

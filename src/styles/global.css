@@ -1,6 +1,11 @@
 /*
- * Globale Styles: Design-Tokens (hell/dunkel), Grundlagen, Knöpfe und Formularfelder.
+ * Globale Styles: Design-Tokens (hell/dunkel), Grundlagen, Hilfsklassen, Knöpfe und Formularfelder.
  * Alles Weitere steht als <style> direkt in der jeweiligen Svelte-Komponente.
+ *
+ * Bildschirmbreiten (Media Queries können keine Variablen lesen, deshalb hier als Übersicht):
+ * - bis 620px: Handy – kurze Beschriftungen, Knöpfe untereinander, Titel nur als Logo
+ * - bis 919px / ab 920px: Startseite einspaltig bzw. zweispaltig
+ * - bis 979px / ab 980px: Tisch ohne bzw. mit Protokoll daneben
  */
 
 /* ---------- Design-Tokens ---------- */
@@ -29,11 +34,27 @@
   --player-s: 50%;
   --player-l: 38%;
 
+  /* Fehler und Warnungen – im Farbton von Herz */
+  --danger: var(--herz);
+
   --font-title: "Kalam", "Segoe Print", "Bradley Hand", cursive;
   --font-body: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Mono", Consolas, "Courier New", monospace;
 
-  /* Kartenbreite; alles an der Karte skaliert damit */
-  --cw: clamp(58px, 16vw, 96px);
+  /* Flächen wie Panels, Plätze und Board */
+  --radius-panel: 16px;
+  --shadow-panel: 0 1px 3px var(--shadow);
+
+  /* Ebenen, von unten nach oben */
+  --z-overlay: 5; /* über dem Board: Beweis-Bühne, Rechenbeispiel einer Regel */
+  --z-sheet: 20; /* Fenster */
+  --z-page: 30; /* ganze Seite darüber: Einstellungen */
+  --z-flight: 40; /* fliegende Karten */
+
+  /* Kartenbreite: wächst mit der Bildschirmbreite bis --cw-max; alles an der Karte skaliert damit */
+  --cw-max: 96px;
+  --cw-base: clamp(58px, 16vw, var(--cw-max));
+  --cw: var(--cw-base);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -133,6 +154,58 @@ body {
 
 .muted {
   color: var(--muted);
+}
+
+/* ---------- Hilfsklassen ---------- */
+
+/* Fläche mit Schatten: Panels, Plätze, Board, Protokoll */
+.surface {
+  background: var(--surface);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-panel);
+}
+
+/* Kleine Überschrift über einem Bereich */
+.eyebrow {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+/* Nur für Screenreader: unsichtbar, wird aber vorgelesen */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/*
+ * Lange und kurze Fassung derselben Beschriftung: Auf dem Handy steht die kurze (.phone-only, mit
+ * aria-hidden), die lange (.wide-only) bleibt dort nur für Screenreader.
+ */
+.phone-only {
+  display: none;
+}
+
+@media (max-width: 620px) {
+  .wide-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .phone-only {
+    display: inline;
+  }
 }
 
 .suit-text {

@@ -1,6 +1,6 @@
 <script lang="ts">
 import type { Ending, Settings } from '../../core/settings';
-import ChoiceGroup, { type Choice } from './ChoiceGroup.svelte';
+import ChoiceGroup, { type Choice } from '../../ui/ChoiceGroup.svelte';
 import Panel from './Panel.svelte';
 
 /** Wie lange gespielt wird: das ganze Deck oder kurz, bis jemand 13 Punkte hat. */

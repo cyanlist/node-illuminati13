@@ -45,7 +45,7 @@ function onclick(event: MouseEvent): void {
   .overlay {
     position: fixed;
     inset: 0;
-    z-index: 20;
+    z-index: var(--z-sheet);
     display: grid;
     place-items: center;
     overflow: auto;

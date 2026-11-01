@@ -1,5 +1,5 @@
 import type { Rng } from '../cards';
-import { CLASSIC_RULES, type RuleKey, randomRules } from './registry';
+import { CLASSIC_RULES, type RuleKey, randomRules, sameRules } from './registry';
 
 /**
  * Ein Regelpaket füllt alle vier Stapel auf einen Schlag. Auf der Startseite erscheint jedes Paket als Knopf
@@ -14,9 +14,6 @@ export interface RulePack {
   /** Erkennt, ob die Felder gerade genau diesem Paket entsprechen – Pakete mit Zufall erkennt man nie wieder */
   matches?(rules: readonly RuleKey[]): boolean;
 }
-
-export const sameRules = (a: readonly RuleKey[], b: readonly RuleKey[]): boolean =>
-  a.length === b.length && a.every((key, i) => key === b[i]);
 
 /** Ein Paket mit festen Regeln für Herz, Pik, Karo und Kreuz. */
 const fixedPack = (id: string, title: string, description: string, rules: readonly RuleKey[]): RulePack => ({

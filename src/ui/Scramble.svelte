@@ -35,7 +35,7 @@ $effect(() => {
 
 <style>
   .scramble {
-    font-family: ui-monospace, 'Cascadia Mono', Consolas, 'Courier New', monospace;
+    font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
   }
 </style>

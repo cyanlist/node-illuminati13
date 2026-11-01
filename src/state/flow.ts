@@ -1,7 +1,7 @@
 /**
  * Rundenablauf: Spiel starten, Zug vorbereiten, Computerzug, nach dem Zug weitergeben oder werten.
- * Wie ein Zug Karte für Karte abgespielt wird, steht in move-animation.ts; was an zwei Geräten
- * hinzukommt, in online-flow.ts.
+ * Wie ein Zug Karte für Karte abgespielt wird, steht in move-animation.ts. An zwei Geräten gehen eigene
+ * Züge gleich hier hinaus; was mit Nachrichten des anderen Geräts passiert, steht in online-flow.ts.
  */
 import { chooseCpuMove } from '../core/ai';
 import {
@@ -14,11 +14,12 @@ import {
   newGame,
   soloScore,
 } from '../core/game';
-import type { Settings } from '../core/settings';
+import { isOnline, type Settings } from '../core/settings';
 import { loadSoloBest, saveSoloBest } from '../storage';
 import { animateMove } from './move-animation';
 import { online, send } from './online.svelte';
-import { requireGame, table } from './table.svelte';
+import { closeSheets, sheets } from './sheets.svelte';
+import { requireGame, table, type View } from './table.svelte';
 
 /** Taktung in Millisekunden */
 const TIMING = {
@@ -35,10 +36,8 @@ export function onRemoteTurn(handler: () => void): void {
   remoteTurn = handler;
 }
 
-const isOnline = (game: GameState): boolean => game.settings.mode === 'online';
-
 export function startGame(settings: Settings): void {
-  if (settings.mode === 'online') {
+  if (isOnline(settings)) {
     // an zwei Geräten mischt und verteilt immer das einladende Gerät und schickt den Stand hinüber
     if (online.role !== 'host' || !online.connected) return;
     enterGame(newGame({ ...settings, names: [online.myName, online.peerName] }), 0);
@@ -51,33 +50,28 @@ export function startGame(settings: Settings): void {
 /** Setzt sich an den Tisch: neues Spiel oder – an zwei Geräten – der Stand, den das andere Gerät geschickt hat. */
 export function enterGame(game: GameState, me: number): void {
   stopCpu();
-  if (isOnline(game)) markYou(game, me);
+  if (isOnline(game.settings)) markYou(game, me);
   table.me = me;
   table.game = game;
   table.anim = null;
-  table.rulesOpen = false;
-  table.logOpen = false;
-  table.resultsHidden = false;
-  table.view = 'game';
-  window.scrollTo(0, 0);
-  if (game.over) table.phase = 'over';
-  else beginTurn();
+  sheets.resultsHidden = false;
+  showView('game');
+  if (game.over) {
+    table.resetTurn();
+    table.phase = 'over';
+  } else beginTurn();
 }
 
 /** Bereitet den Zug der Person am Zug vor. */
 function beginTurn(): void {
   const game = requireGame();
-  table.selected = [];
-  table.hint = [];
-  table.hintTaken = null;
-  table.message = '';
-  table.topPick = null;
+  table.resetTurn();
   if (currentPlayer(game).cpu) {
     table.phase = 'cpu';
     if (table.view === 'game') scheduleCpu(TIMING.cpuThinking);
     return;
   }
-  if (isOnline(game) && game.current !== table.me) {
+  if (isOnline(game.settings) && game.current !== table.me) {
     table.phase = 'remote';
     remoteTurn();
     return;
@@ -90,7 +84,7 @@ function beginTurn(): void {
 /** Spielt einen Zug ab und führt danach den Rundenablauf weiter. Eigene Züge gehen an das andere Gerät. */
 export async function playTurn(move: Move): Promise<void> {
   const game = requireGame();
-  if (isOnline(game) && game.current === table.me) send({ type: 'move', move, at: game.log.length });
+  if (isOnline(game.settings) && game.current === table.me) send({ type: 'move', move, at: game.log.length });
   if (await animateMove(move)) afterMove();
 }
 
@@ -99,7 +93,7 @@ export function scheduleCpu(delay = TIMING.cpuResume): void {
   cpuTimer = setTimeout(cpuTurn, delay);
 }
 
-export function stopCpu(): void {
+function stopCpu(): void {
   clearTimeout(cpuTimer);
 }
 
@@ -113,41 +107,47 @@ function cpuTurn(): void {
 export function afterMove(): void {
   const game = requireGame();
   finishTurn(game);
-  if (!game.over) {
-    beginTurn();
-    return;
-  }
+  if (game.over) endGame(game);
+  else beginTurn();
+}
+
+/** Spielende: Ergebnisfenster zeigen und allein den Bestwert dieses Geräts vergleichen und ggf. speichern. */
+function endGame(game: GameState): void {
   table.phase = 'over';
-  table.resultsHidden = false;
-  if (game.players.length === 1) {
-    table.soloBest = loadSoloBest(game.settings.ending);
-    const score = soloScore(game);
-    if (score !== null && beatsBest(game, score, table.soloBest)) saveSoloBest(game.settings.ending, score);
-  }
+  sheets.resultsHidden = false;
+  if (game.players.length > 1) return;
+  const { ending } = game.settings;
+  // das Ergebnisfenster vergleicht mit dem Bestwert von vor diesem Spiel
+  table.soloBest = loadSoloBest(ending);
+  const score = soloScore(game);
+  if (score !== null && beatsBest(game, score, table.soloBest)) saveSoloBest(ending, score);
 }
 
 export function goHome(): void {
   stopCpu();
-  table.rulesOpen = false;
-  table.logOpen = false;
-  table.view = 'start';
-  window.scrollTo(0, 0);
+  showView('start');
 }
 
 export function resume(): void {
-  table.view = 'game';
-  window.scrollTo(0, 0);
+  showView('game');
   if (table.phase === 'cpu' && !table.anim) scheduleCpu();
 }
 
 /** Nochmal spielen – an zwei Geräten mischt das einladende Gerät, der Gast bittet nur darum. */
 export function playAgain(): void {
   const { settings } = requireGame();
-  if (settings.mode === 'online' && online.role === 'guest') {
+  if (isOnline(settings) && online.role === 'guest') {
     send({ type: 'again' });
-    table.resultsHidden = true;
+    sheets.resultsHidden = true;
     table.message = `${online.peerName || 'Das andere Gerät'} mischt gleich neu …`;
     return;
   }
   startGame(settings);
+}
+
+/** Wechselt zwischen Startseite und Tisch – oben beginnend und ohne offene Regeln oder Protokoll. */
+function showView(view: View): void {
+  table.view = view;
+  closeSheets();
+  window.scrollTo(0, 0);
 }

@@ -1,8 +1,11 @@
 <script lang="ts">
 import { SUIT_INDICES, SUITS } from '../../core/cards';
 import { CLASSIC_RULES, RULE_KEYS, RULES } from '../../core/rules';
+import { sheets } from '../../state/sheets.svelte';
 import { table } from '../../state/table.svelte';
 import { ruleExample, ruleLabel } from '../../ui/format';
+import { DIR_LABELS } from '../../ui/labels';
+import Motto from '../../ui/Motto.svelte';
 import Sheet from '../../ui/Sheet.svelte';
 import SuitSymbol from '../../ui/SuitSymbol.svelte';
 
@@ -11,7 +14,7 @@ import SuitSymbol from '../../ui/SuitSymbol.svelte';
  * Spiel gilt – die aktuellen Regeln der Stapel mit Beispiel und nur die Tipps, Varianten und das Spielende, die
  * tatsächlich eingeschaltet sind.
  */
-const game = $derived(table.view === 'game' ? table.game : null);
+const game = $derived(table.shownGame);
 const settings = $derived(game?.settings ?? null);
 const rules = $derived(game ? table.rules : CLASSIC_RULES);
 const extraRules = RULE_KEYS.filter((key) => !CLASSIC_RULES.includes(key));
@@ -23,15 +26,14 @@ const HINT_TEXT = {
   nudge: 'Der Tipp-Knopf verrät, ob es gerade eine 13 gibt und aus wie vielen Karten.',
   full: 'Der Tipp-Knopf markiert die Karten einer 13 – zum Lernen der Regeln.',
 } as const;
-const DIR_TEXT = { rechts: 'nach rechts (Herz → Pik → Karo → Kreuz → Herz)', links: 'nach links (Herz → Kreuz → Karo → Pik → Herz)' };
 
 const close = (): void => {
-  table.rulesOpen = false;
+  sheets.rulesOpen = false;
 };
 </script>
 
 <Sheet title="So funktioniert Illuminati 13" onclose={close}>
-  <p class="quote">„Wenn du 5 addierst, aber von der 2 das Herz abziehst – was bekommst du? Natürlich 13!“</p>
+  <Motto />
 
   <h3>Ziel</h3>
   <p>
@@ -146,7 +148,7 @@ const close = (): void => {
     <h3>Variante: Wenn die Weltordnung sich verschiebt</h3>
     <p>
       Landet eine 13 auf einem Stapel, rücken alle vier Stapel eine Position
-      {settings ? DIR_TEXT[settings.dir] : 'in die vereinbarte Richtung'} weiter – der letzte wieder an den Anfang. Die
+      {settings ? DIR_LABELS[settings.dir] : 'in die vereinbarte Richtung'} weiter – der letzte wieder an den Anfang. Die
       Regeln bleiben an ihrem Platz: Jeder Stapel gilt ab jetzt nach der Regel, unter der er nun liegt.
     </p>
   {/if}
@@ -157,13 +159,6 @@ const close = (): void => {
 </Sheet>
 
 <style>
-  .quote {
-    color: var(--muted);
-    font-style: italic;
-    border-left: 3px solid var(--line);
-    padding-left: 12px;
-  }
-
   table {
     width: 100%;
     margin: 8px 0;

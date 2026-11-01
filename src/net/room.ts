@@ -4,7 +4,7 @@
  * Raum-Code als Passwort; das Spiel selbst läuft danach direkt zwischen den Geräten – wie beim QR-Code.
  */
 import { joinRoom } from 'trystero/nostr';
-import { ICE_SERVERS, type Peer, type PeerHandlers } from './peer';
+import { ICE_SERVERS, type Peer, type PeerHandlers } from './transport';
 
 /** Trennt dieses Spiel von allen anderen Apps, die dieselben Relays nutzen */
 const APP_ID = 'illuminati13.cyanlist.v1';

@@ -1,9 +1,10 @@
 <script lang="ts">
 import { currentPlayer, type GameState } from '../../core/game';
 import { playSelection, showHint } from '../../state/actions';
-import { hintButton, mainButton } from '../../state/buttons';
 import { goHome } from '../../state/flow';
+import { sheets } from '../../state/sheets.svelte';
 import { table } from '../../state/table.svelte';
+import { hintButton, mainButton } from './buttons';
 
 /**
  * Der eine Ablegen-Knopf und – falls eingeschaltet – der Tipp, darunter eine kurze Rückmeldung. Der Tipp steht
@@ -24,9 +25,9 @@ const waitingLabel = $derived(
 
 <div class="actions">
   {#if table.phase === 'over' && !table.anim}
-    <button type="button" class="btn btn--primary" onclick={() => (table.resultsHidden = false)}>Ergebnis ansehen</button>
+    <button type="button" class="btn btn--primary" onclick={() => (sheets.resultsHidden = false)}>Ergebnis ansehen</button>
     <button type="button" class="btn btn--ghost" onclick={goHome}>Andere Einstellungen</button>
-  {:else if table.phase === 'play' && !table.anim}
+  {:else if table.canPlay}
     <button type="button" class="btn btn--primary" class:btn--win={main.win} disabled={main.disabled} onclick={playSelection}>
       {main.label}
     </button>

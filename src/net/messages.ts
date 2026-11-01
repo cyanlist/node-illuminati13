@@ -18,7 +18,15 @@ export type Message =
   /** Gast → Gastgeber*in: noch eine Runde */
   | { type: 'again' };
 
-const TYPES = new Set<string>(['hello', 'start', 'move', 'hint', 'resync', 'again']);
+/** Alle Arten von Nachrichten – fehlt eine neue hier, meldet es die Typprüfung */
+const TYPES: Record<Message['type'], true> = {
+  hello: true,
+  start: true,
+  move: true,
+  hint: true,
+  resync: true,
+  again: true,
+};
 
 /** Liest eine Nachricht; null, wenn sie nicht von dieser App stammt. */
 export function parseMessage(text: string): Message | null {
@@ -26,7 +34,7 @@ export function parseMessage(text: string): Message | null {
     const data: unknown = JSON.parse(text);
     if (typeof data !== 'object' || data === null) return null;
     const { type } = data as { type?: unknown };
-    return typeof type === 'string' && TYPES.has(type) ? (data as Message) : null;
+    return typeof type === 'string' && Object.hasOwn(TYPES, type) ? (data as Message) : null;
   } catch {
     return null;
   }

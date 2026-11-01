@@ -1,13 +1,10 @@
 <script lang="ts">
-import { disconnect, online } from '../../state/online.svelte';
+import { disconnect, online, openConnect } from '../../state/online.svelte';
 
 /** Auf der Startseite, wenn das Gegenüber an einem 2. Gerät sitzt: verbunden oder nicht – und der Weg dahin. */
 let { name }: { name: string } = $props();
 
-function open(): void {
-  online.myName = name.trim();
-  online.sheetOpen = true;
-}
+const open = (): void => openConnect(name);
 </script>
 
 <div class="status">

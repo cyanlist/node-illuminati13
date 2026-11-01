@@ -1,8 +1,8 @@
 import { mount } from 'svelte';
 import App from './App.svelte';
 import { inviteFromAddress } from './net/link';
-import { online } from './state/online.svelte';
-import './state/online-flow';
+import { online, openConnect } from './state/online.svelte';
+import { initOnlineFlow } from './state/online-flow';
 import { restoreSnapshot, takeSnapshot } from './state/snapshot.svelte';
 import { loadDeck, loadSettings, loadTheme, saveSettings } from './storage';
 import './styles/global.css';
@@ -28,12 +28,12 @@ function acceptInviteLink(): void {
   if (!invite) return;
   const settings = { ...loadSettings(), mode: 'online' as const };
   saveSettings(settings);
-  online.myName = settings.names[0].trim();
   online.linkInvite = invite;
-  online.sheetOpen = true;
+  openConnect(settings.names[0]);
 }
 
 function start(data?: unknown): void {
+  initOnlineFlow();
   deckChoice.current = loadDeck();
   applyTheme(loadTheme());
   restoreSnapshot(data);

@@ -67,7 +67,7 @@ function fly(node: HTMLElement, flight: Flight) {
 <style>
   .flying {
     position: fixed;
-    z-index: 30;
+    z-index: var(--z-flight);
     pointer-events: none;
     transform-origin: center;
     filter: drop-shadow(0 14px 18px var(--shadow));

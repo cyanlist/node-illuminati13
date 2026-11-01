@@ -1,8 +1,8 @@
-export { beatsBest, GOAL_POINTS, goalOf, soloScore, turnsTaken } from './goal';
+export { GOAL_POINTS, goalOf, turnsTaken } from './goal';
 export { canTakeHint, HINT_COST, takeHint } from './hints';
 export { applyMove } from './moves';
 export { newGame } from './new-game';
 export { currentPlayer, markYou, playerAt } from './players';
-export { type Ranking, ranking } from './ranking';
+export { beatsBest, type Ranking, ranking, soloScore } from './score';
 export { finishTurn } from './turns';
 export * from './types';

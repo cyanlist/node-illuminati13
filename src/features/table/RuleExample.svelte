@@ -60,7 +60,7 @@ function hover(index: number) {
     <p class="calc">
       {#if !value.direct}{value.formula}{' '}{/if}<span class="result">= {num(value.value)}</span>
     </p>
-    <p class="explain">{rule.explain(stack.rank, card.rank)}</p>
+    <p class="explain">{rule.explain(stack.rank, card.rank, value.value)}</p>
   {/if}
   <p class="hint">Wähle eine Handkarte, um ihre Rechnung zu sehen.</p>
 </div>

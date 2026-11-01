@@ -2,7 +2,6 @@
 import { type Card as CardData, SUITS, type SuitIndex } from '../../core/cards';
 import Card from '../../ui/Card.svelte';
 import CardSlot from '../../ui/CardSlot.svelte';
-import { cardCount } from '../../ui/format';
 
 /**
  * Ein Ablagestapel: die oberste Karte, darunter lugt die vorige hervor – oder ein leerer Platz im Stil des
@@ -28,8 +27,7 @@ const below = $derived(cards.at(-2));
     {/if}
   </div>
 
-  <!-- <div class="count"><b>{SUITS[suit].name}</b> · {cards.length === 0 ? 'leer' : cardCount(cards.length)}</div> -->
-   <div class="count"><b>{SUITS[suit].name}</b></div>
+  <div class="name">{SUITS[suit].name}</div>
 </div>
 
 <style>
@@ -53,7 +51,6 @@ const below = $derived(cards.at(-2));
     inset: 0;
   }
 
-  /* angedeutete Karten darunter */
   /* die vorige Karte, leicht verdreht unter der obersten */
   .under {
     position: absolute;
@@ -61,13 +58,10 @@ const below = $derived(cards.at(-2));
     transform: translate(3px, 3px) rotate(2.5deg);
   }
 
-  .count {
+  .name {
     font-size: 12px;
-    color: var(--muted);
-    text-align: center;
-  }
-
-  .count b {
+    font-weight: 700;
     color: var(--suit);
+    text-align: center;
   }
 </style>

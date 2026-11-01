@@ -1,16 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { canTakeHint, type GameState, HINT_COST, newGame, takeHint } from '../src/core/game';
 import type { Settings } from '../src/core/settings';
-import { card, seededRng, settings } from './helpers';
+import { card, dealExample, seededRng, settings } from './helpers';
 
 /** Solo-Spiel mit der Hand aus dem Beispiel der Anleitung, in der es eine 13 aus drei Karten gibt. */
-function hintGame(overrides: Partial<Settings> = {}): GameState {
-  const game = newGame(settings({ mode: 'solo', ...overrides }), seededRng(3));
-  game.piles = [[card(0, 4)], [card(1, 2)], [card(2, 10)], [card(3, 6)]];
-  const [player] = game.players;
-  if (player) player.hand = [card(0, 5), card(1, 7), card(3, 3), card(3, 8), card(2, 13)];
-  return game;
-}
+const hintGame = (overrides: Partial<Settings> = {}): GameState =>
+  dealExample(newGame(settings({ mode: 'solo', ...overrides }), seededRng(3)));
 
 describe('Tipp', () => {
   it('findet die größte 13er-Kombination, ohne Kosten nichts abzuziehen', () => {

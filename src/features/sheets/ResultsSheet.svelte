@@ -1,8 +1,9 @@
 <script lang="ts">
 import { beatsBest, type GameState, GOAL_POINTS, goalOf, ranking, soloScore } from '../../core/game';
 import { goHome, playAgain } from '../../state/flow';
+import { sheets } from '../../state/sheets.svelte';
 import { table } from '../../state/table.svelte';
-import { pts } from '../../ui/format';
+import { inTurns, pts, turnCount } from '../../ui/format';
 import Sheet from '../../ui/Sheet.svelte';
 
 /**
@@ -17,11 +18,10 @@ const winner = $derived(result.order[0]);
 const goal = $derived(goalOf(game) !== null);
 /** Allein: Punkte oder bei „Bis 13“ die Züge; null, wenn das Ziel nicht erreicht wurde */
 const score = $derived(soloScore(game));
-const turns = (n: number): string => `${n} ${n === 1 ? 'Zug' : 'Zügen'}`;
 
 const title = $derived.by(() => {
   if (!winner) return '';
-  if (solo && goal) return score !== null ? `${GOAL_POINTS} Punkte in ${turns(score)}` : pts(winner.points);
+  if (solo && goal) return score !== null ? `${GOAL_POINTS} Punkte ${inTurns(score)}` : pts(winner.points);
   if (solo) return pts(winner.points);
   if (result.tie) return 'Gleichstand';
   return winner.you ? 'Du gewinnst!' : `${winner.name} gewinnt!`;
@@ -31,10 +31,10 @@ const subtitle = $derived.by(() => {
   if (!winner) return '';
   if (solo && goal) {
     const best = table.soloBest;
-    const record = best === 0 ? '' : ` Dein Bestwert: ${GOAL_POINTS} Punkte in ${turns(best)}.`;
+    const record = best === 0 ? '' : ` Dein Bestwert: ${GOAL_POINTS} Punkte ${inTurns(best)}.`;
     if (score === null) return `Der Stapel war leer, bevor du ${GOAL_POINTS} Punkte hattest.${record}`;
     if (best === 0) return `Du hast die 13 ${winner.combos}-mal gefunden.`;
-    return beatsBest(game, score, best) ? `Neuer Bestwert! Bisher waren es ${turns(best)}.` : record.trim();
+    return beatsBest(game, score, best) ? `Neuer Bestwert! Bisher waren es ${turnCount(best)}.` : record.trim();
   }
   if (solo) {
     const best = table.soloBest;
@@ -70,7 +70,7 @@ const subtitle = $derived.by(() => {
   {/if}
 
   {#snippet actions()}
-    <button type="button" class="btn btn--ghost" onclick={() => (table.resultsHidden = true)}>Tisch ansehen</button>
+    <button type="button" class="btn btn--ghost" onclick={() => (sheets.resultsHidden = true)}>Tisch ansehen</button>
     <button type="button" class="btn" onclick={goHome}>Startseite</button>
     <button type="button" class="btn btn--primary" onclick={playAgain}>Nochmal spielen</button>
   {/snippet}

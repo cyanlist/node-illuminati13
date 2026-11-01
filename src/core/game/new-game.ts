@@ -1,4 +1,4 @@
-import { createDeck, type Rng, shuffle } from '../cards';
+import { createDeck, type Rng, SUIT_INDICES, shuffle } from '../cards';
 import { CLASSIC_RULES, type RuleKey, randomRules } from '../rules';
 import type { Settings } from '../settings';
 import { createPlayer } from './players';
@@ -16,7 +16,7 @@ export function newGame(settings: Settings, rng: Rng = Math.random): GameState {
   const state: GameState = {
     settings: { ...settings, names: [...settings.names], customRules: [...settings.customRules] },
     deck,
-    piles: [[], [], [], []],
+    piles: SUIT_INDICES.map(() => []),
     rules,
     rotations: 0,
     players,

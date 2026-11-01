@@ -12,9 +12,7 @@ interface Props {
 let { game, index }: Props = $props();
 
 const cards = $derived(table.hand(index));
-const interactive = $derived(
-  table.phase === 'play' && index === game.current && !playerAt(game, index).cpu && !table.anim,
-);
+const interactive = $derived(table.canPlay && index === game.current && !playerAt(game, index).cpu);
 </script>
 
 <div class="hand">
@@ -28,7 +26,7 @@ const interactive = $derived(
         rules={table.rules}
         showValues={game.settings.showValues}
         selected={table.selected.includes(card.id)}
-        hinted={table.hint.includes(card.id)}
+        hinted={table.hinted.includes(card.id)}
         arriving={table.arriving(card.id)}
         disabled={!interactive}
         onclick={() => toggleCard(card.id)}
@@ -48,6 +46,6 @@ const interactive = $derived(
     padding-top: 16px;
     /* etwas kleiner als auf dem Board, damit fünf Karten auch auf dem Handy in eine Reihe passen;
        auf niedrigen Bildschirmen nie größer, als die Höhe erlaubt (--fit, siehe GameView) */
-    --cw: min(clamp(54px, 15vw, 96px), var(--fit, 96px));
+    --cw: min(clamp(54px, 15vw, var(--cw-max)), var(--fit, var(--cw-max)));
   }
 </style>

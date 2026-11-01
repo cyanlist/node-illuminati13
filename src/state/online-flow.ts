@@ -1,24 +1,27 @@
 /**
- * Spielablauf an zwei Geräten: was mit Nachrichten des anderen Geräts passiert. Züge, die ankommen,
+ * Spielablauf an zwei Geräten: was mit Nachrichten des anderen Geräts passiert. Züge und Tipps, die ankommen,
  * während hier noch Karten fliegen, warten in einer Schlange und werden der Reihe nach abgespielt.
  */
-
+import { takeHint } from '../core/game';
+import { isOnline } from '../core/settings';
 import type { Message } from '../net/messages';
-import { applyHint } from './actions';
 import { enterGame, onRemoteTurn, playAgain, playTurn } from './flow';
 import { onLink, online, send } from './online.svelte';
 import { table } from './table.svelte';
 
 type Turn = Extract<Message, { type: 'move' | 'hint' }>;
 
-const waiting: Turn[] = [];
+const queue: Turn[] = [];
 
-onLink({ message: receive, open: greet });
-onRemoteTurn(next);
+/** Meldet den Spielablauf bei der Verbindung an – einmal beim Start der App. */
+export function initOnlineFlow(): void {
+  onLink({ message: receive, open: greet });
+  onRemoteTurn(playQueuedTurn);
+}
 
 /** Gleich nach dem Verbinden: Läuft schon ein Spiel (Unterbrechung), bekommt der Gast den aktuellen Stand. */
 function greet(): void {
-  if (online.role === 'host' && table.game?.settings.mode === 'online') sendState();
+  if (online.role === 'host' && table.game && isOnline(table.game.settings)) sendState();
 }
 
 function receive(message: Message): void {
@@ -29,14 +32,14 @@ function receive(message: Message): void {
       return;
     case 'start':
       if (online.role !== 'guest') return;
-      waiting.length = 0;
+      queue.length = 0;
       online.sheetOpen = false;
       enterGame(message.game, 1);
       return;
     case 'move':
     case 'hint':
-      waiting.push(message);
-      next();
+      queue.push(message);
+      playQueuedTurn();
       return;
     case 'resync':
       if (online.role === 'host') sendState();
@@ -48,10 +51,10 @@ function receive(message: Message): void {
 }
 
 /** Spielt den nächsten wartenden Zug ab, sobald das andere Gerät dran ist und hier nichts mehr fliegt. */
-function next(): void {
+function playQueuedTurn(): void {
   const game = table.game;
   if (!game || table.phase !== 'remote' || table.anim) return;
-  const turn = waiting.shift();
+  const turn = queue.shift();
   if (!turn) return;
 
   // laufen die Stände auseinander, gilt der Stand des einladenden Geräts
@@ -63,17 +66,18 @@ function next(): void {
     playTurn(turn.move).catch(resync);
     return;
   }
+  // ein Tipp kommt nur an, wenn er etwas kostet: hier genauso verrechnen, damit beide Stände gleich bleiben
   try {
-    applyHint(game);
+    takeHint(game);
   } catch {
     resync();
     return;
   }
-  next();
+  playQueuedTurn();
 }
 
 function resync(): void {
-  waiting.length = 0;
+  queue.length = 0;
   if (online.role === 'host') sendState();
   else send({ type: 'resync' });
 }

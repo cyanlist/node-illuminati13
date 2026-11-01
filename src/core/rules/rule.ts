@@ -12,8 +12,11 @@ export interface Rule {
   calc(stack: number, hand: number): number;
   /** Rechenweg ohne Ergebnis, z. B. „4 + 5“ */
   show(stack: number, hand: number): string;
-  /** Der Rechenweg in Alltagssprache, z. B. „Zähle beide Zahlen zusammen: 4 und 5 sind 9.“ */
-  explain(stack: number, hand: number): string;
+  /**
+   * Der Rechenweg in Alltagssprache, z. B. „Zähle beide Zahlen zusammen: 4 und 5 sind 9.“
+   * `value` ist das Ergebnis von `calc(stack, hand)`.
+   */
+  explain(stack: number, hand: number, value: number): string;
 }
 
 /** Zahl mit echtem Minuszeichen, z. B. „−3“. */

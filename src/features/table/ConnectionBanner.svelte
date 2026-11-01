@@ -33,8 +33,8 @@ function resume(): void {
     justify-content: space-between;
     gap: 10px;
     padding: 10px 14px;
-    background: color-mix(in srgb, var(--herz) 12%, var(--surface));
-    border: 1.5px solid color-mix(in srgb, var(--herz) 40%, transparent);
+    background: color-mix(in srgb, var(--danger) 12%, var(--surface));
+    border: 1.5px solid color-mix(in srgb, var(--danger) 40%, transparent);
     border-radius: 12px;
     font-weight: 700;
   }

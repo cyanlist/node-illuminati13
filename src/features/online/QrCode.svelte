@@ -1,5 +1,5 @@
 <script lang="ts">
-import { qrMatrix } from '../../net/qr';
+import { qrMatrix } from '../../net/qr-code';
 
 /** Ein QR-Code – immer schwarz auf weiß, auch im dunklen Design, damit jede Kamera ihn liest. */
 let { text, label }: { text: string; label: string } = $props();

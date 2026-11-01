@@ -32,18 +32,24 @@ export interface Signal {
 
 const PREFIX = 'I13';
 const SEP = '~';
+const CANDIDATE = 'a=candidate:';
 /** Mehr Adressen helfen selten, machen den QR-Code aber dichter */
 const MAX_CANDIDATES = 6;
 const MDNS_SUFFIX = '.local';
+
+/** Sieht der Text aus wie ein Einladungs- oder Antwort-Code? */
+export const isSignalCode = (text: string): boolean => text.startsWith(`${PREFIX}${SEP}`);
 
 /* ---------- SDP → Signal ---------- */
 
 /** Liest die nötigen Angaben aus dem SDP des eigenen Browsers. */
 export function fromSdp(sdp: string, kind: SignalKind): Signal {
+  const lines = sdp.split(/\r?\n/);
   const attr = (name: string): string => {
-    const line = sdp.split(/\r?\n/).find((l) => l.startsWith(`a=${name}:`));
+    const prefix = `a=${name}:`;
+    const line = lines.find((l) => l.startsWith(prefix));
     if (!line) throw new Error(`Im SDP fehlt a=${name}.`);
-    return line.slice(name.length + 3).trim();
+    return line.slice(prefix.length).trim();
   };
   const [algorithm, hex = ''] = attr('fingerprint').split(' ');
   if (algorithm?.toLowerCase() !== 'sha-256') throw new Error('Unbekannter Fingerabdruck im SDP.');
@@ -54,16 +60,16 @@ export function fromSdp(sdp: string, kind: SignalKind): Signal {
     ufrag: attr('ice-ufrag'),
     pwd: attr('ice-pwd'),
     fingerprint: Uint8Array.from(hex.split(':').map((byte) => Number.parseInt(byte, 16))),
-    candidates: parseCandidates(sdp),
+    candidates: parseCandidates(lines),
   };
 }
 
 /** a=candidate:<foundation> <component> <protocol> <priority> <address> <port> typ <type> … */
-function parseCandidates(sdp: string): Candidate[] {
+function parseCandidates(lines: readonly string[]): Candidate[] {
   const found: Candidate[] = [];
-  for (const line of sdp.split(/\r?\n/)) {
-    if (!line.startsWith('a=candidate:')) continue;
-    const [, component, protocol, , address, port, , type] = line.slice(12).split(' ');
+  for (const line of lines) {
+    if (!line.startsWith(CANDIDATE)) continue;
+    const [, component, protocol, , address, port, , type] = line.slice(CANDIDATE.length).split(' ');
     if (component !== '1' || protocol?.toLowerCase() !== 'udp') continue;
     if ((type !== 'host' && type !== 'srflx') || !address) continue;
     if (found.some((c) => c.address === address && c.port === Number(port))) continue;

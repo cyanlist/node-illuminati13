@@ -1,33 +1,8 @@
 /**
- * QR-Codes zeigen und mit der Kamera lesen. Gelesen wird mit dem eingebauten BarcodeDetector, wo es ihn
- * gibt (Chrome auf Android), sonst mit jsQR (z. B. Safari auf dem iPhone).
+ * QR-Codes mit der Kamera lesen. Gelesen wird mit dem eingebauten BarcodeDetector, wo es ihn gibt
+ * (Chrome auf Android), sonst mit jsQR (z. B. Safari auf dem iPhone).
  */
 import jsQR from 'jsqr';
-import qrcode from 'qrcode-generator';
-
-export interface QrMatrix {
-  /** Kantenlänge in Modulen (Kästchen) */
-  size: number;
-  /** SVG-Pfad aller dunklen Module, ein Modul = 1 × 1 */
-  path: string;
-}
-
-/** Macht aus einem Text einen QR-Code. Fehlerkorrektur M: verträgt Spiegelungen und leichte Unschärfe. */
-export function qrMatrix(text: string): QrMatrix {
-  const qr = qrcode(0, 'M');
-  qr.addData(text);
-  qr.make();
-  const size = qr.getModuleCount();
-  let path = '';
-  for (let row = 0; row < size; row++) {
-    for (let col = 0; col < size; col++) {
-      if (qr.isDark(row, col)) path += `M${col} ${row}h1v1h-1z`;
-    }
-  }
-  return { size, path };
-}
-
-/* ---------- Kamera ---------- */
 
 interface Detector {
   detect(source: CanvasImageSource): Promise<{ rawValue: string }[]>;
@@ -44,11 +19,14 @@ declare global {
  * gesperrt – dann gar nicht erst anbieten. Browser ohne diese Auskunft probieren es einfach.
  */
 export function cameraAllowed(): boolean {
-  if (!navigator.mediaDevices?.getUserMedia) return false;
+  if (!hasCamera()) return false;
   const policy = (document as Document & { featurePolicy?: { allowsFeature(name: string): boolean } })
     .featurePolicy;
   return policy ? policy.allowsFeature('camera') : true;
 }
+
+/** Kann dieser Browser überhaupt eine Kamera öffnen? */
+const hasCamera = (): boolean => !!navigator.mediaDevices?.getUserMedia;
 
 /** So oft wird ein Kamerabild geprüft (ms) */
 const SCAN_EVERY = 200;
@@ -60,8 +38,7 @@ export class CameraError extends Error {}
  * Gibt eine Funktion zurück, die Kamera und Suche wieder beendet.
  */
 export async function scanQr(video: HTMLVideoElement, onCode: (text: string) => void): Promise<() => void> {
-  if (!navigator.mediaDevices?.getUserMedia)
-    throw new CameraError('Dieser Browser erlaubt hier keinen Zugriff auf die Kamera.');
+  if (!hasCamera()) throw new CameraError('Dieser Browser erlaubt hier keinen Zugriff auf die Kamera.');
   let stream: MediaStream;
   try {
     stream = await navigator.mediaDevices.getUserMedia({

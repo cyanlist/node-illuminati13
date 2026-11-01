@@ -5,7 +5,15 @@ import type { TrueValue } from '../core/values';
 /** Zahl mit echtem Minuszeichen. */
 export const num = signed;
 
-export const pts = (n: number): string => `${n} ${n === 1 ? 'Punkt' : 'Punkte'}`;
+export const pointWord = (n: number): string => (n === 1 ? 'Punkt' : 'Punkte');
+
+export const pts = (n: number): string => `${n} ${pointWord(n)}`;
+
+/** „1 Zug“, „3 Züge“ */
+export const turnCount = (n: number): string => `${n} ${n === 1 ? 'Zug' : 'Züge'}`;
+
+/** Für „in … “: „in 1 Zug“, „in 3 Zügen“ */
+export const inTurns = (n: number): string => `in ${n} ${n === 1 ? 'Zug' : 'Zügen'}`;
 
 export const cardCount = (n: number): string => `${n} ${n === 1 ? 'Karte' : 'Karten'}`;
 

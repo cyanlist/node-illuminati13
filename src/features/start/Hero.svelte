@@ -2,6 +2,8 @@
 import type { Card as CardData } from '../../core/cards';
 import Card from '../../ui/Card.svelte';
 import Logo from '../../ui/Logo.svelte';
+import Motto from '../../ui/Motto.svelte';
+import Wordmark from '../../ui/Wordmark.svelte';
 
 /** Vier Karten als Fächer – frei nach dem Zitat aus der Anleitung. */
 const fan: { card: CardData; rotate: string; lift: string }[] = [
@@ -14,7 +16,7 @@ const fan: { card: CardData; rotate: string; lift: string }[] = [
 
 <section class="hero">
   <Logo size="60px" />
-  <h1>Illuminati <span>13</span></h1>
+  <h1><Wordmark /></h1>
   <p class="lead">
     Ihr seid Verschwörungstheoretiker*innen auf der Suche nach dem ultimativen Beweis: der Zahl 13. Verrechnet eure Karten
     mit den Stapeln und bildet immer wieder die 13.
@@ -25,7 +27,7 @@ const fan: { card: CardData; rotate: string; lift: string }[] = [
       <div class="slot" style:--rotate={rotate} style:--lift={lift}><Card {card} /></div>
     {/each}
   </div>
-  <p class="quote">„Wenn du 5 addierst, aber von der 2 das Herz abziehst – was bekommst du? Natürlich 13!“</p>
+  <div class="quote"><Motto /></div>
 </section>
 
 <style>
@@ -45,14 +47,8 @@ const fan: { card: CardData; rotate: string; lift: string }[] = [
 
   h1 {
     margin: 0;
-    font-family: var(--font-title);
-    font-weight: 700;
     font-size: clamp(46px, 9vw, 76px);
     line-height: 1;
-  }
-
-  h1 span {
-    color: var(--herz);
   }
 
   .lead {
@@ -105,14 +101,5 @@ const fan: { card: CardData; rotate: string; lift: string }[] = [
     .more {
       display: none;
     }
-  }
-
-  .quote {
-    margin: 0;
-    max-width: 30em;
-    color: var(--muted);
-    font-style: italic;
-    border-left: 3px solid var(--line);
-    padding-left: 12px;
   }
 </style>

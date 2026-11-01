@@ -18,7 +18,7 @@ let { count }: { count: number } = $props();
 
   <!-- in der schmalen Spalte auf dem Handy nur die Zahl, damit die Zeile nicht umbricht -->
   <div class="count">
-    {#if count === 0}leer{:else}<span class="long">{cardCount(count)}</span><span class="short" aria-hidden="true">{count}</span>{/if}
+    {#if count === 0}leer{:else}<span class="wide-only">{cardCount(count)}</span><span class="phone-only" aria-hidden="true">{count}</span>{/if}
   </div>
 </div>
 
@@ -29,7 +29,7 @@ let { count }: { count: number } = $props();
     align-items: center;
     gap: 8px;
     min-width: 0;
-    padding-left: clamp(6px, 2vw, 18px);
+    padding-left: var(--board-gap);
     border-left: 1.5px dashed var(--line);
   }
 
@@ -77,24 +77,5 @@ let { count }: { count: number } = $props();
     color: var(--muted);
     text-align: center;
     font-variant-numeric: tabular-nums;
-  }
-
-  .short {
-    display: none;
-  }
-
-  /* für Screenreader bleibt „39 Karten“ */
-  @media (max-width: 620px) {
-    .long {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-      clip-path: inset(50%);
-    }
-
-    .short {
-      display: inline;
-    }
   }
 </style>

@@ -1,6 +1,8 @@
 <script lang="ts">
+import { ROTATION_DIRS } from '../../core/rules';
 import type { Settings } from '../../core/settings';
-import CheckOption from './CheckOption.svelte';
+import { DIR_LABELS } from '../../ui/labels';
+import CheckOption from '../../ui/CheckOption.svelte';
 import Panel from './Panel.svelte';
 
 /** Wahre Werte anzeigen, offene Karten und die Variante „Wenn die Weltordnung sich verschiebt“. */
@@ -30,8 +32,7 @@ let { draft = $bindable(), plain = false }: { draft: Settings; plain?: boolean }
     <label class="field">
       Richtung, in die die Stapel rücken
       <select bind:value={draft.dir}>
-        <option value="rechts">nach rechts (Herz → Pik → Karo → Kreuz → Herz)</option>
-        <option value="links">nach links (Herz → Kreuz → Karo → Pik → Herz)</option>
+        {#each ROTATION_DIRS as dir (dir)}<option value={dir}>{DIR_LABELS[dir]}</option>{/each}
       </select>
     </label>
   {/if}

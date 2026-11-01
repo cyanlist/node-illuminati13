@@ -6,16 +6,71 @@
  * 2. Nachziehen vom Nachziehstapel in die Hand (drawUp)
  */
 import { tick } from 'svelte';
+import type { Card } from '../core/cards';
 import { applyMove, currentPlayer, type Move, type PlacementStep, type ProofPart } from '../core/game';
+import type { RuleKey } from '../core/rules';
 import { flyCard } from './flights.svelte';
 import { drawPileRect, launchRect, pileRect, stageRect } from './positions';
-import { type MoveAnimation, requireGame, table } from './table.svelte';
+import { requireGame, table } from './table.svelte';
+
+/**
+ * Laufende Animation eines Zugs. Der Zug ist im Spielzustand schon ausgeführt; die Anzeige zeigt
+ * so lange den Stand davor, bis jede Karte einzeln abgelegt und jede neue Karte nachgezogen ist.
+ */
+export interface MoveAnimation {
+  id: number;
+  player: number;
+  /** ids der Karten, die noch nicht auf ihrem Stapel gelandet sind */
+  pending: number[];
+  rules: RuleKey[];
+  rotations: number;
+  points: number[];
+  combos: number[];
+  deck: number;
+  logLength: number;
+  /** Hand der Person am Zug vor dem Zug */
+  handBefore: Card[];
+  /** ids der Karten, die die Hand schon verlassen haben (in der Luft oder gelandet) */
+  launched: number[];
+  /** Nachgezogene Karten in der Reihenfolge, in der sie in die Hand kommen */
+  drawn: Card[];
+  /** ids der nachgezogenen Karten, die schon ihren Platz in der Hand haben (evtl. noch im Anflug) */
+  incoming: number[];
+  /** ids der nachgezogenen Karten, die angekommen und sichtbar sind */
+  arrived: number[];
+  /** Bei einem Beweis: die Bühne, auf der die Karten vorgezeigt werden */
+  proof: ProofAnimation | null;
+}
+
+/**
+ * Beweis-Bühne über dem Board: Die Karten werden allen gezeigt, ihre wahren Werte nacheinander
+ * enthüllt und die 13 aufgelöst – erst danach fliegen sie auf ihre Stapel.
+ */
+export interface ProofAnimation {
+  /** Die Karten mit Rechenweg in der Reihenfolge, in der sie gewählt wurden */
+  parts: ProofPart[];
+  /** ids der Karten, die schon auf der Bühne liegen */
+  arrived: number[];
+  /** ids der Karten, die die Bühne Richtung Stapel verlassen haben */
+  left: number[];
+  /** Karte, deren Rechenweg gerade zu sehen ist (-1: keine) */
+  revealing: number;
+  /** Wie viele wahre Werte schon enthüllt sind */
+  revealed: number;
+  /** „= 13 · +n Punkte“ ist aufgelöst */
+  solved: boolean;
+  /** Die Bühne wird durchsichtig, die Karten fliegen auf ihre Stapel */
+  clearing: boolean;
+  /** Angetippt: alles Weitere ohne Pausen */
+  skipped: boolean;
+}
 
 /** Taktung in Millisekunden */
 const TIMING = {
   beforeFirstCard: 120,
   betweenCards: 300,
-  betweenCardsCpu: 450,
+  /** Züge, denen man nur zusieht (Computer, anderes Gerät), laufen etwas gemächlicher */
+  betweenCardsWatched: 450,
   /** Abstand, in dem die Karten eines Beweises zur Bühne starten */
   stageStagger: 90,
   /** So lange ist der Rechenweg zu sehen, bevor der wahre Wert erscheint */
@@ -30,7 +85,7 @@ const TIMING = {
   stageToPileStagger: 60,
   betweenDraws: 80,
   afterMove: 250,
-  afterMoveCpu: 800,
+  afterMoveWatched: 800,
 };
 
 let nextAnimationId = 1;
@@ -71,7 +126,6 @@ export function skipProof(): void {
 export async function animateMove(move: Move): Promise<boolean> {
   const game = requireGame();
   const player = game.current;
-  // Züge, die man nur zusieht (Computer, anderes Gerät), laufen etwas gemächlicher
   const watched = currentPlayer(game).cpu || player !== table.viewer;
   // was die Anzeige bis zum Ende der Animation zeigt: der Stand direkt vor dem Zug
   const before = {
@@ -85,7 +139,7 @@ export async function animateMove(move: Move): Promise<boolean> {
   };
   const result = applyMove(game, move);
   const drawnIds = new Set(result.drawn);
-  const anim: MoveAnimation = {
+  table.anim = {
     ...before,
     id: nextAnimationId++,
     player,
@@ -96,8 +150,9 @@ export async function animateMove(move: Move): Promise<boolean> {
     arrived: [],
     proof: null,
   };
-  table.anim = anim;
-  table.hint = [];
+  // weiter mit dem Stand aus table.anim: nur Änderungen an diesem reaktiven Objekt erreichen die Anzeige
+  const anim = table.anim;
+  table.hinted = [];
   table.message = '';
   // ein neues Spiel oder der Weg zur Startseite beendet die Animation
   const running = (): boolean => table.anim?.id === anim.id;
@@ -105,10 +160,10 @@ export async function animateMove(move: Move): Promise<boolean> {
   await wait(TIMING.beforeFirstCard);
   const laid =
     result.parts.length > 0
-      ? await presentProof(result.parts, result.steps, player, running)
-      : await layDown(result.steps, player, watched, running);
-  if (!laid || !(await drawUp(player, running))) return false;
-  await wait(watched ? TIMING.afterMoveCpu : TIMING.afterMove);
+      ? await presentProof(anim, result.parts, result.steps, running)
+      : await layDown(anim, result.steps, watched, running);
+  if (!laid || !(await drawUp(anim, running))) return false;
+  await wait(watched ? TIMING.afterMoveWatched : TIMING.afterMove);
   if (!running()) return false;
 
   table.anim = null;
@@ -118,22 +173,21 @@ export async function animateMove(move: Move): Promise<boolean> {
 
 /** Abwurf: Die Karte bleibt in der Hand liegen, bis sie abhebt, und fliegt dann auf ihren Stapel. */
 async function layDown(
+  anim: MoveAnimation,
   steps: PlacementStep[],
-  player: number,
   watched: boolean,
   running: () => boolean,
 ): Promise<boolean> {
   for (const step of steps) {
-    const anim = table.anim;
-    if (!anim || !running()) return false;
+    if (!running()) return false;
 
-    const from = handRect(step.card.id, player);
+    const from = handRect(step.card.id, anim.player);
     anim.launched.push(step.card.id);
     await flyCard(step.card, from, pileRect(step.card.suit));
     if (!running()) return false;
 
     landOnPile(anim, step);
-    await wait(watched ? TIMING.betweenCardsCpu : TIMING.betweenCards);
+    await wait(watched ? TIMING.betweenCardsWatched : TIMING.betweenCards);
   }
   return running();
 }
@@ -143,13 +197,12 @@ async function layDown(
  * die 13 aufgelöst. Danach fliegen sie von der Bühne auf ihre Stapel.
  */
 async function presentProof(
+  anim: MoveAnimation,
   parts: ProofPart[],
   steps: PlacementStep[],
-  player: number,
   running: () => boolean,
 ): Promise<boolean> {
-  const anim = table.anim;
-  if (!anim) return false;
+  const { player } = anim;
   anim.proof = {
     parts,
     arrived: [],
@@ -212,12 +265,12 @@ async function presentProof(
  * Nachziehen: Jede neue Karte bekommt zuerst einen (noch unsichtbaren) Platz in der Hand und fliegt dann
  * vom Nachziehstapel genau dorthin – in die eigene Hand offen, zum Gegenüber verdeckt (außer mit offenen Karten).
  */
-async function drawUp(player: number, running: () => boolean): Promise<boolean> {
+async function drawUp(anim: MoveAnimation, running: () => boolean): Promise<boolean> {
+  const { player } = anim;
   const hidden = player !== table.viewer;
   const faceDown = hidden && !table.game?.settings.openHands;
-  for (const card of table.anim?.drawn ?? []) {
-    const anim = table.anim;
-    if (!anim || !running()) return false;
+  for (const card of anim.drawn) {
+    if (!running()) return false;
 
     const from = drawPileRect();
     anim.deck--;

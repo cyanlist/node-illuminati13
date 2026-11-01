@@ -1,6 +1,6 @@
 <script lang="ts">
 import { onDestroy, tick } from 'svelte';
-import { CameraError, cameraAllowed, scanQr } from '../../net/qr';
+import { CameraError, cameraAllowed, scanQr } from '../../net/qr-scan';
 
 /**
  * Einen Code der Gegenseite eingeben: eintippen bzw. einfügen – oder den QR-Code mit der Kamera scannen.
@@ -112,7 +112,7 @@ onDestroy(stop);
 
   .error {
     margin: 0;
-    color: var(--herz);
+    color: var(--danger);
     text-align: center;
   }
 </style>

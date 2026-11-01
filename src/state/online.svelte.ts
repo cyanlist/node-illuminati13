@@ -7,11 +7,11 @@
  */
 
 import type { Invite } from '../net/link';
-import type { Message } from '../net/messages';
-import { parseMessage } from '../net/messages';
-import { createGuest, createHost, type HostPeer, InvalidCodeError, type Peer } from '../net/peer';
+import { type Message, parseMessage } from '../net/messages';
+import { createGuest, createHost, type HostPeer, InvalidCodeError } from '../net/peer';
 import { enterRoom } from '../net/room';
 import { newRoomCode } from '../net/room-code';
+import type { Peer } from '../net/transport';
 
 export type Role = 'host' | 'guest';
 export type Method = 'room' | 'code';
@@ -70,6 +70,12 @@ export function send(message: Message): void {
   peer?.send(JSON.stringify(message));
 }
 
+/** Öffnet das Verbindungsfenster – mit dem eigenen Namen, den das andere Gerät zu sehen bekommt. */
+export function openConnect(name: string): void {
+  online.myName = name.trim();
+  online.sheetOpen = true;
+}
+
 /** Ereignisse genau einer Verbindung; meldet sich eine ältere noch, wird das übergangen. */
 function handlersFor(own: number) {
   const current = (): boolean => own === generation;
@@ -93,8 +99,7 @@ function handlersFor(own: number) {
 
 function connectedNow(): void {
   clearTimeout(connectTimer);
-  online.status = 'connected';
-  online.error = '';
+  setStatus('connected');
   send({ type: 'hello', name: online.myName });
   opened();
 }
@@ -145,8 +150,7 @@ export async function acceptAnswer(code: string): Promise<void> {
   if (online.role !== 'host' || !peer || !('accept' in peer)) return;
   try {
     await peer.accept(code);
-    online.error = '';
-    online.status = 'connecting';
+    setStatus('connecting');
     waitForConnection(
       CONNECT_LIMIT,
       'Die Verbindung kam nicht zustande. Am zuverlässigsten klappt es, wenn beide Geräte im selben WLAN sind.',
@@ -166,8 +170,7 @@ export async function join(code: string, name: string): Promise<void> {
     online.code = peer.code;
     online.status = 'waiting';
   } catch (error) {
-    online.status = 'idle';
-    online.error = describe(error);
+    setStatus('idle', describe(error));
   }
 }
 
@@ -178,8 +181,7 @@ export async function join(code: string, name: string): Promise<void> {
 export function reconnect(): void {
   const { role, method, roomCode, myName } = online;
   if (method === 'room' && role === 'host' && peer) {
-    online.status = 'waiting';
-    online.error = '';
+    setStatus('waiting');
   } else if (method === 'room' && role === 'host') {
     createRoom(myName, roomCode || undefined);
   } else if (method === 'room' && role === 'guest' && roomCode) {
@@ -188,9 +190,8 @@ export function reconnect(): void {
     void invite(myName);
   } else {
     close();
-    online.status = 'idle';
     online.code = '';
-    online.error = '';
+    setStatus('idle');
   }
   online.sheetOpen = true;
 }
@@ -201,10 +202,9 @@ export function disconnect(): void {
   online.role = null;
   online.method = 'room';
   online.roomCode = '';
-  online.status = 'idle';
   online.code = '';
   online.peerName = '';
-  online.error = '';
+  setStatus('idle');
 }
 
 function reset(role: Role, name: string, method: Method): void {
@@ -212,9 +212,14 @@ function reset(role: Role, name: string, method: Method): void {
   online.role = role;
   online.method = method;
   online.myName = name;
-  online.status = 'preparing';
   online.code = '';
-  online.error = '';
+  setStatus('preparing');
+}
+
+/** Neuer Stand des Aufbaus – eine alte Fehlermeldung verschwindet dabei. */
+function setStatus(status: LinkStatus, error = ''): void {
+  online.status = status;
+  online.error = error;
 }
 
 function close(): void {
@@ -234,8 +239,7 @@ function waitForConnection(limit: number, message: string): void {
 
 function fail(message: string): void {
   close();
-  online.status = 'failed';
-  online.error = message;
+  setStatus('failed', message);
 }
 
 function describe(error: unknown): string {

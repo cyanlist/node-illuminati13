@@ -1,10 +1,13 @@
 /**
- * Zustand der Oberfläche: das laufende Spiel und alles, was nur die Anzeige betrifft
- * (Auswahl, Fenster, laufende Ablege-Animation). Geändert wird er über flow.ts und actions.ts.
+ * Zustand am Tisch: das laufende Spiel und was nur die Anzeige betrifft – Auswahl, Tipp, Rückmeldung und
+ * die laufende Ablege-Animation. Geändert wird er im Spielablauf (flow.ts), durch die Person am Gerät
+ * (actions.ts) und beim Abspielen eines Zugs (move-animation.ts).
  */
 import { type Card, SUIT_INDICES, type SuitIndex } from '../core/cards';
-import { currentPlayer, type GameState, type LogEntry, type ProofPart } from '../core/game';
+import { currentPlayer, type GameState, type LogEntry } from '../core/game';
 import { pileColumn, type RuleKey } from '../core/rules';
+import { isOnline } from '../core/settings';
+import type { MoveAnimation } from './move-animation';
 
 export type View = 'start' | 'game';
 
@@ -17,58 +20,6 @@ export type Phase =
   | 'order' // Fenster: welche Karte einer Farbe oben liegt
   | 'over';
 
-/**
- * Laufende Animation eines Zugs. Der Zug ist im Spielzustand schon ausgeführt; die Anzeige zeigt
- * so lange den Stand davor, bis jede Karte einzeln abgelegt und jede neue Karte nachgezogen ist.
- */
-export interface MoveAnimation {
-  id: number;
-  player: number;
-  /** ids der Karten, die noch nicht auf ihrem Stapel gelandet sind */
-  pending: number[];
-  rules: RuleKey[];
-  rotations: number;
-  points: number[];
-  combos: number[];
-  deck: number;
-  logLength: number;
-  /** Hand der Person am Zug vor dem Zug */
-  handBefore: Card[];
-  /** ids der Karten, die die Hand schon verlassen haben (in der Luft oder gelandet) */
-  launched: number[];
-  /** Nachgezogene Karten in der Reihenfolge, in der sie in die Hand kommen */
-  drawn: Card[];
-  /** ids der nachgezogenen Karten, die schon ihren Platz in der Hand haben (evtl. noch im Anflug) */
-  incoming: number[];
-  /** ids der nachgezogenen Karten, die angekommen und sichtbar sind */
-  arrived: number[];
-  /** Bei einem Beweis: die Bühne, auf der die Karten vorgezeigt werden */
-  proof: ProofStage | null;
-}
-
-/**
- * Beweis-Bühne über dem Board: Die Karten werden allen gezeigt, ihre wahren Werte nacheinander
- * enthüllt und die 13 aufgelöst – erst danach fliegen sie auf ihre Stapel.
- */
-export interface ProofStage {
-  /** Die Karten mit Rechenweg in der Reihenfolge, in der sie gewählt wurden */
-  parts: ProofPart[];
-  /** ids der Karten, die schon auf der Bühne liegen */
-  arrived: number[];
-  /** ids der Karten, die die Bühne Richtung Stapel verlassen haben */
-  left: number[];
-  /** Karte, deren Rechenweg gerade zu sehen ist (-1: keine) */
-  revealing: number;
-  /** Wie viele wahre Werte schon enthüllt sind */
-  revealed: number;
-  /** „= 13 · +n Punkte“ ist aufgelöst */
-  solved: boolean;
-  /** Die Bühne wird durchsichtig, die Karten fliegen auf ihre Stapel */
-  clearing: boolean;
-  /** Angetippt: alles Weitere ohne Pausen */
-  skipped: boolean;
-}
-
 class TableState {
   view = $state<View>('start');
   game = $state<GameState | null>(null);
@@ -78,25 +29,37 @@ class TableState {
   /** ids der markierten Handkarten */
   selected = $state<number[]>([]);
   /** Tipp (volle Hilfe): hervorgehobene Karten */
-  hint = $state<number[]>([]);
+  hinted = $state<number[]>([]);
   /** Tipp in diesem Zug: ids der gefundenen 13 ([] = keine); null = noch kein Tipp geholt */
-  hintTaken = $state<number[] | null>(null);
+  hintCombo = $state<number[] | null>(null);
   /** Kurze Rückmeldung unter dem Knopf */
   message = $state('');
   /** Gewählte oberste Karte je Farbe, solange das Reihenfolge-Fenster offen ist */
   topPick = $state<Partial<Record<SuitIndex, number>> | null>(null);
-  rulesOpen = $state(false);
-  /** Protokoll als Fenster – auf schmalen Bildschirmen, wo es nicht neben dem Tisch steht */
-  logOpen = $state(false);
-  /** Einstellungen dieses Geräts (Kartendesign, Farbschema) */
-  settingsOpen = $state(false);
-  /** Ergebnisfenster weggeklickt, um den Tisch anzusehen */
-  resultsHidden = $state(false);
   anim = $state<MoveAnimation | null>(null);
   /** Bisheriger Bestwert im Solo-Spiel (Punkte, bei „Bis 13“ Züge), für das Ergebnisfenster */
   soloBest = $state(0);
 
+  /** Neuer Zug: Auswahl, Tipp, Rückmeldung und Reihenfolge-Wahl beginnen von vorn. */
+  resetTurn(): void {
+    this.selected = [];
+    this.hinted = [];
+    this.hintCombo = null;
+    this.message = '';
+    this.topPick = null;
+  }
+
   /* ---------- abgeleitete Ansichten ---------- */
+
+  /** Das Spiel, solange der Tisch zu sehen ist – auf der Startseite null. */
+  get shownGame(): GameState | null {
+    return this.view === 'game' ? this.game : null;
+  }
+
+  /** Die Person am Gerät darf Karten wählen: Sie ist am Zug und es fliegt gerade nichts. */
+  get canPlay(): boolean {
+    return this.game !== null && this.phase === 'play' && !this.anim;
+  }
 
   /**
    * Wessen Karten gerade als ganze Hand gezeigt werden – offen, mit wahren Werten und auswählbar.
@@ -106,7 +69,7 @@ class TableState {
   get viewer(): number {
     const game = this.game;
     if (!game) return -1;
-    if (game.settings.mode === 'online') return this.me;
+    if (isOnline(game.settings)) return this.me;
     if (game.settings.mode !== 'hotseat') return 0;
     return this.phase === 'handoff' ? -1 : game.current;
   }
@@ -116,7 +79,7 @@ class TableState {
    * an zwei Geräten jeweils die eigene Person unten.
    */
   get bottom(): number {
-    return this.game?.settings.mode === 'online' ? this.me : 0;
+    return this.game && isOnline(this.game.settings) ? this.me : 0;
   }
 
   get selectedCards(): Card[] {

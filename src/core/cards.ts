@@ -9,6 +9,9 @@ export const SUITS = [
 export type SuitIndex = 0 | 1 | 2 | 3;
 export const SUIT_INDICES: readonly SuitIndex[] = [0, 1, 2, 3];
 
+/** Die höchste Karte jeder Farbe. */
+export const MAX_RANK = 13;
+
 /** Eine Karte: Farbe und Zahl von 1 bis 13. `id` ist innerhalb eines Decks eindeutig. */
 export interface Card {
   id: number;
@@ -23,7 +26,7 @@ export type Rng = () => number;
 export function createDeck(): Card[] {
   const deck: Card[] = [];
   for (const suit of SUIT_INDICES) {
-    for (let rank = 1; rank <= 13; rank++) deck.push({ id: deck.length, suit, rank });
+    for (let rank = 1; rank <= MAX_RANK; rank++) deck.push({ id: deck.length, suit, rank });
   }
   return deck;
 }

@@ -1,6 +1,6 @@
 <script lang="ts">
 import type { GameState } from '../../core/game';
-import { table } from '../../state/table.svelte';
+import { sheets } from '../../state/sheets.svelte';
 import Sheet from '../../ui/Sheet.svelte';
 import LogList from '../table/LogList.svelte';
 
@@ -8,7 +8,7 @@ import LogList from '../table/LogList.svelte';
 let { game }: { game: GameState } = $props();
 
 const close = (): void => {
-  table.logOpen = false;
+  sheets.logOpen = false;
 };
 </script>
 

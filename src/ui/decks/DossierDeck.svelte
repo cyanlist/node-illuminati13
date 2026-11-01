@@ -1,13 +1,13 @@
 <script lang="ts">
-import type { Card, SuitIndex } from '../../core/cards';
 import CardFace from './CardFace.svelte';
 import EmptySlot from './EmptySlot.svelte';
+import type { DeckProps } from './index';
 
 /**
  * Design „Geheimakte“: Aktendeckel-Karton mit Schreibmaschinen-Zahl, die Farbe als Reiter oben rechts und
  * ein roter Stempel „GEHEIM“; die Rückseite ist der geschlossene Aktendeckel mit „Streng geheim“.
  */
-let { card, slot }: { card?: Card; slot?: SuitIndex } = $props();
+let { card, slot }: DeckProps = $props();
 </script>
 
 {#if card}

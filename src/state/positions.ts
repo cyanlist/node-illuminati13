@@ -1,6 +1,7 @@
 /**
- * Bildschirmpositionen für die Ablege-Animation: Karten fliegen von der Hand bzw. den verdeckten Karten
- * des Gegenübers zu ihrem Stapel. Die Komponenten markieren die Stellen mit data-Attributen.
+ * Bildschirmpositionen für die Animation eines Zugs: Karten fliegen aus der Hand (bzw. von den verdeckten
+ * Karten des Gegenübers) auf die Beweis-Bühne oder ihren Stapel und vom Nachziehstapel in die Hand.
+ * Die Komponenten markieren die Stellen mit data-Attributen.
  */
 import type { SuitIndex } from '../core/cards';
 

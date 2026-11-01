@@ -1,18 +1,30 @@
-import { CLASSIC_RULES, isRuleKey, type RotationDir, type RuleKey, sameRules } from './rules';
+import { SUIT_INDICES } from './cards';
+import { CLASSIC_RULES, isRuleKey, ROTATION_DIRS, type RotationDir, type RuleKey, sameRules } from './rules';
+
+// Die Werte landen in gespeicherten Einstellungen – bestehende daher nicht umbenennen.
 
 /** Wer spielt: gegen den Computer, zu zweit an einem Gerät, zu zweit an zwei Geräten oder allein. */
-export type GameMode = 'cpu' | 'hotseat' | 'online' | 'solo';
+export const GAME_MODES = ['cpu', 'hotseat', 'online', 'solo'] as const;
+export type GameMode = (typeof GAME_MODES)[number];
+
 /** Woher die Regeln der Stapel kommen. */
-export type RuleMode = 'classic' | 'custom' | 'random';
+export const RULE_MODES = ['classic', 'custom', 'random'] as const;
+export type RuleMode = (typeof RULE_MODES)[number];
+
 /**
  * Wie viel der Tipp verrät: gar nichts (kein Tipp-Knopf), nur ob es eine 13 gibt und aus wie vielen Karten,
  * oder welche Karten es sind.
  */
-export type HintLevel = 'off' | 'nudge' | 'full';
+export const HINT_LEVELS = ['off', 'nudge', 'full'] as const;
+export type HintLevel = (typeof HINT_LEVELS)[number];
+
 /** Wann das Spiel endet: wenn der Nachziehstapel leer ist oder – kürzer – sobald jemand 13 Punkte hat. */
-export type Ending = 'deck' | 'thirteen';
+export const ENDINGS = ['deck', 'thirteen'] as const;
+export type Ending = (typeof ENDINGS)[number];
+
 /** Wie gut der Computer Kombinationen erkennt (siehe ai.ts). */
-export type CpuLevel = 'easy' | 'medium' | 'hard';
+export const CPU_LEVELS = ['easy', 'medium', 'hard'] as const;
+export type CpuLevel = (typeof CPU_LEVELS)[number];
 
 export interface Settings {
   mode: GameMode;
@@ -50,20 +62,26 @@ export const DEFAULT_SETTINGS: Settings = {
   ending: 'deck',
 };
 
+/** Zu zweit an zwei Geräten? */
+export const isOnline = (settings: Pick<Settings, 'mode'>): boolean => settings.mode === 'online';
+
 const oneOf = <T extends string>(value: unknown, options: readonly T[], fallback: T): T =>
   options.includes(value as T) ? (value as T) : fallback;
 
 const flag = (value: unknown, fallback: boolean): boolean => (typeof value === 'boolean' ? value : fallback);
 
+/** Eine gültige Regel je Farbe? */
+const validCustomRules = (value: unknown): value is RuleKey[] =>
+  Array.isArray(value) && value.length === SUIT_INDICES.length && value.every(isRuleKey);
+
 /** Macht aus gespeicherten – evtl. veralteten oder kaputten – Daten gültige Einstellungen. */
 export function normalizeSettings(raw: unknown): Settings {
   const data = (typeof raw === 'object' && raw !== null ? raw : {}) as Record<string, unknown>;
   const names = Array.isArray(data.names) ? data.names : [];
-  const rules = data.customRules;
   const d = DEFAULT_SETTINGS;
   return {
-    mode: oneOf(data.mode, ['cpu', 'hotseat', 'online', 'solo'], d.mode),
-    cpuLevel: oneOf(data.cpuLevel, ['easy', 'medium', 'hard'], d.cpuLevel),
+    mode: oneOf(data.mode, GAME_MODES, d.mode),
+    cpuLevel: oneOf(data.cpuLevel, CPU_LEVELS, d.cpuLevel),
     names: [
       // früher stand „Du“ als Name im Feld – zu zweit wurde daraus „Du ist an der Reihe“
       typeof names[0] === 'string' && names[0].trim() !== 'Du' ? names[0] : d.names[0],
@@ -72,13 +90,12 @@ export function normalizeSettings(raw: unknown): Settings {
     showValues: flag(data.showValues, d.showValues),
     openHands: flag(data.openHands, d.openHands),
     variant: flag(data.variant, d.variant),
-    dir: oneOf(data.dir, ['rechts', 'links'], d.dir),
-    ruleMode: oneOf(data.ruleMode, ['classic', 'custom', 'random'], d.ruleMode),
-    customRules:
-      Array.isArray(rules) && rules.length === 4 && rules.every(isRuleKey) ? [...rules] : [...d.customRules],
-    hints: oneOf(data.hints, ['off', 'nudge', 'full'], d.hints),
+    dir: oneOf(data.dir, ROTATION_DIRS, d.dir),
+    ruleMode: oneOf(data.ruleMode, RULE_MODES, d.ruleMode),
+    customRules: validCustomRules(data.customRules) ? [...data.customRules] : [...d.customRules],
+    hints: oneOf(data.hints, HINT_LEVELS, d.hints),
     hintCost: flag(data.hintCost, d.hintCost),
-    ending: oneOf(data.ending, ['deck', 'thirteen'], d.ending),
+    ending: oneOf(data.ending, ENDINGS, d.ending),
   };
 }
 

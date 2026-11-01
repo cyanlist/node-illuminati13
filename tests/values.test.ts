@@ -1,20 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { bestCombo, findCombos } from '../src/core/combos';
-import {
-  CLASSIC_RULES,
-  isRuleKey,
-  pileColumn,
-  RULE_KEYS,
-  RULE_PACKS,
-  RULES,
-  rotateRules,
-} from '../src/core/rules';
-import { sumOfValues, trueValue } from '../src/core/values';
-import { card, seededRng } from './helpers';
+import { CLASSIC_RULES } from '../src/core/rules';
+import { trueValue } from '../src/core/values';
+import { card, exampleHand, examplePiles } from './helpers';
 
-// Beispiel aus der Anleitung: auf den Stapeln liegen ♥4, ♠2, ♦10 und ♣6
-const piles = [[card(0, 4)], [card(1, 2)], [card(2, 10)], [card(3, 6)]];
-const hand = [card(0, 5), card(1, 7), card(3, 3), card(3, 8), card(2, 13)];
+const piles = examplePiles();
+const hand = exampleHand();
 
 describe('wahre Werte', () => {
   it('rechnet das Beispiel aus der Anleitung nach', () => {
@@ -33,90 +23,5 @@ describe('wahre Werte', () => {
       direct: true,
       empty: true,
     });
-  });
-
-  it('findet die Kombination aus dem Beispiel', () => {
-    const proof = [card(1, 7), card(2, 13), card(3, 8)];
-    expect(sumOfValues(proof, piles, CLASSIC_RULES)).toBe(13);
-    const ids = (cards: { id: number }[]) => cards.map((c) => c.id).sort((a, b) => a - b);
-    expect(findCombos(hand, piles, CLASSIC_RULES).map(ids)).toContainEqual(ids(proof));
-  });
-
-  it('wählt die größte Kombination', () => {
-    const combo = bestCombo(hand, piles, CLASSIC_RULES, seededRng(1));
-    const sizes = findCombos(hand, piles, CLASSIC_RULES).map((c) => c.length);
-    expect(combo?.length).toBe(Math.max(...sizes));
-  });
-
-  it('gibt null zurück, wenn es keine 13 gibt', () => {
-    expect(bestCombo([card(0, 1), card(1, 1)], [[], [], [], []], CLASSIC_RULES)).toBeNull();
-  });
-});
-
-describe('Regeln', () => {
-  it('rückt die Stapel nach rechts und nach links weiter', () => {
-    expect(rotateRules(CLASSIC_RULES, 'rechts')).toEqual(['minus', 'copy', 'max', 'plus']);
-    expect(rotateRules(CLASSIC_RULES, 'links')).toEqual(['max', 'plus', 'minus', 'copy']);
-  });
-
-  it('jede Farbe liegt nach dem Weiterrücken unter der Regel, die sie dann bekommt', () => {
-    const rules = rotateRules(CLASSIC_RULES, 'rechts');
-    expect(pileColumn(0, 1, 'rechts', 4)).toBe(1);
-    expect(pileColumn(3, 1, 'rechts', 4)).toBe(0);
-    expect(pileColumn(0, 1, 'links', 4)).toBe(3);
-    for (const suit of [0, 1, 2, 3]) {
-      expect(rules[suit]).toBe(CLASSIC_RULES[pileColumn(suit, 1, 'rechts', 4)]);
-    }
-  });
-
-  it('rechnet alle elf Regeln mit Stapel 6 und Hand 4', () => {
-    const results = Object.fromEntries(RULE_KEYS.map((key) => [key, RULES[key].calc(6, 4)]));
-    expect(results).toEqual({
-      plus: 10,
-      minus: 2,
-      copy: 6,
-      max: 6,
-      min: 4,
-      rminus: -2,
-      dist: 2,
-      mirror: 9,
-      plain: 4,
-      mean: 5,
-      mod: 4,
-    });
-  });
-});
-
-describe('Erklärungen', () => {
-  it('jede Regel erklärt ihr Beispiel in Worten', () => {
-    for (const key of RULE_KEYS) expect(RULES[key].explain(6, 4)).toMatch(/\.$/);
-  });
-
-  it('Modulo erklärt Rest, glatte Teilung und kleinere Handkarte', () => {
-    expect(RULES.mod.explain(4, 11)).toBe('Die 4 passt 2-mal in die 11 (2 × 4 = 8). Übrig bleiben 3.');
-    expect(RULES.mod.explain(4, 12)).toBe(
-      'Die 4 passt 3-mal in die 12 (3 × 4 = 12). Es bleibt nichts übrig, also 0.',
-    );
-    expect(RULES.mod.explain(8, 3)).toBe(
-      'Die 8 passt kein einziges Mal in die 3 – also bleibt die 3 ganz übrig.',
-    );
-  });
-});
-
-describe('Regelpakete', () => {
-  it('liefern vier gültige Regeln und erkennen sich selbst wieder', () => {
-    for (const pack of RULE_PACKS) {
-      const rules = pack.rules(seededRng(1));
-      expect(rules, pack.id).toHaveLength(4);
-      expect(rules.every(isRuleKey), pack.id).toBe(true);
-      if (pack.matches) expect(pack.matches(rules), pack.id).toBe(true);
-    }
-  });
-
-  it('haben eindeutige ids, und nur Klassisch passt auf die klassischen Regeln', () => {
-    expect(new Set(RULE_PACKS.map((pack) => pack.id)).size).toBe(RULE_PACKS.length);
-    expect(RULE_PACKS.filter((pack) => pack.matches?.(CLASSIC_RULES)).map((pack) => pack.id)).toEqual([
-      'classic',
-    ]);
   });
 });

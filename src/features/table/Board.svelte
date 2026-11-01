@@ -12,7 +12,7 @@ import RuleLabel from './RuleLabel.svelte';
  */
 </script>
 
-<section class="board" aria-label="Vier Ablagestapel und Nachziehstapel">
+<section class="board surface" aria-label="Vier Ablagestapel und Nachziehstapel">
   {#each table.columns as suit, column (column)}
     <div class="rule" style:grid-column={column + 1} style:--column={column}><RuleLabel ruleKey={table.rules[suit]} {suit} /></div>
   {/each}
@@ -35,9 +35,6 @@ import RuleLabel from './RuleLabel.svelte';
     column-gap: var(--board-gap);
     row-gap: 8px;
     padding: var(--board-pad);
-    background: var(--surface);
-    border-radius: 16px;
-    box-shadow: 0 1px 3px var(--shadow);
   }
 
   .rule {

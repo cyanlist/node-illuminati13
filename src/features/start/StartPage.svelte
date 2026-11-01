@@ -1,26 +1,24 @@
 <script lang="ts">
 import { normalizeSettings, resolveRuleMode, settingsForEditing } from '../../core/settings';
 import { resume, startGame } from '../../state/flow';
-import { online } from '../../state/online.svelte';
+import { online, openConnect } from '../../state/online.svelte';
+import { sheets } from '../../state/sheets.svelte';
 import { table } from '../../state/table.svelte';
 import { loadSettings, saveSettings } from '../../storage';
 import SettingsButton from '../settings/SettingsButton.svelte';
-import EndingPanel from './EndingPanel.svelte';
 import Hero from './Hero.svelte';
-import HintsPanel from './HintsPanel.svelte';
-import OptionsPanel from './OptionsPanel.svelte';
 import PlayersPanel from './PlayersPanel.svelte';
-import RulesPanel from './RulesPanel.svelte';
+import { SECTIONS, type SectionId } from './sections';
 import SettingsSheet from './SettingsSheet.svelte';
 import SettingsSummary from './SettingsSummary.svelte';
-import type { Section } from './settings-summary';
 
 /**
  * Startseite: links der Titel, rechts das nächste Spiel. Sichtbar ist nur, wer spielt; Länge, Regeln, Tipps und Extras
  * stehen als Kurzfassung da und öffnen sich bei Bedarf in einem Fenster.
  */
 let draft = $state(settingsForEditing(loadSettings()));
-let section = $state<Section | null>(null);
+let openSection = $state<SectionId | null>(null);
+const section = $derived(SECTIONS.find((s) => s.id === openSection));
 
 const running = $derived(table.game !== null && table.phase !== 'over');
 const onlineMode = $derived(draft.mode === 'online');
@@ -37,8 +35,7 @@ function onsubmit(event: SubmitEvent): void {
   const settings = resolveRuleMode(normalizeSettings($state.snapshot(draft)));
   saveSettings(settings);
   if (onlineMode && !online.connected) {
-    online.myName = settings.names[0].trim();
-    online.sheetOpen = true;
+    openConnect(settings.names[0]);
     return;
   }
   startGame(settings);
@@ -50,23 +47,19 @@ function onsubmit(event: SubmitEvent): void {
   <Hero />
   <form {onsubmit}>
     <PlayersPanel bind:draft />
-    {#if !guest}<SettingsSummary {draft} onopen={(open) => (section = open)} />{/if}
+    {#if !guest}<SettingsSummary {draft} onopen={(id) => (openSection = id)} />{/if}
     <div class="actions">
-      <button type="button" class="btn btn--ghost" onclick={() => (table.rulesOpen = true)}>Regeln lesen</button>
+      <button type="button" class="btn btn--ghost" onclick={() => (sheets.rulesOpen = true)}>Regeln lesen</button>
       {#if running}<button type="button" class="btn" onclick={resume}>Weiterspielen</button>{/if}
       <button type="submit" class="btn btn--primary btn--large" disabled={guest}>{startLabel}</button>
     </div>
   </form>
 </div>
 
-{#if section === 'ending'}
-  <SettingsSheet title="Länge des Spiels" onclose={() => (section = null)}><EndingPanel bind:draft plain /></SettingsSheet>
-{:else if section === 'rules'}
-  <SettingsSheet title="Regeln der Stapel" onclose={() => (section = null)}><RulesPanel bind:draft plain /></SettingsSheet>
-{:else if section === 'hints'}
-  <SettingsSheet title="Tipps" onclose={() => (section = null)}><HintsPanel bind:draft plain /></SettingsSheet>
-{:else if section === 'extras'}
-  <SettingsSheet title="Extras" onclose={() => (section = null)}><OptionsPanel bind:draft plain /></SettingsSheet>
+{#if section}
+  <SettingsSheet title={section.title} onclose={() => (openSection = null)}>
+    <section.panel bind:draft plain />
+  </SettingsSheet>
 {/if}
 
 <style>

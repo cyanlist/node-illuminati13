@@ -9,8 +9,8 @@ import SymbolSprite from './ui/SymbolSprite.svelte';
 
 <SymbolSprite />
 
-{#if table.view === 'game' && table.game}
-  <GameView game={table.game} />
+{#if table.shownGame}
+  <GameView game={table.shownGame} />
 {:else}
   <StartPage />
 {/if}

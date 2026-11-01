@@ -3,7 +3,9 @@
  * nach einem Schnappschuss und reicht ihn der neuen Version weiter.
  */
 import type { GameState } from '../core/game';
+import { isOnline } from '../core/settings';
 import { afterMove, scheduleCpu } from './flow';
+import { sheets } from './sheets.svelte';
 import { type Phase, table, type View } from './table.svelte';
 
 interface Snapshot {
@@ -24,7 +26,7 @@ export function takeSnapshot(): Snapshot | null {
     view: table.view,
     phase: table.phase,
     animating: table.anim !== null,
-    resultsHidden: table.resultsHidden,
+    resultsHidden: sheets.resultsHidden,
     soloBest: table.soloBest,
   };
 }
@@ -35,11 +37,12 @@ const isSnapshot = (data: unknown): data is Snapshot =>
 /** Übernimmt einen Schnappschuss (falls vorhanden) und setzt den Spielablauf fort. */
 export function restoreSnapshot(data: unknown): void {
   // ein Spiel an zwei Geräten lebt von der Verbindung – die übersteht eine neue Version nicht
-  if (!isSnapshot(data) || data.game.settings.mode === 'online') return;
+  if (!isSnapshot(data) || isOnline(data.game.settings)) return;
   table.game = data.game;
   table.view = data.view;
-  table.phase = data.phase;
-  table.resultsHidden = data.resultsHidden;
+  // die gewählten Karten stehen nicht im Schnappschuss – das Reihenfolge-Fenster beginnt daher neu beim Wählen
+  table.phase = data.phase === 'order' ? 'play' : data.phase;
+  sheets.resultsHidden = data.resultsHidden;
   table.soloBest = data.soloBest;
   // ein unterbrochenes Ablegen ist im Spielstand schon erledigt – also gleich weiter
   if (data.animating) afterMove();

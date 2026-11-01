@@ -1,21 +1,19 @@
 /**
  * Was die Person am Gerät tun kann: Karten markieren, Tipp holen, ablegen, Reihenfolge wählen, aufdecken.
  */
-import type { SuitIndex } from '../core/cards';
-import { canTakeHint, type GameState, takeHint } from '../core/game';
-import { sumOfValues, TARGET } from '../core/values';
+import type { Card, SuitIndex } from '../core/cards';
+import { canTakeHint, takeHint } from '../core/game';
+import { isOnline } from '../core/settings';
 import { cardCount, num } from '../ui/format';
 import { playTurn } from './flow';
 import { send } from './online.svelte';
+import { judgeSelection } from './selection';
 import { requireGame, table } from './table.svelte';
 
-/** Nur am Zug und nicht, während noch Karten fliegen. */
-const canPlay = (): boolean => table.game !== null && table.phase === 'play' && !table.anim;
-
 export function toggleCard(id: number): void {
-  if (!canPlay()) return;
+  if (!table.canPlay) return;
   table.message = '';
-  table.hint = [];
+  table.hinted = [];
   table.selected = table.selected.includes(id)
     ? table.selected.filter((x) => x !== id)
     : [...table.selected, id];
@@ -26,22 +24,22 @@ export function toggleCard(id: number): void {
  * (die Karten werden markiert). Bezahlt wird ein Tipp nur einmal pro Zug; danach zeigt er dasselbe gratis.
  */
 export function showHint(): void {
-  if (!canPlay()) return;
+  if (!table.canPlay) return;
   const game = requireGame();
-  if (table.hintTaken === null) {
+  if (table.hintCombo === null) {
     if (!canTakeHint(game)) return;
     const at = game.log.length;
-    table.hintTaken = takeHint(game)?.map((card) => card.id) ?? [];
+    table.hintCombo = takeHint(game)?.map((card) => card.id) ?? [];
     // kostet der Tipp einen Punkt, muss das andere Gerät ihn ebenso abziehen
-    if (game.settings.mode === 'online' && game.settings.hintCost) send({ type: 'hint', at });
+    if (isOnline(game.settings) && game.settings.hintCost) send({ type: 'hint', at });
   }
-  const combo = table.hintTaken;
+  const combo = table.hintCombo;
 
   if (combo.length === 0) {
     table.message = 'Hier verbirgt sich keine 13. Wähle eine Karte zum Abwerfen.';
   } else if (game.settings.hints === 'full') {
     table.selected = [...combo];
-    table.hint = [...combo];
+    table.hinted = [...combo];
     table.message = '';
   } else {
     table.message = `Hier steckt eine 13 aus ${cardCount(combo.length)}.`;
@@ -50,35 +48,33 @@ export function showHint(): void {
 
 /** Der Ablegen-Knopf: 13 → Beweis (ggf. erst Reihenfolge wählen), eine Karte → abwerfen, sonst Hinweis. */
 export function playSelection(): void {
-  if (!canPlay()) return;
-  const game = requireGame();
-  const cards = table.selectedCards;
-  const ids = cards.map((card) => card.id);
-  const [first] = cards;
-  if (!first) return;
-  const sum = sumOfValues(cards, game.piles, game.rules);
-
-  if (sum === TARGET) {
-    // standardmäßig liegt die zuletzt gewählte Karte einer Farbe oben
-    const topPick: Partial<Record<SuitIndex, number>> = {};
-    for (const card of cards) topPick[card.suit] = card.id;
-    const sameSuitTwice = cards.some((card) => cards.filter((c) => c.suit === card.suit).length > 1);
-    if (sameSuitTwice) {
-      table.topPick = topPick;
-      table.phase = 'order';
+  if (!table.canPlay) return;
+  const selection = judgeSelection();
+  switch (selection.kind) {
+    case 'proof':
+      playProof(selection.cards);
       return;
-    }
-    void playTurn({ type: 'proof', cardIds: ids, topPick });
-  } else if (cards.length === 1) {
-    void playTurn({ type: 'discard', cardId: first.id });
-  } else {
-    table.message = `Deine Auswahl ergibt ${num(sum)}, nicht 13. Wähle eine 13 oder eine einzelne Karte zum Abwerfen.`;
+    case 'discard':
+      void playTurn({ type: 'discard', cardId: selection.card.id });
+      return;
+    case 'invalid':
+      table.message = `Deine Auswahl ergibt ${num(selection.sum)}, nicht 13. Wähle eine 13 oder eine einzelne Karte zum Abwerfen.`;
+      return;
   }
 }
 
-/** Das andere Gerät hat einen Tipp geholt: hier genauso verrechnen, damit beide Stände gleich bleiben. */
-export function applyHint(game: GameState): void {
-  if (game.settings.hintCost) takeHint(game);
+/** Beweis ablegen – liegen zwei Karten derselben Farbe dabei, erst wählen lassen, welche oben landet. */
+function playProof(cards: Card[]): void {
+  // standardmäßig liegt die zuletzt gewählte Karte einer Farbe oben
+  const topPick: Partial<Record<SuitIndex, number>> = {};
+  for (const card of cards) topPick[card.suit] = card.id;
+  const sameSuitTwice = cards.some((card) => cards.filter((c) => c.suit === card.suit).length > 1);
+  if (sameSuitTwice) {
+    table.topPick = topPick;
+    table.phase = 'order';
+    return;
+  }
+  void playTurn({ type: 'proof', cardIds: cards.map((card) => card.id), topPick });
 }
 
 export function chooseTop(suit: SuitIndex, cardId: number): void {
@@ -89,8 +85,7 @@ export function confirmOrder(): void {
   if (table.phase !== 'order' || table.anim) return;
   const ids = table.selectedCards.map((card) => card.id);
   const topPick = { ...table.topPick };
-  table.topPick = null;
-  table.phase = 'play';
+  cancelOrder();
   void playTurn({ type: 'proof', cardIds: ids, topPick });
 }
 

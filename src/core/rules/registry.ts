@@ -1,4 +1,4 @@
-import { type Rng, shuffle } from '../cards';
+import { type Rng, SUIT_INDICES, shuffle } from '../cards';
 import { copy } from './copy';
 import { distance } from './distance';
 import { handMinusStack } from './hand-minus-stack';
@@ -42,5 +42,10 @@ export const CLASSIC_RULES: readonly RuleKey[] = ['plus', 'minus', 'copy', 'max'
 export const isRuleKey = (value: unknown): value is RuleKey =>
   typeof value === 'string' && Object.hasOwn(RULES, value);
 
-/** Vier verschiedene, zufällig gezogene Regeln. */
-export const randomRules = (rng?: Rng): RuleKey[] => shuffle([...RULE_KEYS], rng).slice(0, 4);
+/** Dieselben Regeln in derselben Reihenfolge? */
+export const sameRules = (a: readonly RuleKey[], b: readonly RuleKey[]): boolean =>
+  a.length === b.length && a.every((key, i) => key === b[i]);
+
+/** Vier verschiedene, zufällig gezogene Regeln – eine je Farbe. */
+export const randomRules = (rng?: Rng): RuleKey[] =>
+  shuffle([...RULE_KEYS], rng).slice(0, SUIT_INDICES.length);

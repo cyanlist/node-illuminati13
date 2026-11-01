@@ -1,7 +1,7 @@
 import { type Card, pickRandom, type Rng, SUIT_INDICES, type SuitIndex } from './cards';
-import { findCombos } from './combos';
+import { findCombos, largestCombos } from './combos';
 import { currentPlayer, type GameState, type Move } from './game';
-import { rotateRules } from './rules';
+import { rotateRules, rotatesRules } from './rules';
 import type { CpuLevel } from './settings';
 
 /**
@@ -42,8 +42,7 @@ export function chooseCpuMove(state: GameState, rng: Rng = Math.random): Move {
     (combo) => rng() < spotChance(profile, combo.length),
   );
   if (noticed.length > 0) {
-    const size = Math.max(...noticed.map((combo) => combo.length));
-    const choices = profile.prefersLargest ? noticed.filter((combo) => combo.length === size) : noticed;
+    const choices = profile.prefersLargest ? largestCombos(noticed) : noticed;
     return proofMove(pickRandom(choices, rng), rng);
   }
 
@@ -79,13 +78,14 @@ function bestDiscard(state: GameState, hand: readonly Card[], rng: Rng): Card {
 function discardScore(state: GameState, hand: readonly Card[], card: Card): number {
   const piles = state.piles.map((pile) => [...pile]);
   piles[card.suit]?.push(card);
-  const rules =
-    state.settings.variant && card.rank === 13 ? rotateRules(state.rules, state.settings.dir) : state.rules;
+  const rules = rotatesRules(state.settings, card)
+    ? rotateRules(state.rules, state.settings.dir)
+    : state.rules;
   const combos = findCombos(
     hand.filter((c) => c.id !== card.id),
     piles,
     rules,
   );
-  if (combos.length === 0) return 0;
-  return Math.max(...combos.map((combo) => combo.length)) * 10 + Math.min(combos.length, 9);
+  const [largest] = largestCombos(combos);
+  return largest ? largest.length * 10 + Math.min(combos.length, 9) : 0;
 }

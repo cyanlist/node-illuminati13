@@ -4,7 +4,7 @@ import { RULE_KEYS, RULE_PACKS, RULES, type RulePack } from '../../core/rules';
 import type { Settings } from '../../core/settings';
 import { ruleExample } from '../../ui/format';
 import SuitSymbol from '../../ui/SuitSymbol.svelte';
-import CheckOption from './CheckOption.svelte';
+import CheckOption from '../../ui/CheckOption.svelte';
 import Panel from './Panel.svelte';
 
 /**

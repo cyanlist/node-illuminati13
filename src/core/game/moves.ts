@@ -1,5 +1,5 @@
 import type { Card, SuitIndex } from '../cards';
-import { rotateRules } from '../rules';
+import { rotateRules, rotatesRules } from '../rules';
 import { TARGET, trueValue } from '../values';
 import { currentPlayer } from './players';
 import {
@@ -83,8 +83,7 @@ function placeCard(state: GameState, card: Card): PlacementStep {
   const pile = state.piles[card.suit];
   if (!pile) throw new Error(`Es gibt keinen Stapel ${card.suit}.`);
   pile.push(card);
-  // Variante: landet eine 13 oben auf einem Stapel, wandern alle Regeln weiter
-  const rotated = state.settings.variant && card.rank === 13;
+  const rotated = rotatesRules(state.settings, card);
   if (rotated) {
     state.rules = rotateRules(state.rules, state.settings.dir);
     state.rotations++;

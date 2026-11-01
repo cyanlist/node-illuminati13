@@ -4,32 +4,12 @@
  * (QR-Code oder Text). Danach laufen Nachrichten direkt zwischen den Geräten.
  */
 import { decodeSignal, encodeSignal, fromSdp, type SignalKind, toSdp } from './signal';
-
-/**
- * Ein öffentlicher STUN-Dienst verrät jedem Gerät, wie es von außen erreichbar ist – nötig, wenn die Geräte
- * nicht im selben WLAN sind. Er sieht nur die Adresse, keine Spieldaten.
- */
-export const ICE_SERVERS: RTCIceServer[] = [{ urls: 'stun:stun.l.google.com:19302' }];
+import { ICE_SERVERS, type Peer, type PeerHandlers } from './transport';
 
 /** So lange sammelt der Browser höchstens Adressen, bevor der Code entsteht (ms) */
 const GATHER_LIMIT = 4000;
 /** Nach der ersten Adresse noch so lange auf weitere warten (ms) */
 const GATHER_AFTER_FIRST = 1500;
-
-export interface PeerHandlers {
-  onopen(): void;
-  onmessage(data: string): void;
-  onclose(): void;
-  /** Die Geräte finden keinen Weg zueinander (z. B. verschiedene Netze, die sich abschotten) */
-  onfail(): void;
-}
-
-export interface Peer {
-  /** Der eigene Code für die Gegenseite */
-  code: string;
-  send(data: string): void;
-  close(): void;
-}
 
 export interface HostPeer extends Peer {
   /** Nimmt den Antwort-Code des Gastes an; danach baut sich die Verbindung auf. */

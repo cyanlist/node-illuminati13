@@ -9,8 +9,8 @@ import LogList from './LogList.svelte';
 let { game }: { game: GameState } = $props();
 </script>
 
-<aside aria-label="Protokoll">
-  <h2>Protokoll</h2>
+<aside class="surface" aria-label="Protokoll">
+  <h2 class="eyebrow">Protokoll</h2>
   <LogList {game} />
 </aside>
 
@@ -32,17 +32,6 @@ let { game }: { game: GameState } = $props();
       min-height: 100%;
       overflow: auto;
       padding: 12px 14px;
-      background: var(--surface);
-      border-radius: 14px;
-      box-shadow: 0 1px 3px var(--shadow);
     }
-  }
-
-  h2 {
-    margin: 0 0 4px;
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--muted);
   }
 </style>

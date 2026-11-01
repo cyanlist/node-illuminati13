@@ -2,7 +2,7 @@
 import type { CpuLevel, GameMode, Settings } from '../../core/settings';
 import OnlineStatus from './OnlineStatus.svelte';
 import Panel from './Panel.svelte';
-import Segmented from './Segmented.svelte';
+import Segmented from '../../ui/Segmented.svelte';
 
 /**
  * Wer spielt: zwei Plätze. Du gibst deinen Namen ein, das Gegenüber ist der Computer (mit Stärke),

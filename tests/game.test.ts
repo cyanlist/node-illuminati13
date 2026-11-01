@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { chooseCpuMove } from '../src/core/ai';
+import { createDeck, MAX_RANK, SUIT_INDICES } from '../src/core/cards';
 import {
   applyMove,
   beatsBest,
   finishTurn,
   type GameState,
+  GOAL_POINTS,
   HAND_SIZE,
   markYou,
   newGame,
@@ -12,20 +14,15 @@ import {
   soloScore,
   turnsTaken,
 } from '../src/core/game';
-import { CLASSIC_RULES } from '../src/core/rules';
-import { normalizeSettings, resolveRuleMode, settingsForEditing } from '../src/core/settings';
-import { card, seededRng, settings } from './helpers';
+import type { Settings } from '../src/core/settings';
+import { TARGET } from '../src/core/values';
+import { card, dealExample, playOut, seededRng, settings } from './helpers';
 
-/** Ein Spiel mit festgelegter Hand und festgelegten Stapeln, wie im Beispiel der Anleitung. */
-function exampleGame(overrides = {}): GameState {
-  const game = newGame(settings({ mode: 'solo', ...overrides }), seededRng(7));
-  game.piles = [[card(0, 4)], [card(1, 2)], [card(2, 10)], [card(3, 6)]];
-  const fixed = [card(0, 5), card(1, 7), card(3, 3), card(3, 8), card(2, 13)];
-  const fixedIds = new Set([...fixed, ...game.piles.flat()].map((c) => c.id));
-  game.deck = game.deck.concat(game.players[0]?.hand ?? []).filter((c) => !fixedIds.has(c.id));
-  if (game.players[0]) game.players[0].hand = fixed;
-  return game;
-}
+/** Ein Spiel allein mit festgelegter Hand und festgelegten Stapeln, wie im Beispiel der Anleitung. */
+const exampleGame = (overrides: Partial<Settings> = {}): GameState =>
+  dealExample(newGame(settings({ mode: 'solo', ...overrides }), seededRng(7)));
+
+const DECK_SIZE = createDeck().length;
 
 const cardsInPlay = (game: GameState): number =>
   game.deck.length + game.piles.flat().length + game.players.reduce((n, p) => n + p.hand.length, 0);
@@ -34,7 +31,7 @@ describe('neues Spiel', () => {
   it('teilt fünf Karten pro Person aus', () => {
     const game = newGame(settings(), seededRng(1));
     expect(game.players.map((p) => p.hand.length)).toEqual([HAND_SIZE, HAND_SIZE]);
-    expect(cardsInPlay(game)).toBe(52);
+    expect(cardsInPlay(game)).toBe(DECK_SIZE);
     expect(game.players[1]).toMatchObject({ name: 'Computer', cpu: true });
   });
 
@@ -42,7 +39,7 @@ describe('neues Spiel', () => {
     const custom = newGame(settings({ ruleMode: 'custom', customRules: ['mirror', 'min', 'plain', 'mean'] }));
     expect(custom.rules).toEqual(['mirror', 'min', 'plain', 'mean']);
     const random = newGame(settings({ ruleMode: 'random' }), seededRng(3));
-    expect(new Set(random.rules).size).toBe(4);
+    expect(new Set(random.rules).size).toBe(SUIT_INDICES.length);
   });
 });
 
@@ -81,7 +78,7 @@ describe('Züge', () => {
   it('lehnt einen Beweis ab, der nicht 13 ergibt', () => {
     const game = exampleGame();
     // ♥5 allein ist 9
-    expect(() => applyMove(game, { type: 'proof', cardIds: [card(0, 5).id] })).toThrow(/nicht 13/);
+    expect(() => applyMove(game, { type: 'proof', cardIds: [card(0, 5).id] })).toThrow(`nicht ${TARGET}`);
     expect(game.players[0]?.hand.length).toBe(HAND_SIZE);
   });
 
@@ -102,7 +99,7 @@ describe('Züge', () => {
 
   it('Variante: eine 13 auf dem Stapel lässt die Stapel weiterrücken', () => {
     const game = exampleGame({ variant: true, dir: 'rechts' });
-    const result = applyMove(game, { type: 'discard', cardId: card(2, 13).id });
+    const result = applyMove(game, { type: 'discard', cardId: card(2, MAX_RANK).id });
     expect(game.rules).toEqual(['minus', 'copy', 'max', 'plus']);
     expect(game.rotations).toBe(1);
     expect(result.steps[0]?.rotated).toBe(true);
@@ -184,11 +181,7 @@ describe('Rundenablauf', () => {
   it.each([false, true])('ganze Partie Computer gegen Computer (Variante: %s)', (variant) => {
     const rng = seededRng(variant ? 11 : 5);
     const game = newGame(settings({ mode: 'hotseat', variant, ruleMode: 'random' }), rng);
-    for (let turn = 0; turn < 200 && !game.over; turn++) {
-      applyMove(game, chooseCpuMove(game, rng));
-      finishTurn(game);
-      expect(cardsInPlay(game)).toBe(52);
-    }
+    playOut(game, rng, 200, () => expect(cardsInPlay(game)).toBe(DECK_SIZE));
     expect(game.over).toBe(true);
     expect(game.deck.length).toBe(0);
   });
@@ -196,7 +189,7 @@ describe('Rundenablauf', () => {
 
 describe('Bis 13', () => {
   /** Zu zweit; Person `scorer` hat gerade ihren Zug beendet und dabei `points` Punkte erreicht. */
-  function goalGame(scorer: number, points = 13): GameState {
+  function goalGame(scorer: number, points = GOAL_POINTS): GameState {
     const game = newGame(settings({ mode: 'hotseat', ending: 'thirteen' }), seededRng(2));
     game.log = [{ kind: 'intro' }, { kind: 'begins', player: 0 }];
     game.current = scorer;
@@ -224,7 +217,7 @@ describe('Bis 13', () => {
   });
 
   it('unter 13 Punkten und ohne „Bis 13“ geht es weiter', () => {
-    const below = goalGame(1, 12);
+    const below = goalGame(1, GOAL_POINTS - 1);
     finishTurn(below);
     expect(below.over).toBe(false);
     const fullDeck = goalGame(1);
@@ -243,14 +236,11 @@ describe('Bis 13', () => {
 
   it('allein endet das Spiel mit der 13 sofort; gewertet werden die Züge', () => {
     const game = newGame(settings({ mode: 'solo', ending: 'thirteen' }), seededRng(4));
-    const rng = seededRng(9);
-    while (!game.over) {
-      applyMove(game, chooseCpuMove(game, rng));
-      finishTurn(game);
-    }
+    playOut(game, seededRng(9));
+    expect(game.over).toBe(true);
     const [player] = game.players;
     const reached = game.log.find((entry) => entry.kind === 'goal');
-    if (reached) expect(player?.points).toBeGreaterThanOrEqual(13);
+    if (reached) expect(player?.points).toBeGreaterThanOrEqual(GOAL_POINTS);
     else expect(game.deck.length).toBe(0);
     expect(turnsTaken(game, 0)).toBe(
       game.log.filter((e) => e.kind === 'proof' || e.kind === 'discard').length,
@@ -278,44 +268,11 @@ describe('Bis 13', () => {
   it('ganze Partie Computer gegen Computer endet vor dem leeren Stapel', () => {
     const rng = seededRng(5);
     const game = newGame(settings({ mode: 'hotseat', ending: 'thirteen' }), rng);
-    for (let turn = 0; turn < 200 && !game.over; turn++) {
-      applyMove(game, chooseCpuMove(game, rng));
-      finishTurn(game);
-    }
+    playOut(game, rng);
     expect(game.over).toBe(true);
     expect(game.deck.length).toBeGreaterThan(0);
-    expect(Math.max(...game.players.map((p) => p.points))).toBeGreaterThanOrEqual(13);
+    expect(Math.max(...game.players.map((p) => p.points))).toBeGreaterThanOrEqual(GOAL_POINTS);
     // beide hatten gleich viele Züge
     expect(turnsTaken(game, 0)).toBe(turnsTaken(game, 1));
-  });
-});
-
-describe('Einstellungen', () => {
-  it('repariert kaputte oder veraltete Daten', () => {
-    expect(normalizeSettings({ mode: 'netz', customRules: ['plus'], showValues: 'ja' })).toEqual(
-      settings({ customRules: [...CLASSIC_RULES] }),
-    );
-    expect(normalizeSettings(null)).toEqual(settings());
-  });
-
-  it('macht aus einem früher gespeicherten Namen „Du“ ein leeres Feld', () => {
-    expect(normalizeSettings({ names: ['Du', 'Bea'] }).names).toEqual(['', 'Bea']);
-    expect(normalizeSettings({ names: ['Anna', ''] }).names).toEqual(['Anna', '']);
-  });
-
-  it('leitet den Regel-Modus beim Spielstart aus den Feldern ab', () => {
-    expect(resolveRuleMode(settings({ ruleMode: 'custom', customRules: [...CLASSIC_RULES] })).ruleMode).toBe(
-      'classic',
-    );
-    expect(
-      resolveRuleMode(settings({ ruleMode: 'classic', customRules: ['min', 'minus', 'copy', 'max'] }))
-        .ruleMode,
-    ).toBe('custom');
-    expect(resolveRuleMode(settings({ ruleMode: 'random' })).ruleMode).toBe('random');
-  });
-
-  it('zeigt im klassischen Modus die klassischen Regeln zum Bearbeiten', () => {
-    const stored = settings({ ruleMode: 'classic', customRules: ['mirror', 'min', 'plain', 'mean'] });
-    expect(settingsForEditing(stored).customRules).toEqual([...CLASSIC_RULES]);
   });
 });

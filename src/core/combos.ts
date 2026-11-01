@@ -21,6 +21,12 @@ export function findCombos(hand: readonly Card[], piles: Piles, rules: readonly 
   return combos;
 }
 
+/** Die Kombinationen mit den meisten Karten. */
+export function largestCombos(combos: readonly Card[][]): Card[][] {
+  const size = Math.max(...combos.map((combo) => combo.length));
+  return combos.filter((combo) => combo.length === size);
+}
+
 /** Eine der größten 13er-Kombinationen (bei Gleichstand zufällig) oder null. */
 export function bestCombo(
   hand: readonly Card[],
@@ -28,9 +34,6 @@ export function bestCombo(
   rules: readonly RuleKey[],
   rng: Rng = Math.random,
 ): Card[] | null {
-  const combos = findCombos(hand, piles, rules);
-  if (combos.length === 0) return null;
-  const size = Math.max(...combos.map((combo) => combo.length));
-  const largest = combos.filter((combo) => combo.length === size);
-  return pickRandom(largest, rng);
+  const largest = largestCombos(findCombos(hand, piles, rules));
+  return largest.length > 0 ? pickRandom(largest, rng) : null;
 }

@@ -1,8 +1,8 @@
 <script lang="ts">
-import { table } from '../../state/table.svelte';
+import { sheets } from '../../state/sheets.svelte';
 import { saveTheme } from '../../storage';
 import { applyTheme, type Theme, themeChoice } from '../../ui/theme.svelte';
-import Segmented from '../start/Segmented.svelte';
+import Segmented from '../../ui/Segmented.svelte';
 import LookPanel from './LookPanel.svelte';
 
 /**
@@ -16,7 +16,7 @@ const themes: { value: Theme; label: string }[] = [
 ];
 
 function close(): void {
-  table.settingsOpen = false;
+  sheets.settingsOpen = false;
 }
 
 function onkeydown(event: KeyboardEvent): void {
@@ -36,13 +36,13 @@ function onkeydown(event: KeyboardEvent): void {
       <button type="button" class="btn btn--primary" onclick={close}>Fertig</button>
     </header>
 
-    <section>
-      <h3>Kartendesign</h3>
+    <section class="surface">
+      <h3 class="eyebrow">Kartendesign</h3>
       <LookPanel />
     </section>
 
-    <section>
-      <h3>Farbschema</h3>
+    <section class="surface">
+      <h3 class="eyebrow">Farbschema</h3>
       <Segmented
         name="theme"
         label="Farbschema"
@@ -64,7 +64,7 @@ function onkeydown(event: KeyboardEvent): void {
   .overlay {
     position: fixed;
     inset: 0;
-    z-index: 30;
+    z-index: var(--z-page);
     overflow: auto;
     background: var(--bg);
     padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px))
@@ -104,18 +104,10 @@ function onkeydown(event: KeyboardEvent): void {
 
   section {
     padding: 16px 18px;
-    background: var(--surface);
-    border-radius: 16px;
-    box-shadow: 0 1px 3px var(--shadow);
   }
 
   h3 {
-    margin: 0 0 12px;
-    font-size: 13px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--muted);
+    margin-bottom: 12px;
   }
 
   .hint {

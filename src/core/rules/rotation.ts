@@ -1,7 +1,23 @@
+import { type Card, MAX_RANK } from '../cards';
 import type { RuleKey } from './registry';
 
-/** Richtung, in die die Stapel in der Variante „Wenn die Weltordnung sich verschiebt“ weiterrücken. */
-export type RotationDir = 'rechts' | 'links';
+/**
+ * Richtungen, in die die Stapel in der Variante „Wenn die Weltordnung sich verschiebt“ weiterrücken.
+ * Die Werte landen in gespeicherten Einstellungen – daher nicht umbenennen.
+ */
+export const ROTATION_DIRS = ['rechts', 'links'] as const;
+export type RotationDir = (typeof ROTATION_DIRS)[number];
+
+/** Die Einstellungen, von denen das Weiterrücken abhängt. */
+interface RotationSettings {
+  /** Variante „Wenn die Weltordnung sich verschiebt“ */
+  variant: boolean;
+  dir: RotationDir;
+}
+
+/** Variante: Landet eine 13 oben auf einem Stapel, wandern alle Regeln weiter. */
+export const rotatesRules = (settings: RotationSettings, card: Card): boolean =>
+  settings.variant && card.rank === MAX_RANK;
 
 /**
  * Spalte auf dem Board, in der der Stapel einer Farbe nach `rotations` Verschiebungen liegt.
@@ -17,6 +33,5 @@ export function pileColumn(suit: number, rotations: number, dir: RotationDir, co
  * neuen Spalte. Bei „rechts“ gilt für Herz danach die Regel, unter der vorher Pik lag.
  */
 export function rotateRules(rules: readonly RuleKey[], dir: RotationDir): RuleKey[] {
-  const n = rules.length;
-  return rules.map((_, i) => rules[dir === 'rechts' ? (i + 1) % n : (i + n - 1) % n] as RuleKey);
+  return rules.map((_, suit) => rules[pileColumn(suit, 1, dir, rules.length)] as RuleKey);
 }

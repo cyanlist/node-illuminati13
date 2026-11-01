@@ -21,7 +21,7 @@ function choose(deck: Deck): void {
       onclick={() => choose(deck.id)}
     >
       <b>{deck.title}</b>
-      <small>{deck.description}</small>
+      {#if deck.description}<small>{deck.description}</small>{/if}
       <DeckPreview deck={deck.id} />
     </button>
   {/each}

@@ -1,14 +1,14 @@
 <script lang="ts">
-import type { Card, SuitIndex } from '../../core/cards';
 import Logo from '../Logo.svelte';
 import CardFace from './CardFace.svelte';
 import EmptySlot from './EmptySlot.svelte';
+import type { DeckProps } from './index';
 
 /**
  * Design „Entschlüsselt“: dunkles Terminal mit leuchtenden Schreibmaschinen-Zahlen und feinen Bildzeilen;
  * auf der Beweis-Bühne rattern die Ziffern kurz, bevor der wahre Wert einrastet (ProofStage).
  */
-let { card, slot }: { card?: Card; slot?: SuitIndex } = $props();
+let { card, slot }: DeckProps = $props();
 
 /** Leuchtfarben je Farbe – eigens für den schwarzen Grund, im hellen wie im dunklen Design gleich */
 const NEON = ['#ff6b81', '#b99cff', '#ffb44d', '#4dffa0'] as const;
@@ -32,7 +32,7 @@ const NEON = ['#ff6b81', '#b99cff', '#ffb44d', '#4dffa0'] as const;
       repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 3px),
       radial-gradient(circle at 50% 40%, #0f2418, #050b07);
     box-shadow: 0 1px 2px var(--shadow);
-    font-family: ui-monospace, 'Cascadia Mono', Consolas, 'Courier New', monospace;
+    font-family: var(--font-mono);
   }
 
   .front {

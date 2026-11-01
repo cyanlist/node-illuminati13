@@ -1,19 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import { CPU_PROFILES, chooseCpuMove, spotChance } from '../src/core/ai';
-import { findCombos } from '../src/core/combos';
-import { type GameState, newGame } from '../src/core/game';
+import { findCombos, largestCombos } from '../src/core/combos';
+import { currentPlayer, type GameState, newGame } from '../src/core/game';
 import type { CpuLevel } from '../src/core/settings';
-import { card, seededRng, settings } from './helpers';
+import { dealExample, seededRng, settings } from './helpers';
 
-/** Computer am Zug mit der Hand aus dem Beispiel der Anleitung: es gibt 13er-Kombinationen aus 1 bis 3 Karten. */
+/** Computer am Zug mit der Hand aus dem Beispiel der Anleitung. */
 function cpuGame(cpuLevel: CpuLevel): GameState {
   const game = newGame(settings({ mode: 'cpu', cpuLevel }), seededRng(4));
   game.current = 1;
-  game.piles = [[card(0, 4)], [card(1, 2)], [card(2, 10)], [card(3, 6)]];
-  const cpu = game.players[1];
-  if (cpu) cpu.hand = [card(0, 5), card(1, 7), card(3, 3), card(3, 8), card(2, 13)];
-  return game;
+  return dealExample(game);
 }
+
+/** Wie viele Karten die größte 13er-Kombination der Person am Zug hat. */
+const largestSize = (game: GameState): number =>
+  largestCombos(findCombos(currentPlayer(game).hand, game.piles, game.rules))[0]?.length ?? 0;
 
 /** Zufallsquelle mit festem Wert: 0 → bemerkt alles, 0.999 → bemerkt nichts. */
 const always = (value: number) => () => value;
@@ -29,9 +30,7 @@ describe('Computer-Stärke', () => {
 
   it('schwer legt immer die größte Kombination', () => {
     const game = cpuGame('hard');
-    const largest = Math.max(
-      ...findCombos(game.players[1]?.hand ?? [], game.piles, game.rules).map((c) => c.length),
-    );
+    const largest = largestSize(game);
     for (let seed = 1; seed <= 20; seed++) {
       const move = chooseCpuMove(game, seededRng(seed));
       expect(move.type === 'proof' && move.cardIds.length).toBe(largest);
@@ -46,10 +45,11 @@ describe('Computer-Stärke', () => {
   it('mittel und leicht übersehen über viele Züge öfter die größte Kombination als schwer', () => {
     const largestShare = (level: CpuLevel): number => {
       const game = cpuGame(level);
+      const size = largestSize(game);
       let largest = 0;
       for (let seed = 1; seed <= 300; seed++) {
         const move = chooseCpuMove(game, seededRng(seed));
-        if (move.type === 'proof' && move.cardIds.length === 3) largest++;
+        if (move.type === 'proof' && move.cardIds.length === size) largest++;
       }
       return largest / 300;
     };

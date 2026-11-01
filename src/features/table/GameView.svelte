@@ -1,6 +1,6 @@
 <script lang="ts">
 import type { GameState } from '../../core/game';
-import { hintButton } from '../../state/buttons';
+import { isOnline } from '../../core/settings';
 import Actions from './Actions.svelte';
 import { table } from '../../state/table.svelte';
 import Board from './Board.svelte';
@@ -25,14 +25,14 @@ const bottom = $derived(table.bottom);
  */
 const CHROME = { base: 284, topSeat: 111, hint: 43 };
 const chrome = $derived(
-  CHROME.base + (game.players.length > 1 ? CHROME.topSeat : 0) + (hintButton().hidden ? 0 : CHROME.hint),
+  CHROME.base + (game.players.length > 1 ? CHROME.topSeat : 0) + (game.settings.hints === 'off' ? 0 : CHROME.hint),
 );
 </script>
 
 <div class="game">
   <TopBar />
   <GameStatus {game} />
-  {#if game.settings.mode === 'online'}<ConnectionBanner />{/if}
+  {#if isOnline(game.settings)}<ConnectionBanner />{/if}
   <main class="table">
     <div class="play" style:--chrome="{chrome}px">
       {#if game.players.length > 1}<PlayerSeat {game} index={1 - bottom} position="top" />{/if}
@@ -96,7 +96,7 @@ const chrome = $derived(
     gap: 14px;
     min-width: 0;
     /* Kartenbreite auf Board und Stapeln; --fit gibt es nur auf schmalen Bildschirmen (unten) */
-    --cw: min(clamp(58px, 16vw, 96px), var(--fit, 96px));
+    --cw: min(var(--cw-base), var(--fit, var(--cw-max)));
   }
 
   /*
