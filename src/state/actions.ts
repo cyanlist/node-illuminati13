@@ -20,8 +20,9 @@ export function toggleCard(id: number): void {
 }
 
 /**
- * Tipp je nach Einstellung: Andeutung (ob es eine 13 gibt und aus wie vielen Karten) oder volle Hilfe
- * (die Karten werden markiert). Bezahlt wird ein Tipp nur einmal pro Zug; danach zeigt er dasselbe gratis.
+ * Tipp je nach Einstellung: ja oder nein (nur ob es eine 13 gibt), Andeutung (zusätzlich aus wie vielen Karten)
+ * oder volle Hilfe (die Karten werden markiert). Bezahlt wird ein Tipp nur einmal pro Zug; danach zeigt er
+ * dasselbe gratis.
  */
 export function showHint(): void {
   if (!table.canPlay) return;
@@ -41,8 +42,10 @@ export function showHint(): void {
     table.selected = [...combo];
     table.hinted = [...combo];
     table.message = '';
-  } else {
+  } else if (game.settings.hints === 'nudge') {
     table.message = `Hier steckt eine 13 aus ${cardCount(combo.length)}.`;
+  } else {
+    table.message = 'Hier steckt eine 13.';
   }
 }
 

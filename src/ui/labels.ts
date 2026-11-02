@@ -8,4 +8,9 @@ export const DIR_LABELS: Record<RotationDir, string> = {
   links: 'nach links (Herz → Kreuz → Karo → Pik → Herz)',
 };
 
-export const HINT_TITLES: Record<HintLevel, string> = { off: 'Aus', nudge: 'Andeutung', full: 'Volle Hilfe' };
+export const HINT_TITLES: Record<HintLevel, string> = {
+  off: 'Aus',
+  exists: 'Ja oder nein',
+  nudge: 'Andeutung',
+  full: 'Volle Hilfe',
+};

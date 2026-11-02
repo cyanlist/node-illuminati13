@@ -23,6 +23,7 @@ const solo = $derived(game?.players.length === 1);
 const shows = (active: boolean): boolean => !settings || active;
 
 const HINT_TEXT = {
+  exists: 'Der Tipp-Knopf verrät nur, ob es gerade eine 13 gibt – welche, findest du selbst heraus.',
   nudge: 'Der Tipp-Knopf verrät, ob es gerade eine 13 gibt und aus wie vielen Karten.',
   full: 'Der Tipp-Knopf markiert die Karten einer 13 – zum Lernen der Regeln.',
 } as const;
@@ -137,8 +138,8 @@ const close = (): void => {
         {HINT_TEXT[settings.hints]}
         {settings.hintCost ? 'Ein Tipp kostet einen Punkt – einmal pro Zug, und nur, wenn du einen Punkt hast.' : ''}
       {:else}
-        Auf der Startseite stellst du ein, wie viel der Tipp-Knopf verrät: gar nichts (aus), nur ob es eine 13 gibt und
-        aus wie vielen Karten (Andeutung) oder welche Karten es sind (volle Hilfe). Wahlweise kostet ein Tipp einen Punkt
+        Auf der Startseite stellst du ein, wie viel der Tipp-Knopf verrät: gar nichts (aus), nur ob es eine 13 gibt
+        (ja oder nein), zusätzlich aus wie vielen Karten (Andeutung) oder welche Karten es sind (volle Hilfe). Wahlweise kostet ein Tipp einen Punkt
         – einmal pro Zug, und nur, wenn du einen Punkt hast.
       {/if}
     </p>

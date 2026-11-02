@@ -10,7 +10,8 @@ let { draft = $bindable(), plain = false }: { draft: Settings; plain?: boolean }
 
 const levels: Choice<HintLevel>[] = [
   { value: 'off', title: HINT_TITLES.off, description: 'Kein Tipp-Knopf – du findest jede 13 selbst.' },
-  { value: 'nudge', title: HINT_TITLES.nudge, description: 'Verrät nur, ob es eine 13 gibt und aus wie vielen Karten.' },
+  { value: 'exists', title: HINT_TITLES.exists, description: 'Verrät nur, ob es gerade eine 13 gibt.' },
+  { value: 'nudge', title: HINT_TITLES.nudge, description: 'Verrät, ob es eine 13 gibt und aus wie vielen Karten.' },
   { value: 'full', title: HINT_TITLES.full, description: 'Markiert die Karten einer 13 – zum Lernen der Regeln.' },
 ];
 </script>

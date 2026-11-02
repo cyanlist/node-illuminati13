@@ -12,10 +12,10 @@ export const RULE_MODES = ['classic', 'custom', 'random'] as const;
 export type RuleMode = (typeof RULE_MODES)[number];
 
 /**
- * Wie viel der Tipp verrät: gar nichts (kein Tipp-Knopf), nur ob es eine 13 gibt und aus wie vielen Karten,
- * oder welche Karten es sind.
+ * Wie viel der Tipp verrät: gar nichts (kein Tipp-Knopf), nur ob es eine 13 gibt, ob es eine gibt und aus wie
+ * vielen Karten, oder welche Karten es sind.
  */
-export const HINT_LEVELS = ['off', 'nudge', 'full'] as const;
+export const HINT_LEVELS = ['off', 'exists', 'nudge', 'full'] as const;
 export type HintLevel = (typeof HINT_LEVELS)[number];
 
 /** Wann das Spiel endet: wenn der Nachziehstapel leer ist oder – kürzer – sobald jemand 13 Punkte hat. */
