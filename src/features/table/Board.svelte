@@ -5,10 +5,12 @@ import { table } from '../../state/table.svelte';
 import DrawPile from './DrawPile.svelte';
 import Pile from './Pile.svelte';
 import RuleLabel from './RuleLabel.svelte';
+import WorldOrder from './WorldOrder.svelte';
 
 /**
  * Oben stehen die Regeln fest in ihren Spalten, darunter liegen die Stapel. In der Variante
- * „Wenn die Weltordnung sich verschiebt“ rücken die Stapel weiter und gleiten in ihre neue Spalte.
+ * „Wenn die Weltordnung sich verschiebt“ rücken die Stapel weiter und gleiten in ihre neue Spalte;
+ * unter dem Nachziehstapel steht dann, wie oft und in welche Richtung.
  */
 </script>
 
@@ -21,7 +23,9 @@ import RuleLabel from './RuleLabel.svelte';
       <Pile {suit} cards={table.piles[suit] ?? []} />
     </div>
   {/each}
-  <div class="draw"><DrawPile count={table.deckCount} /></div>
+  <div class="draw">
+    <DrawPile count={table.deckCount}>{#if table.game?.settings.variant}<WorldOrder />{/if}</DrawPile>
+  </div>
 </section>
 
 <style>

@@ -23,9 +23,12 @@ const bottom = $derived(table.bottom);
  * Wie viel Höhe am Tisch nicht für Karten da ist (auf dem Handy gemessen): Ränder, Beschriftungen, die eigene
  * Kopfzeile und der Ablegen-Knopf mit Rückmeldung – plus der Platz gegenüber und der Tipp, wenn es sie gibt.
  */
-const CHROME = { base: 284, topSeat: 111, hint: 43 };
+const CHROME = { base: 302, topSeat: 111, hint: 43, worldOrder: 18 };
 const chrome = $derived(
-  CHROME.base + (game.players.length > 1 ? CHROME.topSeat : 0) + (game.settings.hints === 'off' ? 0 : CHROME.hint),
+  CHROME.base +
+    (game.players.length > 1 ? CHROME.topSeat : 0) +
+    (game.settings.hints === 'off' ? 0 : CHROME.hint) +
+    (game.settings.variant ? CHROME.worldOrder : 0),
 );
 </script>
 

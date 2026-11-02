@@ -4,9 +4,8 @@ import { table } from '../../state/table.svelte';
 import { turnCount } from '../../ui/format';
 
 /**
- * Hinweise zum Spiel oben am Tisch: letzte Runde, „Bis 13“ (allein mit Zahl der Züge), Regel-Modus, offene Karten,
- * Variante.
- * Ohne Hinweise bleibt die Leiste weg.
+ * Hinweise zum Spiel oben am Tisch: letzte Runde, „Bis 13“ (allein mit Zahl der Züge), Regel-Modus und offene
+ * Karten. Die Variante zeigt das Board selbst (WorldOrder.svelte). Ohne Hinweise bleibt die Leiste weg.
  */
 let { game }: { game: GameState } = $props();
 
@@ -18,7 +17,7 @@ const solo = $derived(game.players.length === 1);
 /** Allein bei „Bis 13“: die bisherigen Züge – genau die werden am Ende gewertet */
 const turns = $derived(turnsTaken(game, 0));
 const visible = $derived(
-  turnsLeft !== null || goal !== null || ruleMode !== 'classic' || openHands || game.settings.variant,
+  turnsLeft !== null || goal !== null || ruleMode !== 'classic' || openHands,
 );
 </script>
 
@@ -33,7 +32,6 @@ const visible = $derived(
     {#if ruleMode === 'custom'}<span class="tag">Eigene Regeln</span>{/if}
     {#if ruleMode === 'random'}<span class="tag">Ausgeloste Regeln</span>{/if}
     {#if openHands}<span class="tag">Offene Karten</span>{/if}
-    {#if game.settings.variant}<span class="tag">Weltordnung {table.rotations}× verschoben</span>{/if}
   </section>
 {/if}
 

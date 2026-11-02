@@ -1,9 +1,13 @@
 <script lang="ts">
+import type { Snippet } from 'svelte';
 import CardBack from '../../ui/CardBack.svelte';
 import { cardCount } from '../../ui/format';
 
-/** Der Nachziehstapel rechts neben den Ablagestapeln: verdeckte Karte und wie viele noch übrig sind. */
-let { count }: { count: number } = $props();
+/**
+ * Der Nachziehstapel rechts neben den Ablagestapeln: verdeckte Karte und wie viele noch übrig sind.
+ * Darunter ist Platz für einen Zusatz (`children`), z. B. den Zähler der Weltordnung.
+ */
+let { count, children }: { count: number; children?: Snippet } = $props();
 </script>
 
 <div class="draw">
@@ -20,6 +24,7 @@ let { count }: { count: number } = $props();
   <div class="count">
     {#if count === 0}leer{:else}<span class="wide-only">{cardCount(count)}</span><span class="phone-only" aria-hidden="true">{count}</span>{/if}
   </div>
+  {@render children?.()}
 </div>
 
 <style>
