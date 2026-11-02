@@ -47,7 +47,7 @@ describe('Regeln', () => {
     expect(rotatesRules(settings({ variant: false }), card(2, MAX_RANK))).toBe(false);
   });
 
-  it('rechnet alle elf Regeln mit Stapel 6 und Hand 4', () => {
+  it('rechnet alle neun Regeln mit Stapel 6 und Hand 4', () => {
     const results = Object.fromEntries(RULE_KEYS.map((key) => [key, RULES[key].calc(6, 4)]));
     expect(results).toEqual({
       plus: 10,
@@ -57,8 +57,6 @@ describe('Regeln', () => {
       min: 4,
       rminus: -2,
       dist: 2,
-      mirror: 9,
-      plain: 4,
       mean: 5,
       mod: 4,
     });

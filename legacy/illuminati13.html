@@ -394,7 +394,6 @@ input[type="text"], select {
     min:    { label: 'Minimum(Stapel, Hand)',  short: 'min(S, H)', calc: (s, h) => Math.min(s, h),          show: (s, h) => `min(${s}, ${h})` },
     rminus: { label: 'Hand − Stapel',          short: 'H − S',     calc: (s, h) => h - s,                   show: (s, h) => `${h} − ${s}` },
     dist:   { label: 'Abstand(Stapel, Hand)',  short: '|S − H|',   calc: (s, h) => Math.abs(s - h),         show: (s, h) => `|${s} − ${h}|` },
-    plain:  { label: 'Hand bleibt Hand',       short: '= Hand',    calc: (s, h) => h,                       show: (s, h) => `= ${h}` },
     mean:   { label: 'Mittelwert (abgerundet)', short: 'Ø(S, H)',  calc: (s, h) => Math.floor((s + h) / 2), show: (s, h) => `Ø(${s}, ${h})` },
   };
   const START_RULES = ['plus', 'minus', 'copy', 'max'];

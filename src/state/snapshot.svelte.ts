@@ -3,6 +3,7 @@
  * nach einem Schnappschuss und reicht ihn der neuen Version weiter.
  */
 import type { GameState } from '../core/game';
+import { isRuleKey } from '../core/rules';
 import { isOnline } from '../core/settings';
 import { afterMove, scheduleCpu } from './flow';
 import { sheets } from './sheets.svelte';
@@ -36,8 +37,9 @@ const isSnapshot = (data: unknown): data is Snapshot =>
 
 /** Übernimmt einen Schnappschuss (falls vorhanden) und setzt den Spielablauf fort. */
 export function restoreSnapshot(data: unknown): void {
-  // ein Spiel an zwei Geräten lebt von der Verbindung – die übersteht eine neue Version nicht
-  if (!isSnapshot(data) || isOnline(data.game.settings)) return;
+  // ein Spiel an zwei Geräten lebt von der Verbindung – die übersteht eine neue Version nicht;
+  // ebenso ein Spiel mit einer Regel, die es in dieser Version nicht mehr gibt
+  if (!isSnapshot(data) || isOnline(data.game.settings) || !data.game.rules.every(isRuleKey)) return;
   table.game = data.game;
   table.view = data.view;
   // die gewählten Karten stehen nicht im Schnappschuss – das Reihenfolge-Fenster beginnt daher neu beim Wählen

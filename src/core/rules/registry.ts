@@ -6,9 +6,7 @@ import { max } from './max';
 import { mean } from './mean';
 import { min } from './min';
 import { minus } from './minus';
-import { mirror } from './mirror';
 import { modulo } from './modulo';
-import { plain } from './plain';
 import { plus } from './plus';
 import type { Rule } from './rule';
 
@@ -26,8 +24,6 @@ export const RULES = {
   min,
   rminus: handMinusStack,
   dist: distance,
-  mirror,
-  plain,
   mean,
   mod: modulo,
 } satisfies Record<string, Rule>;

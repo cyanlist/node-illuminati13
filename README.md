@@ -10,7 +10,7 @@ die 13 bildet, bekommt pro Karte einen Punkt.
   Raum-Code wie „K7M4X“: Beide Geräte finden sich darüber bei öffentlichen Nostr-Relays (Bibliothek Trystero), die nur
   die verschlüsselten Verbindungsdaten weiterreichen. Ausweichweg ganz ohne fremde Dienste: zwei längere Codes per
   QR-Code oder Messenger austauschen. Die Kamera braucht eine https-Adresse (als Claude-Artifact geht nur Eintippen).
-- **Regeln der Stapel:** klassisch (wie in der Anleitung), eigene Zuordnung aus elf Regeln oder ausgelost.
+- **Regeln der Stapel:** klassisch (wie in der Anleitung), eigene Zuordnung aus neun Regeln oder ausgelost.
 - **Variante „Wenn die Weltordnung sich verschiebt“:** Landet eine 13 auf einem Stapel, rücken alle Stapel unter die nächste Regel weiter.
 - Abgelegte Karten fliegen nacheinander auf ihre Stapel, damit man sieht, was das Gegenüber spielt.
 

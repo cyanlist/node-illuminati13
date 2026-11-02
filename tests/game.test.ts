@@ -36,8 +36,8 @@ describe('neues Spiel', () => {
   });
 
   it('nimmt eigene Regeln und lost zufällige aus', () => {
-    const custom = newGame(settings({ ruleMode: 'custom', customRules: ['mirror', 'min', 'plain', 'mean'] }));
-    expect(custom.rules).toEqual(['mirror', 'min', 'plain', 'mean']);
+    const custom = newGame(settings({ ruleMode: 'custom', customRules: ['dist', 'min', 'mod', 'mean'] }));
+    expect(custom.rules).toEqual(['dist', 'min', 'mod', 'mean']);
     const random = newGame(settings({ ruleMode: 'random' }), seededRng(3));
     expect(new Set(random.rules).size).toBe(SUIT_INDICES.length);
   });

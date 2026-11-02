@@ -28,8 +28,14 @@ describe('Einstellungen', () => {
     for (const ruleMode of RULE_MODES) expect(normalizeSettings({ ruleMode }).ruleMode).toBe(ruleMode);
     for (const hints of HINT_LEVELS) expect(normalizeSettings({ hints }).hints).toBe(hints);
     for (const ending of ENDINGS) expect(normalizeSettings({ ending }).ending).toBe(ending);
-    const customRules = ['mirror', 'min', 'plain', 'mean'];
+    const customRules = ['dist', 'min', 'mod', 'mean'];
     expect(normalizeSettings({ customRules }).customRules).toEqual(customRules);
+  });
+
+  it('ersetzt eigene Regeln, die es nicht mehr gibt, durch die klassischen', () => {
+    // „13 − Hand“ und „Hand bleibt Hand“ gab es in früheren Versionen
+    const customRules = ['mirror', 'min', 'plain', 'mean'];
+    expect(normalizeSettings({ customRules }).customRules).toEqual([...CLASSIC_RULES]);
   });
 
   it('macht aus einem früher gespeicherten Namen „Du“ ein leeres Feld', () => {
@@ -49,7 +55,7 @@ describe('Einstellungen', () => {
   });
 
   it('zeigt im klassischen Modus die klassischen Regeln zum Bearbeiten', () => {
-    const stored = settings({ ruleMode: 'classic', customRules: ['mirror', 'min', 'plain', 'mean'] });
+    const stored = settings({ ruleMode: 'classic', customRules: ['dist', 'min', 'mod', 'mean'] });
     expect(settingsForEditing(stored).customRules).toEqual([...CLASSIC_RULES]);
   });
 

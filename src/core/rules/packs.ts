@@ -38,12 +38,12 @@ export const RULE_PACKS: readonly RulePack[] = [
     'max',
     'min',
   ]),
-  // 68 % · 2,9 Karten
-  fixedPack('mirror', 'Spiegelwelt', 'Alles verdreht – dafür große Beweise.', [
-    'mirror',
+  // 67 % · 3,0 Karten
+  fixedPack('twisted', 'Verdrehte Welt', 'Ungewohnte Rechnungen – dafür große Beweise.', [
     'rminus',
     'dist',
-    'min',
+    'mod',
+    'mean',
   ]),
   {
     id: 'random',
