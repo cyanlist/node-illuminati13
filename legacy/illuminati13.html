@@ -394,7 +394,6 @@ input[type="text"], select {
     min:    { label: 'Minimum(Stapel, Hand)',  short: 'min(S, H)', calc: (s, h) => Math.min(s, h),          show: (s, h) => `min(${s}, ${h})` },
     rminus: { label: 'Hand − Stapel',          short: 'H − S',     calc: (s, h) => h - s,                   show: (s, h) => `${h} − ${s}` },
     dist:   { label: 'Abstand(Stapel, Hand)',  short: '|S − H|',   calc: (s, h) => Math.abs(s - h),         show: (s, h) => `|${s} − ${h}|` },
-    mirror: { label: '13 − Hand',              short: '13 − H',    calc: (s, h) => 13 - h,                  show: (s, h) => `13 − ${h}` },
     plain:  { label: 'Hand bleibt Hand',       short: '= Hand',    calc: (s, h) => h,                       show: (s, h) => `= ${h}` },
     mean:   { label: 'Mittelwert (abgerundet)', short: 'Ø(S, H)',  calc: (s, h) => Math.floor((s + h) / 2), show: (s, h) => `Ø(${s}, ${h})` },
   };
@@ -843,7 +842,7 @@ input[type="text"], select {
     const mode = $('#setup input[name="rulemode"]:checked').value;
     const el = $('#rule-area');
     if (mode === 'random') {
-      el.innerHTML = `<p class="note">Ausgelost wird aus ${Object.keys(RULES).length} Regeln, die Zuordnung siehst du dann über den Stapeln. Mit der Variante wandern auch ausgeloste Regeln weiter.</p>`;
+      el.innerHTML = '';
       return;
     }
     const rules = mode === 'custom' ? ui.draftRules : START_RULES;

@@ -10,7 +10,6 @@ export type Deck = 'classic' | 'pinboard' | 'dollar' | 'dossier' | 'cipher' | 'o
 export interface DeckInfo {
   id: Deck;
   title: string;
-  description: string;
   /** Eckenrundung der Karten */
   radius: string;
   /** Jede Karte hängt ein wenig schief (Notizzettel) */
@@ -18,38 +17,12 @@ export interface DeckInfo {
 }
 
 export const DECKS: DeckInfo[] = [
-  { id: 'classic', title: 'Klassisch', description: 'Ruhig getönt, große Zahl – wie bisher.', radius: '8px' },
-  {
-    id: 'pinboard',
-    title: 'Pinnwand',
-    description: 'Notizzettel mit Pinnnadeln; ein roter Faden verbindet die Karten eines Beweises.',
-    radius: '3px',
-    tilt: true,
-  },
-  {
-    id: 'dollar',
-    title: 'Dollarnote',
-    description: 'Gravur wie auf dem Dollarschein – dessen Siegel steckt voller 13en.',
-    radius: '6px',
-  },
-  {
-    id: 'dossier',
-    title: 'Geheimakte',
-    description: 'Aktendeckel, Schreibmaschine und ein roter Stempel: streng geheim.',
-    radius: '4px',
-  },
-  {
-    id: 'cipher',
-    title: 'Entschlüsselt',
-    description: 'Leuchtendes Terminal; beim Beweis rattern die Ziffern, bis der wahre Wert einrastet.',
-    radius: '6px',
-  },
-  {
-    id: 'occult',
-    title: 'Okkult',
-    description: 'Nachtviolett mit Gold; Sonne, Mond, Feuer und Wasser statt der Farbsymbole.',
-    radius: '8px',
-  },
+  { id: 'classic', title: 'Klassisch', radius: '8px' },
+  { id: 'pinboard', title: 'Pinnwand', radius: '3px', tilt: true },
+  { id: 'dollar', title: 'Dollarnote', radius: '6px' },
+  { id: 'dossier', title: 'Geheimakte', radius: '4px' },
+  { id: 'cipher', title: 'Entschlüsselt', radius: '6px' },
+  { id: 'occult', title: 'Okkult', radius: '8px' },
 ];
 
 export const deckInfo = (deck: Deck): DeckInfo =>

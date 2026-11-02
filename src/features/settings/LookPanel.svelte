@@ -21,7 +21,6 @@ function choose(deck: Deck): void {
       onclick={() => choose(deck.id)}
     >
       <b>{deck.title}</b>
-      {#if deck.description}<small>{deck.description}</small>{/if}
       <DeckPreview deck={deck.id} />
     </button>
   {/each}
@@ -55,9 +54,5 @@ function choose(deck: Deck): void {
   .active {
     border-color: var(--accent);
     box-shadow: inset 0 0 0 1px var(--accent);
-  }
-
-  small {
-    color: var(--muted);
   }
 </style>
