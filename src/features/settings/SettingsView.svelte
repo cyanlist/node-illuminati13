@@ -3,10 +3,12 @@ import { sheets } from '../../state/sheets.svelte';
 import { saveTheme } from '../../storage';
 import { applyTheme, type Theme, themeChoice } from '../../ui/theme.svelte';
 import Segmented from '../../ui/Segmented.svelte';
+import DevInfo from './DevInfo.svelte';
 import LookPanel from './LookPanel.svelte';
 
 /**
- * Eigener Bereich für Einstellungen, die zum Gerät gehören statt zum Spiel: Kartendesign und Farbschema.
+ * Eigener Bereich für Einstellungen, die zum Gerät gehören statt zum Spiel: Kartendesign und Farbschema – und
+ * ganz unten die Entwicklerinfo zum Rauskopieren.
  * Liegt als ganze Seite über Startseite bzw. Tisch, damit dort nichts verloren geht.
  */
 const themes: { value: Theme; label: string }[] = [
@@ -56,6 +58,11 @@ function onkeydown(event: KeyboardEvent): void {
         }
       />
       <p class="muted hint">„Automatisch“ folgt der Einstellung deines Geräts.</p>
+    </section>
+
+    <section class="surface">
+      <h3 class="eyebrow">Für Tester*innen</h3>
+      <DevInfo />
     </section>
   </div>
 </div>
