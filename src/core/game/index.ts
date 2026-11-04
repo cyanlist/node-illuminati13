@@ -5,5 +5,5 @@ export { newGame } from './new-game';
 export { currentPlayer, markYou, playerAt } from './players';
 export * from './ruleset';
 export { type Ranking, ranking } from './score';
-export { finishTurn } from './turns';
+export { finishTurn, lastTurnPlayers } from './turns';
 export * from './types';

@@ -26,6 +26,9 @@ const TIMING = {
   cpuResume: 900,
 };
 
+/** So lange steht die Ankündigung „Letzte Runde!“ über dem Board (FinalRoundNotice) – der Computer wartet so lange */
+export const FINAL_NOTICE_MS = 3200;
+
 let cpuTimer: ReturnType<typeof setTimeout> | undefined;
 
 /** Wird gerufen, sobald das andere Gerät am Zug ist (online-flow.ts spielt dann wartende Züge ab). */
@@ -67,7 +70,9 @@ function beginTurn(): void {
   table.resetTurn();
   if (currentPlayer(game).cpu) {
     table.phase = 'cpu';
-    if (table.view === 'game') scheduleCpu(TIMING.cpuThinking);
+    // hat gerade die letzte Runde begonnen, darf man die Ankündigung erst in Ruhe lesen
+    const pause = finalRoundJustStarted(game) ? FINAL_NOTICE_MS : 0;
+    if (table.view === 'game') scheduleCpu(TIMING.cpuThinking + pause);
     return;
   }
   if (isOnline(game.settings) && game.current !== table.me) {
@@ -78,6 +83,12 @@ function beginTurn(): void {
   // zu zweit wird das Gerät mit verdeckten Karten weitergegeben – mit offenen Karten ist das unnötig
   const handoff = game.settings.mode === 'hotseat' && !game.settings.openHands;
   table.phase = handoff ? 'handoff' : 'play';
+}
+
+/** Der letzte Eintrag im Protokoll eröffnet die letzte Runde (Ziel erreicht oder Nachziehstapel aufgebraucht). */
+function finalRoundJustStarted(game: GameState): boolean {
+  const kind = game.log.at(-1)?.kind;
+  return kind === 'goal' || kind === 'final';
 }
 
 /** Spielt einen Zug ab und führt danach den Rundenablauf weiter. Eigene Züge gehen an das andere Gerät. */

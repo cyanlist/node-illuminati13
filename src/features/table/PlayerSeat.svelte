@@ -1,5 +1,5 @@
 <script lang="ts">
-import { type GameState, playerAt, rulesetFor } from '../../core/game';
+import { type GameState, lastTurnPlayers, playerAt, rulesetFor } from '../../core/game';
 import { table } from '../../state/table.svelte';
 import HandCards from './HandCards.svelte';
 import Seat from './Seat.svelte';
@@ -31,6 +31,7 @@ const showsHand = $derived(index === table.viewer);
   combos={table.combos(index)}
   active={index === game.current && game.players.length > 1 && table.phase !== 'over'}
   compact={!showsHand}
+  lastTurn={lastTurnPlayers(game).includes(index)}
   thinking={((player.cpu && table.phase === 'cpu') || (index !== table.me && table.phase === 'remote')) && !table.anim}
 >
   {#if showsHand}

@@ -27,3 +27,10 @@ export function finishTurn(state: GameState): void {
     state.log.push({ kind: 'skip', player: state.current });
   }
 }
+
+/** In der letzten Runde: wer noch einen Zug hat, in Zugreihenfolge ab der Person am Zug – sonst niemand. */
+export function lastTurnPlayers(state: GameState): number[] {
+  if (state.finalTurnsLeft === null || state.over) return [];
+  const count = state.players.length;
+  return Array.from({ length: Math.min(state.finalTurnsLeft, count) }, (_, i) => (state.current + i) % count);
+}

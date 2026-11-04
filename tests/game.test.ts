@@ -6,6 +6,7 @@ import {
   finishTurn,
   type GameState,
   HAND_SIZE,
+  lastTurnPlayers,
   markYou,
   newGame,
   ranking,
@@ -148,6 +149,21 @@ describe('Rundenablauf', () => {
     finishTurn(game);
     expect(game.over).toBe(true);
     expect(game.log.at(-1)).toEqual({ kind: 'end' });
+  });
+
+  it('in der letzten Runde ist klar, wer noch einen Zug hat', () => {
+    const game = newGame(settings({ mode: 'hotseat' }), seededRng(2));
+    game.current = 0;
+    expect(lastTurnPlayers(game)).toEqual([]);
+    game.deck = [];
+    finishTurn(game);
+    // Person 0 hat den Stapel geleert: Person 1 und danach Person 0 haben noch je einen Zug
+    expect(lastTurnPlayers(game)).toEqual([1, 0]);
+    finishTurn(game);
+    expect(lastTurnPlayers(game)).toEqual([0]);
+    finishTurn(game);
+    expect(game.over).toBe(true);
+    expect(lastTurnPlayers(game)).toEqual([]);
   });
 
   it('wer keine Karten mehr hat, setzt aus', () => {

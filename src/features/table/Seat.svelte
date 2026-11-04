@@ -15,23 +15,38 @@ interface Props {
   name: string;
   cpu: boolean;
   points: number;
-  /** Bei „Bis 13“ das Ziel – die Punkte stehen dann als „7 / 13“ da */
+  /** Mit Punkteziel das Ziel – die Punkte stehen dann als „7 / 13“ da */
   goal?: number | null;
   combos: number;
   /** Diese Person ist am Zug */
   active: boolean;
   /** Der Computer bzw. das andere Gerät überlegt gerade */
   thinking?: boolean;
+  /** Letzte Runde, und diese Person hat noch einen Zug – als Marke oben am Rand des Platzes */
+  lastTurn?: boolean;
   /** Kleine Karten neben dem Avatar statt in einer eigenen Reihe */
   compact?: boolean;
   /** Beschriftung für Screenreader, z. B. „Platz oben“ */
   label: string;
   children: Snippet;
 }
-let { name, cpu, points, goal = null, combos, active, thinking = false, compact = false, label, children }: Props = $props();
+let {
+  name,
+  cpu,
+  points,
+  goal = null,
+  combos,
+  active,
+  thinking = false,
+  lastTurn = false,
+  compact = false,
+  label,
+  children,
+}: Props = $props();
 </script>
 
 <section class="seat" class:active class:cpu class:compact style:--hue={hueFor(name)} aria-label={label}>
+  {#if lastTurn}<span class="last-turn">Letzter Zug</span>{/if}
   <Avatar {name} {cpu} size="44px" />
   <header>
     <span class="name">{name}</span>
@@ -49,6 +64,7 @@ let { name, cpu, points, goal = null, combos, active, thinking = false, compact 
   .seat {
     /* die Farbe dieser Person; der Computer bleibt neutral */
     --player: hsl(var(--hue) var(--player-s) var(--player-l));
+    position: relative;
     padding: 12px clamp(12px, 2.4vw, 22px) 14px;
     background:
       linear-gradient(100deg, color-mix(in srgb, var(--player) 14%, transparent), transparent 45%),
@@ -142,5 +158,21 @@ let { name, cpu, points, goal = null, combos, active, thinking = false, compact 
     border-radius: 6px;
     font-size: 11px;
     line-height: 1.4;
+  }
+
+  /* wie ein Aufkleber auf dem oberen Rand – braucht keinen Platz in der Zeile */
+  .last-turn {
+    position: absolute;
+    top: -9px;
+    right: 16px;
+    z-index: 1;
+    padding: 1px 10px 2px;
+    border-radius: 999px;
+    background: var(--danger);
+    color: var(--surface);
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    box-shadow: 0 0 0 3px var(--bg);
   }
 </style>

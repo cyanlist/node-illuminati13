@@ -58,8 +58,17 @@ const visible = $derived(
     white-space: nowrap;
   }
 
+  /* letzte Runde: in der Warnfarbe, mit sanftem Pulsieren */
   .warn {
-    color: var(--text);
-    border-color: var(--text);
+    color: var(--danger);
+    border-color: var(--danger);
+    background: color-mix(in srgb, var(--danger) 12%, var(--surface));
+    animation: pulse 1.8s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    50% {
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--danger) 25%, transparent);
+    }
   }
 </style>

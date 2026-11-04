@@ -5,6 +5,7 @@ import Actions from './Actions.svelte';
 import { table } from '../../state/table.svelte';
 import Board from './Board.svelte';
 import ConnectionBanner from './ConnectionBanner.svelte';
+import FinalRoundNotice from './FinalRoundNotice.svelte';
 import GameLog from './GameLog.svelte';
 import GameStatus from './GameStatus.svelte';
 import PlayerSeat from './PlayerSeat.svelte';
@@ -45,6 +46,7 @@ const chrome = $derived(
       <div class="board-area">
         <Board />
         <ProofStage {game} />
+        <FinalRoundNotice {game} />
       </div>
       <PlayerSeat {game} index={bottom} position="bottom" />
     </div>
