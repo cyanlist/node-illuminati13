@@ -1,0 +1,3 @@
+# Zeilenenden: im Repository und beim Auschecken immer LF – so, wie Biome es erwartet, auch unter Windows
+# (sonst wandelt core.autocrlf beim Branch-Wechsel in CRLF um, und `npm run verify` meldet Formatfehler).
+* text=auto eol=lf
