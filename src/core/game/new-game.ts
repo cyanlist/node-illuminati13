@@ -2,6 +2,7 @@ import { createDeck, type Rng, SUIT_INDICES, shuffle } from '../cards';
 import { CLASSIC_RULES, type RuleKey, randomRules } from '../rules';
 import type { Settings } from '../settings';
 import { createPlayer } from './players';
+import { rulesetFor } from './ruleset';
 import { type GameState, HAND_SIZE } from './types';
 
 /** Mischt, teilt aus und legt fest, wer beginnt und welche Regeln gelten. */
@@ -28,7 +29,8 @@ export function newGame(settings: Settings, rng: Rng = Math.random): GameState {
   };
   if (settings.ruleMode !== 'classic')
     state.log.push({ kind: 'rules', ruleMode: settings.ruleMode, rules: [...rules] });
-  if (settings.variant) state.log.push({ kind: 'variant', dir: settings.dir });
+  const { announcement } = rulesetFor(settings).placement;
+  if (announcement) state.log.push(announcement);
   if (count > 1) state.log.push({ kind: 'begins', player: state.current });
   return state;
 }

@@ -1,7 +1,7 @@
 import type { Card, SuitIndex } from '../cards';
-import { rotateRules, rotatesRules } from '../rules';
 import { TARGET, trueValue } from '../values';
 import { currentPlayer } from './players';
+import { type Ruleset, rulesetFor } from './ruleset';
 import {
   type GameState,
   HAND_SIZE,
@@ -17,14 +17,16 @@ import {
 export function applyMove(state: GameState, move: Move): MoveResult {
   if (state.over) throw new Error('Das Spiel ist schon vorbei.');
   const player = currentPlayer(state);
+  const ruleset = rulesetFor(state.settings);
   return move.type === 'proof'
-    ? applyProof(state, player, move.cardIds, move.topPick ?? {})
-    : applyDiscard(state, player, move.cardId);
+    ? applyProof(state, ruleset, player, move.cardIds, move.topPick ?? {})
+    : applyDiscard(state, ruleset, player, move.cardId);
 }
 
 /** Beweis: Karten, die zusammen 13 ergeben, bringen je einen Punkt; danach auf fünf Karten nachziehen. */
 function applyProof(
   state: GameState,
+  ruleset: Ruleset,
   player: Player,
   cardIds: number[],
   topPick: Partial<Record<SuitIndex, number>>,
@@ -42,8 +44,8 @@ function applyProof(
   const ordered = [...cards].sort(
     (a, b) => Number(topPick[a.suit] === a.id) - Number(topPick[b.suit] === b.id),
   );
-  const steps = ordered.map((card) => placeCard(state, card));
-  const drawn = refill(state, player, HAND_SIZE);
+  const steps = ordered.map((card) => placeCard(state, ruleset, card));
+  const drawn = ruleset.draw.refill(state, player, HAND_SIZE);
 
   logMove(state, { kind: 'proof', player: state.current, parts, points: cards.length });
   logRotations(state, steps);
@@ -51,14 +53,14 @@ function applyProof(
 }
 
 /** Noch keine Erleuchtung: eine Karte auf ihren Stapel, eine nachziehen. */
-function applyDiscard(state: GameState, player: Player, cardId: number): MoveResult {
+function applyDiscard(state: GameState, ruleset: Ruleset, player: Player, cardId: number): MoveResult {
   const [card] = cardsFromHand(player, [cardId]);
   if (!card) throw new Error('Keine Karte zum Abwerfen gewählt.');
   const handSize = player.hand.length;
 
   removeFromHand(player, [card]);
-  const steps = [placeCard(state, card)];
-  const drawn = refill(state, player, handSize);
+  const steps = [placeCard(state, ruleset, card)];
+  const drawn = ruleset.draw.refill(state, player, handSize);
 
   logMove(state, { kind: 'discard', player: state.current, card });
   logRotations(state, steps);
@@ -79,27 +81,13 @@ function removeFromHand(player: Player, cards: readonly Card[]): void {
   player.hand = player.hand.filter((card) => !ids.has(card.id));
 }
 
-function placeCard(state: GameState, card: Card): PlacementStep {
+/** Legt die Karte auf ihren Stapel; was danach passiert (z. B. die Weltordnung verschieben), regelt der Baustein. */
+function placeCard(state: GameState, ruleset: Ruleset, card: Card): PlacementStep {
   const pile = state.piles[card.suit];
   if (!pile) throw new Error(`Es gibt keinen Stapel ${card.suit}.`);
   pile.push(card);
-  const rotated = rotatesRules(state.settings, card);
-  if (rotated) {
-    state.rules = rotateRules(state.rules, state.settings.dir);
-    state.rotations++;
-  }
+  const rotated = ruleset.placement.afterPlace(state, card);
   return { card, rules: [...state.rules], rotations: state.rotations, rotated };
-}
-
-function refill(state: GameState, player: Player, target: number): number[] {
-  const drawn: number[] = [];
-  while (player.hand.length < target) {
-    const card = state.deck.pop();
-    if (!card) break;
-    player.hand.push(card);
-    drawn.push(card.id);
-  }
-  return drawn;
 }
 
 function logMove(state: GameState, entry: LogEntry): void {

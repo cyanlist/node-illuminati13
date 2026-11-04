@@ -1,7 +1,6 @@
 import { type Card, pickRandom, type Rng, SUIT_INDICES, type SuitIndex } from './cards';
 import { findCombos, largestCombos } from './combos';
-import { currentPlayer, type GameState, type Move } from './game';
-import { rotateRules, rotatesRules } from './rules';
+import { currentPlayer, type GameState, type Move, rulesetFor } from './game';
 import type { CpuLevel } from './settings';
 
 /**
@@ -78,9 +77,7 @@ function bestDiscard(state: GameState, hand: readonly Card[], rng: Rng): Card {
 function discardScore(state: GameState, hand: readonly Card[], card: Card): number {
   const piles = state.piles.map((pile) => [...pile]);
   piles[card.suit]?.push(card);
-  const rules = rotatesRules(state.settings, card)
-    ? rotateRules(state.rules, state.settings.dir)
-    : state.rules;
+  const rules = rulesetFor(state.settings).placement.rulesAfter(state, card);
   const combos = findCombos(
     hand.filter((c) => c.id !== card.id),
     piles,

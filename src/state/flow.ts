@@ -5,14 +5,13 @@
  */
 import { chooseCpuMove } from '../core/ai';
 import {
-  beatsBest,
   currentPlayer,
   finishTurn,
   type GameState,
   type Move,
   markYou,
   newGame,
-  soloScore,
+  rulesetFor,
 } from '../core/game';
 import { isOnline, type Settings } from '../core/settings';
 import { loadSoloBest, saveSoloBest } from '../storage';
@@ -116,11 +115,11 @@ function endGame(game: GameState): void {
   table.phase = 'over';
   sheets.resultsHidden = false;
   if (game.players.length > 1) return;
-  const { ending } = game.settings;
+  const { ending } = rulesetFor(game.settings);
   // das Ergebnisfenster vergleicht mit dem Bestwert von vor diesem Spiel
-  table.soloBest = loadSoloBest(ending);
-  const score = soloScore(game);
-  if (score !== null && beatsBest(game, score, table.soloBest)) saveSoloBest(ending, score);
+  table.soloBest = loadSoloBest(ending.recordName);
+  const score = ending.soloScore(game);
+  if (score !== null && ending.beatsBest(score, table.soloBest)) saveSoloBest(ending.recordName, score);
 }
 
 export function goHome(): void {

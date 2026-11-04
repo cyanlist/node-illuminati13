@@ -15,7 +15,7 @@ export const turnCount = (n: number): string => `${n} ${n === 1 ? 'Zug' : 'Züge
 /** Für „in … “: „in 1 Zug“, „in 3 Zügen“ */
 export const inTurns = (n: number): string => `in ${n} ${n === 1 ? 'Zug' : 'Zügen'}`;
 
-export const cardCount = (n: number): string => `${n} ${n === 1 ? 'Karte' : 'Karten'}`;
+export { cardCount } from '../core/cards';
 
 /** Rechenweg unter einer Handkarte, z. B. „4 + 5“ oder „= 10“. */
 export function formulaText(value: TrueValue): string {

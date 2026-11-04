@@ -1,32 +1,26 @@
 <script lang="ts">
 import { SUIT_INDICES, SUITS } from '../../core/cards';
+import { fullDeck, rulesetFor } from '../../core/game';
 import { CLASSIC_RULES, RULE_KEYS, RULES } from '../../core/rules';
 import { sheets } from '../../state/sheets.svelte';
 import { table } from '../../state/table.svelte';
 import { ruleExample, ruleLabel } from '../../ui/format';
-import { DIR_LABELS } from '../../ui/labels';
 import Motto from '../../ui/Motto.svelte';
 import Sheet from '../../ui/Sheet.svelte';
 import SuitSymbol from '../../ui/SuitSymbol.svelte';
 
 /**
  * Die Spielregeln in Kürze. Auf der Startseite steht alles, was man einstellen kann; im Spiel nur, was für dieses
- * Spiel gilt – die aktuellen Regeln der Stapel mit Beispiel und nur die Tipps, Varianten und das Spielende, die
- * tatsächlich eingeschaltet sind.
+ * Spiel gilt – die aktuellen Regeln der Stapel mit Beispiel und die Texte der Bausteine im Regelwerk: Spielende,
+ * Tipp-Stufe und Variante, soweit eingeschaltet.
  */
 const game = $derived(table.shownGame);
-const settings = $derived(game?.settings ?? null);
+/** Im Spiel das Regelwerk dieses Spiels; auf der Startseite null */
+const ruleset = $derived(game ? rulesetFor(game.settings) : null);
 const rules = $derived(game ? table.rules : CLASSIC_RULES);
 const extraRules = RULE_KEYS.filter((key) => !CLASSIC_RULES.includes(key));
 const solo = $derived(game?.players.length === 1);
-/** Im Spiel: ein Abschnitt erscheint nur, wenn er für dieses Spiel gilt */
-const shows = (active: boolean): boolean => !settings || active;
-
-const HINT_TEXT = {
-  exists: 'Der Tipp-Knopf verrät nur, ob es gerade eine 13 gibt – welche, findest du selbst heraus.',
-  nudge: 'Der Tipp-Knopf verrät, ob es gerade eine 13 gibt und aus wie vielen Karten.',
-  full: 'Der Tipp-Knopf markiert die Karten einer 13 – zum Lernen der Regeln.',
-} as const;
+const HINT_COST_TEXT = 'Ein Tipp kostet einen Punkt – einmal pro Zug, und nur, wenn du einen Punkt hast.';
 
 const close = (): void => {
   sheets.rulesOpen = false;
@@ -39,13 +33,7 @@ const close = (): void => {
   <h3>Ziel</h3>
   <p>
     Bilde aus deinen Handkarten immer wieder die 13. Jede Karte in einer gültigen Kombination bringt einen Punkt.
-    {#if solo && settings?.ending === 'thirteen'}
-      Schaffe 13 Punkte in möglichst wenigen Zügen.
-    {:else if solo}
-      Sammle so viele Punkte wie möglich.
-    {:else}
-      Wer am Ende die meisten Punkte hat, gewinnt.
-    {/if}
+    {(ruleset?.ending ?? fullDeck).aimText(solo)}
   </p>
 
   <h3>1. Die wahren Werte entschlüsseln</h3>
@@ -85,29 +73,9 @@ const close = (): void => {
   </ul>
 
   <h3>3. Das Ende der Offenbarung</h3>
-  {#if settings?.ending === 'thirteen'}
-    <p>
-      {#if solo}
-        Das Spiel endet, sobald du 13 Punkte hast – gewertet wird, in wie vielen Zügen du sie schaffst. Ist der
-        Nachziehstapel vorher leer, hast du noch einen letzten Zug.
-      {:else}
-        Wer zuerst 13 Punkte hat, beendet das Spiel. Die Runde wird noch zu Ende gespielt, damit alle gleich viele Züge
-        hatten – dann gewinnen die meisten Punkte. Ist der Nachziehstapel vorher leer, spielt jede*r noch einen letzten
-        Zug. Bei Punktgleichstand gewinnt, wer mehr 13er-Kombinationen gefunden hat.
-      {/if}
-    </p>
-  {:else}
-    <p>
-      {#if solo}
-        Ist der Nachziehstapel leer, hast du noch einen letzten Zug. Danach zählen deine Punkte.
-      {:else}
-        Ist der Nachziehstapel leer, spielt jede*r noch einen letzten Zug. Bei Punktgleichstand gewinnt, wer mehr
-        13er-Kombinationen gefunden hat.
-      {/if}
-    </p>
-  {/if}
+  <p>{(ruleset?.ending ?? fullDeck).endText(solo)}</p>
 
-  {#if !settings}
+  {#if !ruleset}
     <h3>Kürzer: Bis 13</h3>
     <p>
       Wer zuerst 13 Punkte hat, beendet das Spiel. Die Runde wird noch zu Ende gespielt, damit alle gleich viele Züge
@@ -131,26 +99,28 @@ const close = (): void => {
     </table>
   {/if}
 
-  {#if shows(settings?.hints !== 'off')}
+  {#if ruleset}
+    {#if ruleset.hint}
+      <h3>Tipps</h3>
+      <p>{ruleset.hint.rulesText} {game?.settings.hintCost ? HINT_COST_TEXT : ''}</p>
+    {/if}
+    {#if ruleset.placement.rulesSection}
+      <h3>{ruleset.placement.rulesSection.title}</h3>
+      <p>{ruleset.placement.rulesSection.text}</p>
+    {/if}
+  {:else}
     <h3>Tipps</h3>
     <p>
-      {#if settings && settings.hints !== 'off'}
-        {HINT_TEXT[settings.hints]}
-        {settings.hintCost ? 'Ein Tipp kostet einen Punkt – einmal pro Zug, und nur, wenn du einen Punkt hast.' : ''}
-      {:else}
-        Auf der Startseite stellst du ein, wie viel der Tipp-Knopf verrät: gar nichts (aus), nur ob es eine 13 gibt
-        (ja oder nein), zusätzlich aus wie vielen Karten (Andeutung) oder welche Karten es sind (volle Hilfe). Wahlweise kostet ein Tipp einen Punkt
-        – einmal pro Zug, und nur, wenn du einen Punkt hast.
-      {/if}
+      Auf der Startseite stellst du ein, wie viel der Tipp-Knopf verrät: gar nichts (aus), nur ob es eine 13 gibt
+      (ja oder nein), zusätzlich aus wie vielen Karten (Andeutung) oder welche Karten es sind (volle Hilfe). Wahlweise
+      kostet ein Tipp einen Punkt – einmal pro Zug, und nur, wenn du einen Punkt hast.
     </p>
-  {/if}
 
-  {#if shows(settings?.variant === true)}
     <h3>Variante: Wenn die Weltordnung sich verschiebt</h3>
     <p>
-      Landet eine 13 auf einem Stapel, rücken alle vier Stapel eine Position
-      {settings ? DIR_LABELS[settings.dir] : 'in die vereinbarte Richtung'} weiter – der letzte wieder an den Anfang. Die
-      Regeln bleiben an ihrem Platz: Jeder Stapel gilt ab jetzt nach der Regel, unter der er nun liegt.
+      Landet eine 13 auf einem Stapel, rücken alle vier Stapel eine Position in die vereinbarte Richtung weiter – der
+      letzte wieder an den Anfang. Die Regeln bleiben an ihrem Platz: Jeder Stapel gilt ab jetzt nach der Regel, unter
+      der er nun liegt.
     </p>
   {/if}
 

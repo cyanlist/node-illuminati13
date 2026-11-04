@@ -6,6 +6,9 @@ export const SUITS = [
   { key: 'kreuz', name: 'Kreuz' },
 ] as const;
 
+/** „1 Karte“, „3 Karten“ */
+export const cardCount = (n: number): string => `${n} ${n === 1 ? 'Karte' : 'Karten'}`;
+
 export type SuitIndex = 0 | 1 | 2 | 3;
 export const SUIT_INDICES: readonly SuitIndex[] = [0, 1, 2, 3];
 

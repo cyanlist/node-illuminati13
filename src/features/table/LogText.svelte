@@ -1,6 +1,6 @@
 <script lang="ts">
 import { SUIT_INDICES, SUITS } from '../../core/cards';
-import { GOAL_POINTS, type GameState, type LogEntry, playerAt, ranking } from '../../core/game';
+import { type GameState, type LogEntry, playerAt, ranking, rulesetFor } from '../../core/game';
 import Chip from '../../ui/Chip.svelte';
 import { calcText, pts, ruleLabel } from '../../ui/format';
 import Subject from '../../ui/Subject.svelte';
@@ -12,6 +12,7 @@ interface Props {
 }
 let { game, entry }: Props = $props();
 
+const goal = $derived(rulesetFor(game.settings).ending.goal);
 const winner = $derived(entry.kind === 'end' && game.players.length > 1 ? ranking(game) : null);
 </script>
 
@@ -53,8 +54,8 @@ const winner = $derived(entry.kind === 'end' && game.players.length > 1 ? rankin
 {:else if entry.kind === 'goal'}
   <Subject
     player={playerAt(game, entry.player)}
-    third="hat {GOAL_POINTS} Punkte erreicht!"
-    second="hast {GOAL_POINTS} Punkte erreicht!"
+    third="hat {goal} Punkte erreicht!"
+    second="hast {goal} Punkte erreicht!"
   />
   {#if entry.turnsLeft > 0}
     Die Runde wird noch zu Ende gespielt – {entry.turnsLeft === 1 ? 'ein letzter Zug' : `noch ${entry.turnsLeft} Züge`}.

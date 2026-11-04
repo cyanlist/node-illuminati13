@@ -1,4 +1,4 @@
-import { type Ending, normalizeSettings, type Settings } from './core/settings';
+import { normalizeSettings, type Settings } from './core/settings';
 import { type Deck, isDeck } from './ui/deck.svelte';
 import { isTheme, type Theme } from './ui/theme.svelte';
 
@@ -6,8 +6,7 @@ import { isTheme, type Theme } from './ui/theme.svelte';
 // Vorschau), läuft alles ohne ihn weiter.
 
 const SETTINGS_KEY = 'illu13-settings';
-/** Bestwert allein: Punkte im ganzen Spiel, bei „Bis 13“ die wenigsten Züge */
-const SOLO_BEST_KEYS: Record<Ending, string> = { deck: 'illu13-best-solo', thirteen: 'illu13-best-solo-13' };
+
 const DECK_KEY = 'illu13-deck';
 const THEME_KEY = 'illu13-theme';
 
@@ -31,11 +30,12 @@ function write(key: string, value: unknown): void {
 export const loadSettings = (): Settings => normalizeSettings(read(SETTINGS_KEY));
 export const saveSettings = (settings: Settings): void => write(SETTINGS_KEY, settings);
 
-export function loadSoloBest(ending: Ending): number {
-  const value = read(SOLO_BEST_KEYS[ending]);
+/** Bestwert allein – je Spielende unter eigenem Namen (`Ending.recordName`), z. B. illu13-best-solo-13 */
+export function loadSoloBest(recordName: string): number {
+  const value = read(`illu13-${recordName}`);
   return typeof value === 'number' ? value : 0;
 }
-export const saveSoloBest = (ending: Ending, score: number): void => write(SOLO_BEST_KEYS[ending], score);
+export const saveSoloBest = (recordName: string, score: number): void => write(`illu13-${recordName}`, score);
 
 /** Kartendesign dieses Geräts – getrennt von den Spieleinstellungen, die an zwei Geräten mitreisen. */
 export function loadDeck(): Deck {

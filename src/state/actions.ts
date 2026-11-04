@@ -2,9 +2,9 @@
  * Was die Person am Gerät tun kann: Karten markieren, Tipp holen, ablegen, Reihenfolge wählen, aufdecken.
  */
 import type { Card, SuitIndex } from '../core/cards';
-import { canTakeHint, takeHint } from '../core/game';
+import { canTakeHint, NO_THIRTEEN, rulesetFor, takeHint } from '../core/game';
 import { isOnline } from '../core/settings';
-import { cardCount, num } from '../ui/format';
+import { num } from '../ui/format';
 import { playTurn } from './flow';
 import { send } from './online.svelte';
 import { judgeSelection } from './selection';
@@ -20,13 +20,14 @@ export function toggleCard(id: number): void {
 }
 
 /**
- * Tipp je nach Einstellung: ja oder nein (nur ob es eine 13 gibt), Andeutung (zusätzlich aus wie vielen Karten)
- * oder volle Hilfe (die Karten werden markiert). Bezahlt wird ein Tipp nur einmal pro Zug; danach zeigt er
- * dasselbe gratis.
+ * Tipp: Was er zeigt, bestimmt die Tipp-Stufe des Regelwerks – eine Meldung und ggf. markierte Karten.
+ * Bezahlt wird ein Tipp nur einmal pro Zug; danach zeigt er dasselbe gratis.
  */
 export function showHint(): void {
   if (!table.canPlay) return;
   const game = requireGame();
+  const { hint } = rulesetFor(game.settings);
+  if (!hint) return;
   if (table.hintCombo === null) {
     if (!canTakeHint(game)) return;
     const at = game.log.length;
@@ -35,17 +36,11 @@ export function showHint(): void {
     if (isOnline(game.settings) && game.settings.hintCost) send({ type: 'hint', at });
   }
   const combo = table.hintCombo;
-
-  if (combo.length === 0) {
-    table.message = 'Hier verbirgt sich keine 13. Wähle eine Karte zum Abwerfen.';
-  } else if (game.settings.hints === 'full') {
-    table.selected = [...combo];
-    table.hinted = [...combo];
-    table.message = '';
-  } else if (game.settings.hints === 'nudge') {
-    table.message = `Hier steckt eine 13 aus ${cardCount(combo.length)}.`;
-  } else {
-    table.message = 'Hier steckt eine 13.';
+  const reveal = combo.length === 0 ? NO_THIRTEEN : hint.reveal(combo);
+  table.message = reveal.message;
+  if (reveal.highlight.length > 0) {
+    table.selected = [...reveal.highlight];
+    table.hinted = [...reveal.highlight];
   }
 }
 

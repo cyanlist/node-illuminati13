@@ -1,6 +1,7 @@
 <script lang="ts">
 import { cubicInOut } from 'svelte/easing';
 import { flip } from 'svelte/animate';
+import { rulesetFor } from '../../core/game';
 import { table } from '../../state/table.svelte';
 import DrawPile from './DrawPile.svelte';
 import Pile from './Pile.svelte';
@@ -12,6 +13,8 @@ import WorldOrder from './WorldOrder.svelte';
  * „Wenn die Weltordnung sich verschiebt“ rücken die Stapel weiter und gleiten in ihre neue Spalte;
  * unter dem Nachziehstapel steht dann, wie oft und in welche Richtung.
  */
+
+const worldOrder = $derived(!!table.game && rulesetFor(table.game.settings).placement.id === 'world-order');
 </script>
 
 <section class="board surface" aria-label="Vier Ablagestapel und Nachziehstapel">
@@ -24,7 +27,7 @@ import WorldOrder from './WorldOrder.svelte';
     </div>
   {/each}
   <div class="draw">
-    <DrawPile count={table.deckCount}>{#if table.game?.settings.variant}<WorldOrder />{/if}</DrawPile>
+    <DrawPile count={table.deckCount}>{#if worldOrder}<WorldOrder />{/if}</DrawPile>
   </div>
 </section>
 

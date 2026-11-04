@@ -1,5 +1,5 @@
 <script lang="ts">
-import { type GameState, goalOf, turnsTaken } from '../../core/game';
+import { type GameState, rulesetFor, turnsTaken } from '../../core/game';
 import { table } from '../../state/table.svelte';
 import { turnCount } from '../../ui/format';
 
@@ -12,7 +12,7 @@ let { game }: { game: GameState } = $props();
 const turnsLeft = $derived(table.phase === 'over' ? null : game.finalTurnsLeft);
 const ruleMode = $derived(game.settings.ruleMode);
 const openHands = $derived(game.settings.openHands && game.players.length > 1);
-const goal = $derived(goalOf(game));
+const goal = $derived(rulesetFor(game.settings).ending.goal);
 const solo = $derived(game.players.length === 1);
 /** Allein bei „Bis 13“: die bisherigen Züge – genau die werden am Ende gewertet */
 const turns = $derived(turnsTaken(game, 0));

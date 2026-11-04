@@ -3,7 +3,6 @@ import { chooseCpuMove } from '../src/core/ai';
 import { createDeck, MAX_RANK, SUIT_INDICES } from '../src/core/cards';
 import {
   applyMove,
-  beatsBest,
   finishTurn,
   type GameState,
   GOAL_POINTS,
@@ -11,7 +10,7 @@ import {
   markYou,
   newGame,
   ranking,
-  soloScore,
+  rulesetFor,
   turnsTaken,
 } from '../src/core/game';
 import type { Settings } from '../src/core/settings';
@@ -249,20 +248,22 @@ describe('Bis 13', () => {
 
   it('Bestwert allein: Punkte im ganzen Spiel, bei „Bis 13“ die wenigsten Züge', () => {
     const deck = newGame(settings({ mode: 'solo' }), seededRng(4));
+    const full = rulesetFor(deck.settings).ending;
     if (deck.players[0]) deck.players[0].points = 20;
-    expect(soloScore(deck)).toBe(20);
-    expect(beatsBest(deck, 20, 18)).toBe(true);
+    expect(full.soloScore(deck)).toBe(20);
+    expect(full.beatsBest(20, 18)).toBe(true);
 
     const short = newGame(settings({ mode: 'solo', ending: 'thirteen' }), seededRng(4));
-    expect(soloScore(short)).toBe(null);
+    const thirteen = rulesetFor(short.settings).ending;
+    expect(thirteen.soloScore(short)).toBe(null);
     short.log.push(
       { kind: 'discard', player: 0, card: card(0, 1) },
       { kind: 'goal', player: 0, turnsLeft: 0 },
     );
-    expect(soloScore(short)).toBe(1);
-    expect(beatsBest(short, 9, 0)).toBe(true);
-    expect(beatsBest(short, 9, 8)).toBe(false);
-    expect(beatsBest(short, 7, 8)).toBe(true);
+    expect(thirteen.soloScore(short)).toBe(1);
+    expect(thirteen.beatsBest(9, 0)).toBe(true);
+    expect(thirteen.beatsBest(9, 8)).toBe(false);
+    expect(thirteen.beatsBest(7, 8)).toBe(true);
   });
 
   it('ganze Partie Computer gegen Computer endet vor dem leeren Stapel', () => {

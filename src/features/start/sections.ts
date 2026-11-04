@@ -3,9 +3,9 @@
  * Wörtern und das Fenster zum Anpassen. Neuer Bereich: Panel anlegen und hier eintragen.
  */
 import type { Component } from 'svelte';
+import { HINTS_OFF, hintStyle } from '../../core/game';
 import { RULE_PACKS, RULES } from '../../core/rules';
 import type { Settings } from '../../core/settings';
-import { HINT_TITLES } from '../../ui/labels';
 import EndingPanel from './EndingPanel.svelte';
 import ExtrasPanel from './ExtrasPanel.svelte';
 import HintsPanel from './HintsPanel.svelte';
@@ -48,7 +48,7 @@ function rulesSummary(draft: Settings): string {
 }
 
 function hintsSummary(draft: Settings): string {
-  const level = HINT_TITLES[draft.hints];
+  const level = (hintStyle(draft.hints) ?? HINTS_OFF).title;
   return draft.hints !== 'off' && draft.hintCost ? `${level}, kostet einen Punkt` : level;
 }
 

@@ -1,7 +1,6 @@
 <script lang="ts">
-import { ROTATION_DIRS } from '../../core/rules';
+import { DIR_LABELS, ROTATION_DIRS } from '../../core/rules';
 import type { Settings } from '../../core/settings';
-import { DIR_LABELS } from '../../ui/labels';
 import CheckOption from '../../ui/CheckOption.svelte';
 import Panel from './Panel.svelte';
 

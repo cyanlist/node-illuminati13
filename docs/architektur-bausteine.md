@@ -1,169 +1,117 @@
-# Umbau: Spielablauf aus austauschbaren Bausteinen
+# Spielablauf aus austauschbaren Bausteinen
 
-Stand: 02.11.2026 – **geplant, noch nicht umgesetzt.** Dieses Dokument ist der Auftrag für den Umbau.
+Stand: 04.11.2026 – **umgesetzt** auf dem Branch `refactor/modular-ruleset`.
 
-## Ziel
+## Idee
 
-Jeder Abschnitt des Spielablaufs wird ein austauschbarer **Baustein** mit fester Schnittstelle. Eine Variante ist
-dann nur eine andere Zusammenstellung von Bausteinen. Statt verstreuter Abfragen wie
-`if (settings.ending === 'thirteen')` in Kern, Zustand und Oberfläche fragt der Code das **Regelwerk**:
+Jeder Abschnitt des Spielablaufs ist ein austauschbarer **Baustein** mit fester Schnittstelle. Eine Variante ist nur
+eine andere Zusammenstellung von Bausteinen. Statt verstreuter Abfragen wie `if (settings.ending === 'thirteen')`
+fragt der Code das **Regelwerk**:
 
 ```ts
 const ruleset = rulesetFor(state.settings);
 ruleset.ending.checkFinalRound(state);
 ruleset.draw.refill(state, player, HAND_SIZE);
 ruleset.placement.afterPlace(state, card);
+ruleset.hint?.reveal(combo);
 ```
 
-Damit stecken neue Varianten wie „Kaninchenbau“ oder „Glaubensfrage“ (siehe `docs/ideen-varianten.md`) später an
-**einer** Stelle, statt durch das ganze Projekt verteilt zu werden.
+Außerhalb von `rulesetFor` fragt nur noch die Startseite die Einstellungen `ending`, `variant` und `hints` ab – dort,
+wo man sie einstellt (`EndingPanel`, `ExtrasPanel`, `HintsPanel`, `sections.ts`).
 
 ## Grundsätze
 
-1. **Schnittstelle + Objekte statt abstrakter Klassen.** So wie die Stapel-Regeln heute schon gebaut sind
-   (`defineRule`, eine Datei pro Regel, ein Verzeichnis per Schlüssel). Braucht ein Baustein eine Einstellung,
-   erzeugt ihn eine kleine Funktion, z. B. `firstTo(13)`. Eine abstrakte Basisklasse nur dann, wenn mehrere
-   Bausteine wirklich gemeinsames Verhalten erben.
-2. **Bausteine leben nicht im Spielstand.** `GameState` bleibt reine Daten, denn er reist als JSON zum anderen Gerät
-   und übersteht den Neustart im Artifact-Viewer (Schnappschuss). Er speichert weiter nur die Einstellungen;
-   `rulesetFor(settings)` sucht daraus jedes Mal die Bausteine heraus (rein und schnell, darf beliebig oft laufen).
-3. **Erster Schritt ohne Verhaltensänderung.** Alle Tests bleiben unverändert grün; dazu kommen Tests je Baustein.
-4. **Gespeicherte Werte bleiben gültig.** Die Schlüssel in den Einstellungen (`ending: 'deck' | 'thirteen'`,
-   `hints`, `variant`, …) werden nicht umbenannt – sie stehen in gespeicherten Einstellungen und Schnappschüssen.
+1. **Schnittstelle + Objekte statt abstrakter Klassen** – wie bei den Stapel-Regeln (`defineRule`). Braucht ein
+   Baustein eine Einstellung, erzeugt ihn eine kleine Funktion, z. B. `firstTo(13)` oder `worldOrder('links')`.
+2. **Bausteine leben nicht im Spielstand.** `GameState` bleibt reine Daten (JSON zum anderen Gerät, Schnappschuss im
+   Artifact-Viewer). Er speichert nur die Einstellungen; `rulesetFor(settings)` baut das Regelwerk bei Bedarf neu –
+   rein und schnell, darf beliebig oft laufen.
+3. **Gespeicherte Werte bleiben gültig.** Die Schlüssel der Einstellungen wurden nicht umbenannt; der Bestwert allein
+   liegt weiter unter `illu13-best-solo` bzw. `illu13-best-solo-13`.
+4. **Texte gehören zum Baustein.** Was das Regelfenster, das Tipps-Fenster oder die Meldung unter dem Knopf über einen
+   Baustein sagt, steht beim Baustein selbst – so wie die Stapel-Regeln ihre Erklärungen mitbringen.
 
-## Die Bausteine
+## Aufbau
 
-| Baustein          | Frage                                         | Heute                               | Später                                   |
-| ----------------- | --------------------------------------------- | ----------------------------------- | ---------------------------------------- |
-| **Spielende**     | Wann ist Schluss, wie wird gewertet?          | Ganzes Deck, Bis 13                 | Bis 50 mit Nachmischen (Kaninchenbau)    |
-| **Nachziehen**    | Was passiert bei leerem Nachziehstapel?       | Aufhören                            | Nachmischen (Kaninchenbau)               |
-| **Ablage-Effekt** | Was passiert, wenn eine Karte landet?         | Nichts, Weltordnung                 | Allsehendes Auge, Kettenreaktion         |
-| **Tipp**          | Was verrät der Tipp-Knopf?                    | Aus, Ja oder nein, Andeutung, Volle Hilfe | –                                  |
-| Beweisprüfung     | Wird ein Beweis sofort geprüft?               | Sofort                              | Behaupten + Anfechten (Glaubensfrage)    |
-| Abwurf-Ziel       | Wohin darf eine abgeworfene Karte?            | Eigener Stapel                      | Jeder Stapel (Vertuschung)               |
-| Regeln der Stapel | Woher kommen die vier Regeln?                 | Klassisch, eigene, ausgelost        | Geheime Regel                            |
+Alles liegt in `src/core/game/ruleset/` und wird über `src/core/game/index.ts` exportiert.
 
-**Fett** = Teil dieses Umbaus. Die übrigen erst zusammen mit der Variante, die sie braucht – ihre Schnittstelle sieht
-man erst, wenn man die zweite Form wirklich baut (vor allem die Beweisprüfung, bei der ein Zug zweiteilig wird).
+| Datei                        | Inhalt                                                                              |
+| ---------------------------- | ----------------------------------------------------------------------------------- |
+| `types.ts`                   | Schnittstellen `Ending`, `DrawPolicy`, `PlacementEffect`, `HintStyle`, `Ruleset`    |
+| `index.ts`                   | `rulesetFor(settings)` – ordnet jeder Einstellung ihren Baustein zu                 |
+| `ending/full-deck.ts`        | `fullDeck` – bis der Stapel leer ist; meiste Punkte; allein zählen die Punkte       |
+| `ending/first-to.ts`         | `firstTo(points)` – „Bis 13“ = `firstTo(GOAL_POINTS)`; faire letzte Runde; allein zählen die Züge |
+| `draw/stop-when-empty.ts`    | `stopWhenEmpty` – nachziehen, solange es geht; leerer Stapel startet die letzte Runde |
+| `placement/none.ts`          | `noEffect` – ohne Variante                                                          |
+| `placement/world-order.ts`   | `worldOrder(dir)` – eine 13 verschiebt die Weltordnung                              |
+| `hints.ts`                   | `HINT_STYLES` (Ja oder nein, Andeutung, Volle Hilfe), `HINTS_OFF`, `NO_THIRTEEN`, `HINT_CHOICES` |
 
-## Schnittstellen (Entwurf)
+Dazu `src/core/game/history.ts` mit `turnsTaken` und `starter` (was sich aus dem Protokoll ablesen lässt) – die
+Bausteine nutzen es, der Rest des Spiels auch.
+
+### Schnittstellen
 
 ```ts
-/** Spielende: wann die letzte Runde beginnt, was die Plakette zeigt und wie allein gewertet wird. */
-export interface Ending {
-  /** Punkteziel für die Anzeige („7 / 13“), null ohne Ziel */
-  goal: number | null;
-  /** Nach jedem echten Zug (nicht nach Aussetzen): beginnt jetzt die letzte Runde? Setzt ggf. finalTurnsLeft. */
-  checkFinalRound(state: GameState): void;
-  /** Allein: Wertung – Punkte, oder Züge bis zum Ziel; null, wenn das Ziel nicht erreicht wurde */
+interface Ending {
+  goal: number | null;                       // Punkteziel für die Plakette („7 / 13“)
+  recordName: string;                        // Name, unter dem das Gerät den Bestwert allein speichert
+  checkFinalRound(state: GameState): void;   // nach jedem echten Zug: beginnt die letzte Runde?
   soloScore(state: GameState): number | null;
   beatsBest(score: number, best: number): boolean;
+  aimText(solo: boolean): string;            // „Ziel“ im Regelfenster
+  endText(solo: boolean): string;            // „Das Ende der Offenbarung“ im Regelfenster
 }
 
-/** Nachziehen auf die Handgröße. */
-export interface DrawPolicy {
-  refill(state: GameState, player: Player, target: number): number[]; // ids der gezogenen Karten
-  /** Beginnt nach leerem Nachziehstapel die letzte Runde? (Nachmischen: nie) */
-  endsWhenEmpty: boolean;
+interface DrawPolicy {
+  refill(state: GameState, player: Player, target: number): number[];
+  endsWhenEmpty: boolean;                    // leerer Nachziehstapel → letzte Runde?
 }
 
-/** Was passiert, wenn eine Karte auf ihrem Stapel landet. */
-export interface PlacementEffect {
-  /** Setzt z. B. Regeln und Verschiebungen weiter; true, wenn sich die Weltordnung verschoben hat */
-  afterPlace(state: GameState, card: Card): boolean;
-  /** Für den Computer (ai.ts): Regeln, die nach dem Ablegen dieser Karte gelten würden – ohne den Zustand zu ändern */
-  rulesAfter(state: GameState, card: Card): RuleKey[];
-  /** Für die Anzeige (WorldOrder.svelte): würde diese Karte etwas auslösen? */
-  triggers(state: GameState, card: Card): boolean;
+interface PlacementEffect {
+  id: 'none' | 'world-order';                // woran die Oberfläche z. B. den Zähler der Weltordnung festmacht
+  announcement: LogEntry | null;             // Protokoll beim Spielstart
+  rulesSection: { title: string; text: string } | null;
+  afterPlace(state: GameState, card: Card): boolean;          // true: Weltordnung verschoben
+  rulesAfter(state: GameState, card: Card): readonly RuleKey[]; // für den Computer, ohne den Zustand zu ändern
+  triggers(state: GameState, card: Card): boolean;            // für das Aufleuchten des Zählers
 }
 
-/** Was der Tipp verrät – gemeinsam für Logik (actions.ts) und Texte (RulesSheet, HintsPanel). */
-export interface HintStyle {
-  title: string;        // „Andeutung“
-  description: string;  // Text im Tipps-Fenster
-  rulesText: string;    // Satz im Regelfenster
-  /** Was der Tipp für diese Kombination zeigt: Meldung und markierte Karten */
-  reveal(combo: Card[] | null): { message: string; highlight: number[] };
+interface HintStyle {
+  id: 'exists' | 'nudge' | 'full';
+  title: string;  description: string;  rulesText: string;
+  reveal(combo: readonly number[]): { message: string; highlight: number[] };
 }
-
-export interface Ruleset {
-  ending: Ending;
-  draw: DrawPolicy;
-  placement: PlacementEffect;
-  hint: HintStyle | null; // null = Tipps aus
-}
-
-export function rulesetFor(settings: Settings): Ruleset;
 ```
 
-Die genauen Felder darf der Umbau anpassen, wenn sich beim Bauen etwas Besseres zeigt – Hauptsache, die Aufrufer
-fragen nur noch das Regelwerk.
+### Wer fragt welchen Baustein
 
-### Konkrete Bausteine im ersten Schritt
+| Baustein          | Kern                                                   | Zustand und Oberfläche                                        |
+| ----------------- | ------------------------------------------------------ | ------------------------------------------------------------- |
+| `ending`          | `turns.ts` (`finishTurn`)                              | `flow.ts` (Bestwert), `GameStatus`, `PlayerSeat`, `LogText`, `ResultsSheet`, `RulesSheet` |
+| `draw`            | `moves.ts` (`refill`), `turns.ts` (letzte Runde)       | –                                                             |
+| `placement`       | `moves.ts` (`placeCard`), `new-game.ts`, `ai.ts`       | `Board`, `WorldOrder`, `GameView` (Höhenbudget), `RulesSheet` |
+| `hint`            | `hints.ts` (`canTakeHint`)                             | `actions.ts` (`showHint`), `buttons.ts`, `GameView`, `RulesSheet`, `HintsPanel`, `sections.ts` |
 
-| Datei                                   | Baustein                                                                 |
-| --------------------------------------- | ------------------------------------------------------------------------ |
-| `ending/full-deck.ts`                   | `fullDeck` – meiste Punkte; nach leerem Stapel hat jede*r noch einen Zug |
-| `ending/first-to.ts`                    | `firstTo(points)` – „Bis 13“ = `firstTo(GOAL_POINTS)`; faire letzte Runde, allein zählen die Züge |
-| `draw/stop-when-empty.ts`               | `stopWhenEmpty` – heutiges Verhalten von `refill`                        |
-| `placement/none.ts`                     | `noEffect`                                                               |
-| `placement/world-order.ts`              | `worldOrder(dir)` – heutiges `rotatesRules` / `rotateRules`              |
-| `hints/{exists,nudge,full}.ts`          | die drei Tipp-Stufen                                                     |
-| `ruleset.ts`                            | `rulesetFor(settings)` setzt alles zusammen                              |
+## Neue Variante einbauen
 
-Vorschlag für den Ort: `src/core/game/ruleset/` (die Bausteine gehören zum Spielkern; Texte der Tipp-Stufen dürfen
-dort stehen, weil auch die Regeln heute schon ihre Texte mitbringen).
+1. Baustein-Datei im passenden Ordner anlegen, die Schnittstelle aus `types.ts` erfüllen (Texte inklusive).
+2. Falls nötig: neuen Wert in den Einstellungen (`src/core/settings.ts`, Listen wie `ENDINGS`) und auf der Startseite
+   ein Feld dafür.
+3. In `rulesetFor` (`ruleset/index.ts`) zuordnen.
+4. Tests in `tests/ruleset.test.ts` – der Baustein lässt sich dort direkt prüfen, ohne ein ganzes Spiel.
 
-## Wo heute verzweigt wird (Stand des Umbaus)
+Beispiel: Ein Punkteziel von 20 ist nur `firstTo(20)`; der Test „ein anderes Punkteziel lässt sich einstecken“
+prüft genau das, ohne außerhalb von `ruleset/` etwas zu ändern.
 
-Diese Stellen sollen danach nur noch das Regelwerk fragen:
+Noch nicht als Baustein herausgezogen, weil ihre zweite Form noch fehlt: **Beweisprüfung** (kommt mit der
+„Glaubensfrage“, dann mit zweiteiligem Zug), **Abwurf-Ziel** (mit „Vertuschung“) und **Regeln der Stapel** (mit der
+„Geheimen Regel“). Ideen dazu: `docs/ideen-varianten.md`.
 
-**Spielende** (`ending`)
-- `src/core/game/goal.ts` – `goalOf`, `checkGoal` → in `firstTo`
-- `src/core/game/score.ts` – `soloScore`, `beatsBest` → in die Spielende-Bausteine (`ranking` bleibt gemeinsam)
-- `src/core/game/turns.ts` – `finishTurn`: letzte Runde nach leerem Stapel + `checkGoal`
-- `src/state/flow.ts` – `endGame` (Bestwert allein)
-- `src/features/table/GameStatus.svelte`, `PlayerSeat.svelte` – `goalOf`
-- `src/features/sheets/ResultsSheet.svelte` – `goalOf`, `soloScore`, `beatsBest`
-- `src/features/sheets/RulesSheet.svelte` – Texte je nach `settings.ending`
-- `src/features/start/sections.ts` (`endingSummary`), `EndingPanel.svelte` – Texte
+## Abweichungen vom ursprünglichen Plan
 
-**Nachziehen** (`draw`)
-- `src/core/game/moves.ts` – `refill`
-- `src/core/game/turns.ts` – „Nachziehstapel leer → jede*r noch einen Zug“
-
-**Ablage-Effekt** (`placement`)
-- `src/core/game/moves.ts` – `placeCard` (`rotatesRules`, `rotateRules`, `rotations`)
-- `src/core/ai.ts` – `discardScore` (Regeln nach dem Abwurf vorausberechnen)
-- `src/core/game/new-game.ts` – Protokolleintrag „Variante aktiv“
-- `src/features/table/WorldOrder.svelte` – Aufleuchten (`rotatesRules`)
-- `src/features/table/Board.svelte`, `GameView.svelte` (Höhenbudget) – `settings.variant`
-
-**Tipp** (`hint`)
-- `src/state/actions.ts` – `showHint` (Meldung je Stufe, Markieren bei voller Hilfe)
-- `src/features/table/buttons.ts` – `hintButton` (`hints === 'off'`)
-- `src/features/table/GameView.svelte` – Höhenbudget (`hints === 'off'`)
-- `src/features/sheets/RulesSheet.svelte` – `HINT_TEXT`
-- `src/features/start/HintsPanel.svelte`, `src/ui/labels.ts` (`HINT_TITLES`), `sections.ts` (`hintsSummary`)
-
-## Ablauf des Umbaus
-
-1. **Schnittstellen und `rulesetFor`** anlegen, zunächst mit den heutigen Bausteinen.
-2. **Spielende** umziehen: `finishTurn`, Wertung, Anzeige. Tests: „Bis 13“ und „Ganzes Deck“ laufen wie bisher;
-   neue Tests direkt gegen `fullDeck` und `firstTo(n)` (auch mit anderem n, z. B. 20).
-3. **Nachziehen** umziehen (`refill`, letzte Runde nach leerem Stapel).
-4. **Ablage-Effekt** umziehen (Weltordnung samt Computer und Anzeige).
-5. **Tipp** umziehen (Logik und alle Texte an einer Stelle).
-6. Aufräumen: alte Hilfsfunktionen (`goalOf`, `rotatesRules`, `HINT_TITLES`, …) entfernen, wenn nichts sie mehr
-   nutzt; Kommentare und `docs/ideen-varianten.md` anpassen.
-
-## Fertig ist der Umbau, wenn
-
-- `npm.cmd run verify` grün ist und alle bisherigen Tests unverändert bestehen.
-- Es außerhalb von `rulesetFor` keine Abfrage mehr auf `settings.ending`, `settings.variant` oder `settings.hints`
-  gibt (Ausnahme: die Einstellungs-Panels der Startseite, die diese Werte bearbeiten).
-- Jeder Baustein eigene Tests hat.
-- Das Spiel im Browser unverändert läuft: Ganzes Deck, Bis 13 (zu zweit und allein), Weltordnung nach rechts und
-  links, alle vier Tipp-Stufen; zwei Geräte mindestens per Raum-Code einmal durchgespielt.
-- Probe aufs Exempel: Ein Test-Baustein `firstTo(20)` lässt sich einstecken, ohne außerhalb von `ruleset/` etwas zu
-  ändern.
+- Die Tipp-Stufen liegen zusammen in `hints.ts` statt in drei Dateien – jede ist nur ein paar Zeilen lang.
+- `Ending` bringt zusätzlich `recordName` (Speichername des Bestwerts) und die Texte fürs Regelfenster mit.
+- `PlacementEffect` hat `id`, `announcement` und `rulesSection`, damit Spielstart, Anzeige und Regelfenster ohne
+  Blick in die Einstellungen auskommen.
+- `cardCount` liegt jetzt in `src/core/cards.ts`, `DIR_LABELS` in `src/core/rules/rotation.ts` (beide brauchen die
+  Bausteine); `src/ui/labels.ts` ist entfallen.

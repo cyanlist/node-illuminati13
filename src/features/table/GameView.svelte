@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { GameState } from '../../core/game';
+import { type GameState, rulesetFor } from '../../core/game';
 import { isOnline } from '../../core/settings';
 import Actions from './Actions.svelte';
 import { table } from '../../state/table.svelte';
@@ -24,11 +24,12 @@ const bottom = $derived(table.bottom);
  * Kopfzeile und der Ablegen-Knopf mit Rückmeldung – plus der Platz gegenüber und der Tipp, wenn es sie gibt.
  */
 const CHROME = { base: 302, topSeat: 111, hint: 43, worldOrder: 18 };
+const ruleset = $derived(rulesetFor(game.settings));
 const chrome = $derived(
   CHROME.base +
     (game.players.length > 1 ? CHROME.topSeat : 0) +
-    (game.settings.hints === 'off' ? 0 : CHROME.hint) +
-    (game.settings.variant ? CHROME.worldOrder : 0),
+    (ruleset.hint ? CHROME.hint : 0) +
+    (ruleset.placement.id === 'world-order' ? CHROME.worldOrder : 0),
 );
 </script>
 

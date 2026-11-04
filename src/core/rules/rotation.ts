@@ -1,4 +1,3 @@
-import { type Card, MAX_RANK } from '../cards';
 import type { RuleKey } from './registry';
 
 /**
@@ -8,16 +7,11 @@ import type { RuleKey } from './registry';
 export const ROTATION_DIRS = ['rechts', 'links'] as const;
 export type RotationDir = (typeof ROTATION_DIRS)[number];
 
-/** Die Einstellungen, von denen das Weiterrücken abhängt. */
-interface RotationSettings {
-  /** Variante „Wenn die Weltordnung sich verschiebt“ */
-  variant: boolean;
-  dir: RotationDir;
-}
-
-/** Variante: Landet eine 13 oben auf einem Stapel, wandern alle Regeln weiter. */
-export const rotatesRules = (settings: RotationSettings, card: Card): boolean =>
-  settings.variant && card.rank === MAX_RANK;
+/** Die Richtung in Worten – in den Extras der Startseite und im Regelfenster */
+export const DIR_LABELS: Record<RotationDir, string> = {
+  rechts: 'nach rechts (Herz → Pik → Karo → Kreuz → Herz)',
+  links: 'nach links (Herz → Kreuz → Karo → Pik → Herz)',
+};
 
 /**
  * Spalte auf dem Board, in der der Stapel einer Farbe nach `rotations` Verschiebungen liegt.

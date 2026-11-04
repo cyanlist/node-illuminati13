@@ -1,5 +1,5 @@
 <script lang="ts">
-import { rotatesRules } from '../../core/rules';
+import { rulesetFor } from '../../core/game';
 import { judgeSelection } from '../../state/selection';
 import { table } from '../../state/table.svelte';
 
@@ -9,14 +9,15 @@ import { table } from '../../state/table.svelte';
  * die Zahl kurz an. Liegt in der Auswahl eine 13, die beim Ablegen auf einem Stapel landen würde, leuchtet sie auf –
  * nur mit sichtbaren wahren Werten, sonst würde es verraten, ob die Auswahl gültig ist.
  */
-const settings = $derived(table.game?.settings);
-const right = $derived(settings?.dir !== 'links');
+const right = $derived(table.game?.settings.dir !== 'links');
 
 const armed = $derived.by(() => {
-  if (!settings?.showValues || !table.canPlay) return false;
+  const game = table.game;
+  if (!game?.settings.showValues || !table.canPlay) return false;
+  const { placement } = rulesetFor(game.settings);
   const selection = judgeSelection();
   const placed = selection.kind === 'proof' ? selection.cards : selection.kind === 'discard' ? [selection.card] : [];
-  return placed.some((card) => rotatesRules(settings, card));
+  return placed.some((card) => placement.triggers(game, card));
 });
 </script>
 

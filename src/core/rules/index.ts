@@ -8,5 +8,5 @@ export {
   randomRules,
   sameRules,
 } from './registry';
-export { pileColumn, ROTATION_DIRS, type RotationDir, rotateRules, rotatesRules } from './rotation';
+export { DIR_LABELS, pileColumn, ROTATION_DIRS, type RotationDir, rotateRules } from './rotation';
 export { type Rule, signed } from './rule';

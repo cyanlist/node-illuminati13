@@ -20,10 +20,10 @@ Weitere Namensideen: „Die Verschwörung nimmt kein Ende“, „Der Kreis schli
 ### Umsetzung
 
 - **Einstellung:** „Länge“ bekommt eine dritte Wahl (Ganzes Deck / Bis 13 / Kaninchenbau) plus Punktzahl.
-  „Bis 13“ ist im Grunde ein Sonderfall von „bis X Punkte ohne Nachmischen“: `goalOf()` liefert die
-  eingestellte Zahl, `checkGoal()` mit der fairen letzten Runde bleibt unverändert.
-- **Nachmischen** in `refill()` (core/game/moves.ts): statt bei leerem Deck aufzuhören, nachmischen und einen
-  Protokolleintrag schreiben. Die „letzte Runde nach leerem Stapel“ entfällt in diesem Modus.
+  Das Spielende ist schon ein Baustein (`docs/architektur-bausteine.md`): Kaninchenbau nutzt einfach
+  `firstTo(50)` – die faire letzte Runde ist dort bereits eingebaut.
+- **Nachmischen** als neuer Nachzieh-Baustein `ruleset/draw/reshuffle.ts` mit `endsWhenEmpty: false`: statt bei
+  leerem Deck aufzuhören, nachmischen und einen Protokolleintrag schreiben; in `rulesetFor` zuordnen.
 - **Wichtig – Zufall an zwei Geräten:** Bisher mischt nur das einladende Gerät einmal beim Start; danach tauschen
   die Geräte nur Züge aus und rechnen identisch. Nachmischen mitten im Spiel mit `Math.random` würde auf beiden
   Geräten verschieden ausgehen. Lösung: ein Zufallsgenerator mit gespeichertem Zustand im `GameState`

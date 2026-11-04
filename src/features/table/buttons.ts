@@ -1,7 +1,7 @@
 /**
  * Beschriftung und Zustand der beiden Knöpfe unter der Hand: Ablegen und Tipp.
  */
-import { canTakeHint, HINT_COST } from '../../core/game';
+import { canTakeHint, HINT_COST, rulesetFor } from '../../core/game';
 import { judgeSelection } from '../../state/selection';
 import { table } from '../../state/table.svelte';
 import { num, pts } from '../../ui/format';
@@ -41,7 +41,7 @@ export interface HintButton {
 /** Der Tipp-Knopf: zeigt die Kosten, solange in diesem Zug noch kein Tipp bezahlt ist. */
 export function hintButton(): HintButton {
   const game = table.game;
-  if (!game || game.settings.hints === 'off') return { hidden: true, label: 'Tipp', disabled: true };
+  if (!game || !rulesetFor(game.settings).hint) return { hidden: true, label: 'Tipp', disabled: true };
   // schon bezahlt: derselbe Tipp noch einmal, ohne Kosten
   if (table.hintCombo !== null || !game.settings.hintCost)
     return { hidden: false, label: 'Tipp', disabled: false };

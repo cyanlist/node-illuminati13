@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MAX_RANK, SUIT_INDICES } from '../src/core/cards';
+import { SUIT_INDICES } from '../src/core/cards';
 import { bestCombo, findCombos, largestCombos } from '../src/core/combos';
 import {
   CLASSIC_RULES,
@@ -11,12 +11,11 @@ import {
   RULES,
   type RuleKey,
   rotateRules,
-  rotatesRules,
   sameRules,
   signed,
 } from '../src/core/rules';
 import { sumOfValues, TARGET } from '../src/core/values';
-import { card, exampleHand, examplePiles, seededRng, settings } from './helpers';
+import { card, exampleHand, examplePiles, seededRng } from './helpers';
 
 /** Die Erklärung einer Regel – mit dem Wert, den die Regel dafür ausrechnet. */
 const explain = (key: RuleKey, stack: number, hand: number): string =>
@@ -38,13 +37,6 @@ describe('Regeln', () => {
         expect(rules[suit]).toBe(CLASSIC_RULES[pileColumn(suit, 1, dir, SUIT_INDICES.length)]);
       }
     }
-  });
-
-  it('nur in der Variante und nur mit der höchsten Karte rücken die Stapel weiter', () => {
-    const variant = settings({ variant: true });
-    expect(rotatesRules(variant, card(2, MAX_RANK))).toBe(true);
-    expect(rotatesRules(variant, card(2, MAX_RANK - 1))).toBe(false);
-    expect(rotatesRules(settings({ variant: false }), card(2, MAX_RANK))).toBe(false);
   });
 
   it('rechnet alle neun Regeln mit Stapel 6 und Hand 4', () => {
