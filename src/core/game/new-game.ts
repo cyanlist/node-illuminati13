@@ -1,4 +1,5 @@
 import { createDeck, type Rng, SUIT_INDICES, shuffle } from '../cards';
+import { seedFrom } from '../random';
 import { CLASSIC_RULES, type RuleKey, randomRules } from '../rules';
 import type { Settings } from '../settings';
 import { createPlayer } from './players';
@@ -13,6 +14,7 @@ export function newGame(settings: Settings, rng: Rng = Math.random): GameState {
     createPlayer(settings, i, deck.splice(0, HAND_SIZE)),
   );
   const rules = startingRules(settings, rng);
+  const current = count > 1 ? Math.floor(rng() * count) : 0;
 
   const state: GameState = {
     settings: { ...settings, names: [...settings.names], customRules: [...settings.customRules] },
@@ -20,8 +22,11 @@ export function newGame(settings: Settings, rng: Rng = Math.random): GameState {
     piles: SUIT_INDICES.map(() => []),
     rules,
     rotations: 0,
+    reshuffles: 0,
+    // zuletzt gezogen, damit Mischen, Austeilen und Beginn wie bisher vom selben Zufall abhängen
+    rngState: seedFrom(rng),
     players,
-    current: count > 1 ? Math.floor(rng() * count) : 0,
+    current,
     finalTurnsLeft: null,
     over: false,
     log: [{ kind: 'intro' }],

@@ -5,7 +5,6 @@ import {
   applyMove,
   finishTurn,
   type GameState,
-  GOAL_POINTS,
   HAND_SIZE,
   markYou,
   newGame,
@@ -16,6 +15,9 @@ import {
 import type { Settings } from '../src/core/settings';
 import { TARGET } from '../src/core/values';
 import { card, dealExample, playOut, seededRng, settings } from './helpers';
+
+/** Das kurze Punkteziel – früher eine eigene Variante „Bis 13“ */
+const SHORT_GOAL = 13;
 
 /** Ein Spiel allein mit festgelegter Hand und festgelegten Stapeln, wie im Beispiel der Anleitung. */
 const exampleGame = (overrides: Partial<Settings> = {}): GameState =>
@@ -186,10 +188,10 @@ describe('Rundenablauf', () => {
   });
 });
 
-describe('Bis 13', () => {
+describe('Punkteziel 13 („Die wahre Wahrheit erkennen“)', () => {
   /** Zu zweit; Person `scorer` hat gerade ihren Zug beendet und dabei `points` Punkte erreicht. */
-  function goalGame(scorer: number, points = GOAL_POINTS): GameState {
-    const game = newGame(settings({ mode: 'hotseat', ending: 'thirteen' }), seededRng(2));
+  function goalGame(scorer: number, points = SHORT_GOAL): GameState {
+    const game = newGame(settings({ mode: 'hotseat', truth: true, truthGoal: SHORT_GOAL }), seededRng(2));
     game.log = [{ kind: 'intro' }, { kind: 'begins', player: 0 }];
     game.current = scorer;
     const player = game.players[scorer];
@@ -216,11 +218,11 @@ describe('Bis 13', () => {
   });
 
   it('unter 13 Punkten und ohne „Bis 13“ geht es weiter', () => {
-    const below = goalGame(1, GOAL_POINTS - 1);
+    const below = goalGame(1, SHORT_GOAL - 1);
     finishTurn(below);
     expect(below.over).toBe(false);
     const fullDeck = goalGame(1);
-    fullDeck.settings.ending = 'deck';
+    fullDeck.settings.truth = false;
     finishTurn(fullDeck);
     expect(fullDeck.over).toBe(false);
     expect(fullDeck.finalTurnsLeft).toBe(null);
@@ -234,12 +236,12 @@ describe('Bis 13', () => {
   });
 
   it('allein endet das Spiel mit der 13 sofort; gewertet werden die Züge', () => {
-    const game = newGame(settings({ mode: 'solo', ending: 'thirteen' }), seededRng(4));
+    const game = newGame(settings({ mode: 'solo', truth: true, truthGoal: SHORT_GOAL }), seededRng(4));
     playOut(game, seededRng(9));
     expect(game.over).toBe(true);
     const [player] = game.players;
     const reached = game.log.find((entry) => entry.kind === 'goal');
-    if (reached) expect(player?.points).toBeGreaterThanOrEqual(GOAL_POINTS);
+    if (reached) expect(player?.points).toBeGreaterThanOrEqual(SHORT_GOAL);
     else expect(game.deck.length).toBe(0);
     expect(turnsTaken(game, 0)).toBe(
       game.log.filter((e) => e.kind === 'proof' || e.kind === 'discard').length,
@@ -253,7 +255,7 @@ describe('Bis 13', () => {
     expect(full.soloScore(deck)).toBe(20);
     expect(full.beatsBest(20, 18)).toBe(true);
 
-    const short = newGame(settings({ mode: 'solo', ending: 'thirteen' }), seededRng(4));
+    const short = newGame(settings({ mode: 'solo', truth: true, truthGoal: SHORT_GOAL }), seededRng(4));
     const thirteen = rulesetFor(short.settings).ending;
     expect(thirteen.soloScore(short)).toBe(null);
     short.log.push(
@@ -268,11 +270,11 @@ describe('Bis 13', () => {
 
   it('ganze Partie Computer gegen Computer endet vor dem leeren Stapel', () => {
     const rng = seededRng(5);
-    const game = newGame(settings({ mode: 'hotseat', ending: 'thirteen' }), rng);
+    const game = newGame(settings({ mode: 'hotseat', truth: true, truthGoal: SHORT_GOAL }), rng);
     playOut(game, rng);
     expect(game.over).toBe(true);
     expect(game.deck.length).toBeGreaterThan(0);
-    expect(Math.max(...game.players.map((p) => p.points))).toBeGreaterThanOrEqual(GOAL_POINTS);
+    expect(Math.max(...game.players.map((p) => p.points))).toBeGreaterThanOrEqual(SHORT_GOAL);
     // beide hatten gleich viele Züge
     expect(turnsTaken(game, 0)).toBe(turnsTaken(game, 1));
   });

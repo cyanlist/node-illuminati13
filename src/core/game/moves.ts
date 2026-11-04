@@ -45,11 +45,12 @@ function applyProof(
     (a, b) => Number(topPick[a.suit] === a.id) - Number(topPick[b.suit] === b.id),
   );
   const steps = ordered.map((card) => placeCard(state, ruleset, card));
-  const drawn = ruleset.draw.refill(state, player, HAND_SIZE);
+  const { drawn, reshuffled } = ruleset.draw.refill(state, player, HAND_SIZE);
 
   logMove(state, { kind: 'proof', player: state.current, parts, points: cards.length });
   logRotations(state, steps);
-  return { steps, drawn, parts };
+  logReshuffle(state, reshuffled);
+  return { steps, drawn, parts, reshuffled };
 }
 
 /** Noch keine Erleuchtung: eine Karte auf ihren Stapel, eine nachziehen. */
@@ -60,11 +61,12 @@ function applyDiscard(state: GameState, ruleset: Ruleset, player: Player, cardId
 
   removeFromHand(player, [card]);
   const steps = [placeCard(state, ruleset, card)];
-  const drawn = ruleset.draw.refill(state, player, handSize);
+  const { drawn, reshuffled } = ruleset.draw.refill(state, player, handSize);
 
   logMove(state, { kind: 'discard', player: state.current, card });
   logRotations(state, steps);
-  return { steps, drawn, parts: [] };
+  logReshuffle(state, reshuffled);
+  return { steps, drawn, parts: [], reshuffled };
 }
 
 function cardsFromHand(player: Player, ids: readonly number[]): Card[] {
@@ -97,4 +99,9 @@ function logMove(state: GameState, entry: LogEntry): void {
 function logRotations(state: GameState, steps: readonly PlacementStep[]): void {
   const count = steps.filter((step) => step.rotated).length;
   if (count > 0) state.log.push({ kind: 'rotation', count, dir: state.settings.dir });
+}
+
+/** Erst nach dem Zug ins Protokoll – gemischt wird ja beim Nachziehen, also nach dem Ablegen. */
+function logReshuffle(state: GameState, cards: number): void {
+  if (cards > 0) state.log.push({ kind: 'reshuffle', cards, count: state.reshuffles });
 }

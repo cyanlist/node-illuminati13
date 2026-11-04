@@ -13,7 +13,7 @@ import SettingsSheet from './SettingsSheet.svelte';
 import SettingsSummary from './SettingsSummary.svelte';
 
 /**
- * Startseite: links der Titel, rechts das nächste Spiel. Sichtbar ist nur, wer spielt; Länge, Regeln, Tipps und Extras
+ * Startseite: links der Titel, rechts das nächste Spiel. Sichtbar ist nur, wer spielt; Varianten, Regeln, Tipps und Extras
  * stehen als Kurzfassung da und öffnen sich bei Bedarf in einem Fenster.
  */
 let draft = $state(settingsForEditing(loadSettings()));

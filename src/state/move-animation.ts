@@ -3,7 +3,7 @@
  * so lange den Stand davor zeigen, bis alle Karten geflogen sind:
  * 1. Beweis: Karten auf die Bühne, wahre Werte enthüllen, die 13 auflösen, dann auf die Stapel (presentProof)
  *    Abwurf: die Karte direkt auf ihren Stapel (layDown)
- * 2. Nachziehen vom Nachziehstapel in die Hand (drawUp)
+ * 2. Nachziehen vom Nachziehstapel in die Hand (drawUp) – ist er leer, wird dabei nachgemischt
  */
 import { tick } from 'svelte';
 import type { Card } from '../core/cards';
@@ -71,6 +71,8 @@ const TIMING = {
   betweenCards: 300,
   /** Züge, denen man nur zusieht (Computer, anderes Gerät), laufen etwas gemächlicher */
   betweenCardsWatched: 450,
+  /** Pause, in der der leere Nachziehstapel sich neu füllt */
+  reshuffle: 600,
   /** Abstand, in dem die Karten eines Beweises zur Bühne starten */
   stageStagger: 90,
   /** So lange ist der Rechenweg zu sehen, bevor der wahre Wert erscheint */
@@ -162,7 +164,7 @@ export async function animateMove(move: Move): Promise<boolean> {
     result.parts.length > 0
       ? await presentProof(anim, result.parts, result.steps, running)
       : await layDown(anim, result.steps, watched, running);
-  if (!laid || !(await drawUp(anim, running))) return false;
+  if (!laid || !(await drawUp(anim, result.reshuffled, running))) return false;
   await wait(watched ? TIMING.afterMoveWatched : TIMING.afterMove);
   if (!running()) return false;
 
@@ -264,13 +266,21 @@ async function presentProof(
 /**
  * Nachziehen: Jede neue Karte bekommt zuerst einen (noch unsichtbaren) Platz in der Hand und fliegt dann
  * vom Nachziehstapel genau dorthin – in die eigene Hand offen, zum Gegenüber verdeckt (außer mit offenen Karten).
+ * Wurde beim Zug nachgemischt (`reshuffled` Karten), füllt sich der Stapel, sobald er leer ist, kurz sichtbar neu.
  */
-async function drawUp(anim: MoveAnimation, running: () => boolean): Promise<boolean> {
+async function drawUp(anim: MoveAnimation, reshuffled: number, running: () => boolean): Promise<boolean> {
   const { player } = anim;
   const hidden = player !== table.viewer;
   const faceDown = hidden && !table.game?.settings.openHands;
+  let refill = reshuffled;
   for (const card of anim.drawn) {
     if (!running()) return false;
+    if (anim.deck === 0 && refill > 0) {
+      anim.deck = refill;
+      refill = 0;
+      await wait(TIMING.reshuffle);
+      if (!running()) return false;
+    }
 
     const from = drawPileRect();
     anim.deck--;

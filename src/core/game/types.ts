@@ -33,8 +33,10 @@ export type LogEntry =
   | { kind: 'skip'; player: number }
   | { kind: 'hint'; player: number; cost: number }
   | { kind: 'final'; players: number }
-  /** „Bis 13“: jemand hat das Ziel erreicht; `turnsLeft` Züge bis die Runde komplett ist */
+  /** Punkteziel erreicht (z. B. „Bis 13“); `turnsLeft` Züge, bis die Runde komplett ist */
   | { kind: 'goal'; player: number; turnsLeft: number }
+  /** Nachgemischt: `cards` Karten der Ablagestapel bilden den neuen Nachziehstapel, zum `count`. Mal */
+  | { kind: 'reshuffle'; cards: number; count: number }
   | { kind: 'end' };
 
 export interface GameState {
@@ -47,9 +49,13 @@ export interface GameState {
   rules: RuleKey[];
   /** Wie oft sich die Weltordnung schon verschoben hat (Variante) */
   rotations: number;
+  /** Wie oft schon nachgemischt wurde („Die wahre Wahrheit erkennen“) */
+  reshuffles: number;
+  /** Zustand des Zufalls für das Mischen mitten im Spiel – beide Geräte ziehen daraus dieselben Zahlen */
+  rngState: number;
   players: Player[];
   current: number;
-  /** null, solange der Nachziehstapel Karten hat (und bei „Bis 13“ niemand das Ziel erreicht hat); danach die noch verbleibenden Züge */
+  /** null bis zur letzten Runde (Nachziehstapel aufgebraucht oder Punkteziel erreicht); danach die noch verbleibenden Züge */
   finalTurnsLeft: number | null;
   over: boolean;
   log: LogEntry[];
@@ -79,6 +85,8 @@ export interface MoveResult {
   steps: PlacementStep[];
   /** ids der nachgezogenen Karten */
   drawn: number[];
+  /** Wie viele Karten beim Nachziehen nachgemischt wurden (0: keine) */
+  reshuffled: number;
   /** Bei einem Beweis: die Karten mit ihrem Rechenweg in der gewählten Reihenfolge; beim Abwurf leer */
   parts: ProofPart[];
 }

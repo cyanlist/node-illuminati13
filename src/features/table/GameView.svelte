@@ -21,15 +21,17 @@ const bottom = $derived(table.bottom);
 
 /*
  * Wie viel Höhe am Tisch nicht für Karten da ist (auf dem Handy gemessen): Ränder, Beschriftungen, die eigene
- * Kopfzeile und der Ablegen-Knopf mit Rückmeldung – plus der Platz gegenüber und der Tipp, wenn es sie gibt.
+ * Kopfzeile und der Ablegen-Knopf mit Rückmeldung – plus der Platz gegenüber, der Tipp, der Zähler der Weltordnung
+ * und mit sichtbaren wahren Werten die Zeile mit dem Rechenweg unter jeder Handkarte, wenn es sie gibt.
  */
-const CHROME = { base: 302, topSeat: 111, hint: 43, worldOrder: 18 };
+const CHROME = { base: 302, topSeat: 111, hint: 43, worldOrder: 18, values: 24 };
 const ruleset = $derived(rulesetFor(game.settings));
 const chrome = $derived(
   CHROME.base +
     (game.players.length > 1 ? CHROME.topSeat : 0) +
     (ruleset.hint ? CHROME.hint : 0) +
-    (ruleset.placement.id === 'world-order' ? CHROME.worldOrder : 0),
+    (ruleset.placement.id === 'world-order' ? CHROME.worldOrder : 0) +
+    (game.settings.showValues ? CHROME.values : 0),
 );
 </script>
 

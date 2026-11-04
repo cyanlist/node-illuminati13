@@ -11,7 +11,7 @@ export function finishTurn(state: GameState): void {
   const { draw, ending } = rulesetFor(state.settings);
   for (let played = true; ; played = false) {
     if (state.finalTurnsLeft !== null) state.finalTurnsLeft--;
-    else if (draw.endsWhenEmpty && state.deck.length === 0) {
+    else if (draw.exhausted(state)) {
       state.finalTurnsLeft = state.players.length;
       state.log.push({ kind: 'final', players: state.players.length });
     }

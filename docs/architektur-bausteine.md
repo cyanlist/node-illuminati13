@@ -5,7 +5,7 @@ Stand: 04.11.2026 – **umgesetzt** auf dem Branch `refactor/modular-ruleset`.
 ## Idee
 
 Jeder Abschnitt des Spielablaufs ist ein austauschbarer **Baustein** mit fester Schnittstelle. Eine Variante ist nur
-eine andere Zusammenstellung von Bausteinen. Statt verstreuter Abfragen wie `if (settings.ending === 'thirteen')`
+eine andere Zusammenstellung von Bausteinen. Statt verstreuter Abfragen wie `if (settings.truth)`
 fragt der Code das **Regelwerk**:
 
 ```ts
@@ -16,8 +16,8 @@ ruleset.placement.afterPlace(state, card);
 ruleset.hint?.reveal(combo);
 ```
 
-Außerhalb von `rulesetFor` fragt nur noch die Startseite die Einstellungen `ending`, `variant` und `hints` ab – dort,
-wo man sie einstellt (`EndingPanel`, `ExtrasPanel`, `HintsPanel`, `sections.ts`).
+Außerhalb von `rulesetFor` fragt nur noch die Startseite die Einstellungen `truth`, `variant` und `hints` ab – dort,
+wo man sie einstellt (`VariantsPanel` mit den Blöcken in `start/variants/`, `HintsPanel`, `sections.ts`).
 
 ## Grundsätze
 
@@ -40,8 +40,9 @@ Alles liegt in `src/core/game/ruleset/` und wird über `src/core/game/index.ts` 
 | `types.ts`                   | Schnittstellen `Ending`, `DrawPolicy`, `PlacementEffect`, `HintStyle`, `Ruleset`    |
 | `index.ts`                   | `rulesetFor(settings)` – ordnet jeder Einstellung ihren Baustein zu                 |
 | `ending/full-deck.ts`        | `fullDeck` – bis der Stapel leer ist; meiste Punkte; allein zählen die Punkte       |
-| `ending/first-to.ts`         | `firstTo(points)` – „Bis 13“ = `firstTo(GOAL_POINTS)`; faire letzte Runde; allein zählen die Züge |
+| `ending/first-to.ts`         | `firstTo(points)` – Punkteziel (13, 25, 50, 100); faire letzte Runde; allein zählen die Züge |
 | `draw/stop-when-empty.ts`    | `stopWhenEmpty` – nachziehen, solange es geht; leerer Stapel startet die letzte Runde |
+| `draw/reshuffle.ts`          | `reshuffle` – leerer Stapel wird aus den Ablagestapeln nachgemischt („Die wahre Wahrheit erkennen“) |
 | `placement/none.ts`          | `noEffect` – ohne Variante                                                          |
 | `placement/world-order.ts`   | `worldOrder(dir)` – eine 13 verschiebt die Weltordnung                              |
 | `hints.ts`                   | `HINT_STYLES` (Ja oder nein, Andeutung, Volle Hilfe), `HINTS_OFF`, `NO_THIRTEEN`, `HINT_CHOICES` |
@@ -59,12 +60,14 @@ interface Ending {
   soloScore(state: GameState): number | null;
   beatsBest(score: number, best: number): boolean;
   aimText(solo: boolean): string;            // „Ziel“ im Regelfenster
-  endText(solo: boolean): string;            // „Das Ende der Offenbarung“ im Regelfenster
+  endText(solo: boolean, draw: DrawPolicy): string; // „Das Ende der Offenbarung“, samt Satz des Nachziehens
 }
 
 interface DrawPolicy {
-  refill(state: GameState, player: Player, target: number): number[];
-  endsWhenEmpty: boolean;                    // leerer Nachziehstapel → letzte Runde?
+  id: 'stop' | 'reshuffle';
+  refill(state: GameState, player: Player, target: number): { drawn: number[]; reshuffled: number };
+  exhausted(state: GameState): boolean;      // Nachziehstapel aufgebraucht → letzte Runde
+  emptyText(solo: boolean): string;          // was bei leerem Nachziehstapel passiert
 }
 
 interface PlacementEffect {
@@ -88,20 +91,27 @@ interface HintStyle {
 | Baustein          | Kern                                                   | Zustand und Oberfläche                                        |
 | ----------------- | ------------------------------------------------------ | ------------------------------------------------------------- |
 | `ending`          | `turns.ts` (`finishTurn`)                              | `flow.ts` (Bestwert), `GameStatus`, `PlayerSeat`, `LogText`, `ResultsSheet`, `RulesSheet` |
-| `draw`            | `moves.ts` (`refill`), `turns.ts` (letzte Runde)       | –                                                             |
+| `draw`            | `moves.ts` (`refill`), `turns.ts` (letzte Runde)       | `GameStatus` (wie oft gemischt), `RulesSheet`                 |
 | `placement`       | `moves.ts` (`placeCard`), `new-game.ts`, `ai.ts`       | `Board`, `WorldOrder`, `GameView` (Höhenbudget), `RulesSheet` |
 | `hint`            | `hints.ts` (`canTakeHint`)                             | `actions.ts` (`showHint`), `buttons.ts`, `GameView`, `RulesSheet`, `HintsPanel`, `sections.ts` |
 
 ## Neue Variante einbauen
 
 1. Baustein-Datei im passenden Ordner anlegen, die Schnittstelle aus `types.ts` erfüllen (Texte inklusive).
-2. Falls nötig: neuen Wert in den Einstellungen (`src/core/settings.ts`, Listen wie `ENDINGS`) und auf der Startseite
+2. Falls nötig: neuen Wert in den Einstellungen (`src/core/settings.ts`, Listen wie `TRUTH_GOALS`) und auf der Startseite
    ein Feld dafür.
 3. In `rulesetFor` (`ruleset/index.ts`) zuordnen.
 4. Tests in `tests/ruleset.test.ts` – der Baustein lässt sich dort direkt prüfen, ohne ein ganzes Spiel.
 
-Beispiel: Ein Punkteziel von 20 ist nur `firstTo(20)`; der Test „ein anderes Punkteziel lässt sich einstecken“
-prüft genau das, ohne außerhalb von `ruleset/` etwas zu ändern.
+Auf der Startseite gehört jede Variante in den Bereich „Varianten“: ein Block in `src/features/start/variants/`,
+eingebunden in `VariantsPanel.svelte`, und eine Kurzfassung in `variantsSummary` (`sections.ts`).
+
+Beispiele:
+- Ein Punkteziel von 20 ist nur `firstTo(20)`; der Test „ein anderes Punkteziel lässt sich einstecken“ prüft genau
+  das, ohne außerhalb von `ruleset/` etwas zu ändern.
+- „Die wahre Wahrheit erkennen“ ist `firstTo(truthGoal)` plus der neue Nachzieh-Baustein `reshuffle`. Dazu kamen nur
+  die Einstellung (`truth`, `truthGoal`), der Block `TruthVariant`, ein Protokolleintrag und – damit zwei
+  Geräte gleich mischen – der Zufall im Spielstand (`rngState`, `src/core/random.ts`).
 
 Noch nicht als Baustein herausgezogen, weil ihre zweite Form noch fehlt: **Beweisprüfung** (kommt mit der
 „Glaubensfrage“, dann mit zweiteiligem Zug), **Abwurf-Ziel** (mit „Vertuschung“) und **Regeln der Stapel** (mit der

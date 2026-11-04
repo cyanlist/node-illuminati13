@@ -1,12 +1,13 @@
 # Ideen für spätere Varianten
 
-Stand: 02.11.2026 – noch nicht eingebaut.
+Stand: 04.11.2026 – Variante 1 ist eingebaut, die übrigen noch nicht.
 
 ---
 
-## 1. „Tiefer in den Kaninchenbau“ (Extended)
+## 1. „Die wahre Wahrheit erkennen“ (Extended) – eingebaut
 
-Kurzname in der Übersicht: **Kaninchenbau**
+Arbeitstitel war „Tiefer in den Kaninchenbau“. Eingebaut als Schalter im Bereich „Varianten“ der Startseite, Punkteziel 13 / 25 / 50 / 100 (13 ersetzt die frühere Variante „Bis 13“),
+höchstens 10 Mischungen. Umsetzung: `docs/architektur-bausteine.md`. Die Notizen unten stammen aus der Planung.
 Weitere Namensideen: „Die Verschwörung nimmt kein Ende“, „Der Kreis schließt sich“, „Die ganze Wahrheit“
 
 ### Regel

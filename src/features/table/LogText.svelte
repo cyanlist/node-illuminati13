@@ -60,6 +60,9 @@ const winner = $derived(entry.kind === 'end' && game.players.length > 1 ? rankin
   {#if entry.turnsLeft > 0}
     Die Runde wird noch zu Ende gespielt – {entry.turnsLeft === 1 ? 'ein letzter Zug' : `noch ${entry.turnsLeft} Züge`}.
   {/if}
+{:else if entry.kind === 'reshuffle'}
+  Die Wahrheit liegt tiefer: {entry.cards} Karten unter den obersten werden gemischt und bilden den neuen
+  Nachziehstapel ({entry.count}. Mischung).
 {:else if entry.kind === 'end'}
   {#if !winner}
     Spielende: {pts(playerAt(game, 0).points)}.

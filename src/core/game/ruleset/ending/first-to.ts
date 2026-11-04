@@ -2,9 +2,6 @@ import { starter, turnsTaken } from '../../history';
 import type { GameState } from '../../types';
 import type { Ending } from '../types';
 
-/** Punkte, bei denen das kurze Spiel „Bis 13“ endet. */
-export const GOAL_POINTS = 13;
-
 const reached = (state: GameState): boolean => state.log.some((entry) => entry.kind === 'goal');
 
 /**
@@ -14,7 +11,7 @@ const reached = (state: GameState): boolean => state.log.some((entry) => entry.k
 export function firstTo(points: number): Ending {
   return {
     goal: points,
-    // „Bis 13“ speichert so wie bisher unter best-solo-13
+    // je Ziel ein eigener Bestwert; 13 liegt wie zu Zeiten von „Bis 13“ unter best-solo-13
     recordName: `best-solo-${points}`,
 
     /**
@@ -38,9 +35,9 @@ export function firstTo(points: number): Ending {
       solo
         ? `Schaffe ${points} Punkte in möglichst wenigen Zügen.`
         : 'Wer am Ende die meisten Punkte hat, gewinnt.',
-    endText: (solo) =>
+    endText: (solo, draw) =>
       solo
-        ? `Das Spiel endet, sobald du ${points} Punkte hast – gewertet wird, in wie vielen Zügen du sie schaffst. Ist der Nachziehstapel vorher leer, hast du noch einen letzten Zug.`
-        : `Wer zuerst ${points} Punkte hat, beendet das Spiel. Die Runde wird noch zu Ende gespielt, damit alle gleich viele Züge hatten – dann gewinnen die meisten Punkte. Ist der Nachziehstapel vorher leer, spielt jede*r noch einen letzten Zug. Bei Punktgleichstand gewinnt, wer mehr 13er-Kombinationen gefunden hat.`,
+        ? `Das Spiel endet, sobald du ${points} Punkte hast – gewertet wird, in wie vielen Zügen du sie schaffst. ${draw.emptyText(true)}`
+        : `Wer zuerst ${points} Punkte hat, beendet das Spiel. Die Runde wird noch zu Ende gespielt, damit alle gleich viele Züge hatten – dann gewinnen die meisten Punkte. ${draw.emptyText(false)} Bei Punktgleichstand gewinnt, wer mehr 13er-Kombinationen gefunden hat.`,
   };
 }

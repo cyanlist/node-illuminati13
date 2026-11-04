@@ -1,6 +1,6 @@
 <script lang="ts">
 import { SUIT_INDICES, SUITS } from '../../core/cards';
-import { fullDeck, rulesetFor } from '../../core/game';
+import { fullDeck, MAX_RESHUFFLES, rulesetFor, stopWhenEmpty } from '../../core/game';
 import { CLASSIC_RULES, RULE_KEYS, RULES } from '../../core/rules';
 import { sheets } from '../../state/sheets.svelte';
 import { table } from '../../state/table.svelte';
@@ -73,15 +73,9 @@ const close = (): void => {
   </ul>
 
   <h3>3. Das Ende der Offenbarung</h3>
-  <p>{(ruleset?.ending ?? fullDeck).endText(solo)}</p>
+  <p>{(ruleset?.ending ?? fullDeck).endText(solo, ruleset?.draw ?? stopWhenEmpty)}</p>
 
   {#if !ruleset}
-    <h3>Kürzer: Bis 13</h3>
-    <p>
-      Wer zuerst 13 Punkte hat, beendet das Spiel. Die Runde wird noch zu Ende gespielt, damit alle gleich viele Züge
-      hatten – dann gewinnen die meisten Punkte. Allein zählt, in wie vielen Zügen du die 13 Punkte schaffst.
-    </p>
-
     <h3>Eigene oder zufällige Regeln</h3>
     <p>
       Auf der Startseite kannst du jedem Stapel eine Regel zuordnen oder sie auslosen lassen. Zusätzlich zu den vier
@@ -116,12 +110,22 @@ const close = (): void => {
       kostet ein Tipp einen Punkt – einmal pro Zug, und nur, wenn du einen Punkt hast.
     </p>
 
-    <h3>Variante: Wenn die Weltordnung sich verschiebt</h3>
-    <p>
-      Landet eine 13 auf einem Stapel, rücken alle vier Stapel eine Position in die vereinbarte Richtung weiter – der
-      letzte wieder an den Anfang. Die Regeln bleiben an ihrem Platz: Jeder Stapel gilt ab jetzt nach der Regel, unter
-      der er nun liegt.
-    </p>
+    <h3>Varianten</h3>
+    <p>Auf der Startseite unter „Varianten“ lässt sich der Spielablauf verändern:</p>
+    <ul>
+      <li>
+        <b>Die wahre Wahrheit erkennen:</b> Statt des ganzen Decks gilt ein Punkteziel – 13 (kurz), 25, 50 oder 100.
+        Wer es zuerst erreicht, beendet das Spiel; die Runde wird noch zu Ende gespielt, damit alle gleich viele Züge
+        hatten. Ist der Nachziehstapel leer, werden die Ablagestapel bis auf ihre oberste Karte gemischt und bilden einen
+        neuen – nach {MAX_RESHUFFLES} Mischungen ist spätestens Schluss. Allein zählt, in wie vielen Zügen du das Ziel
+        schaffst.
+      </li>
+      <li>
+        <b>Wenn die Weltordnung sich verschiebt:</b> Landet eine 13 auf einem Stapel, rücken alle vier Stapel eine
+        Position in die vereinbarte Richtung weiter – der letzte wieder an den Anfang. Die Regeln bleiben an ihrem
+        Platz: Jeder Stapel gilt ab jetzt nach der Regel, unter der er nun liegt.
+      </li>
+    </ul>
   {/if}
 
   {#snippet actions()}

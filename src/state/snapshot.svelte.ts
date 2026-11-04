@@ -4,7 +4,7 @@
  */
 import type { GameState } from '../core/game';
 import { isRuleKey } from '../core/rules';
-import { isOnline } from '../core/settings';
+import { isOnline, normalizeSettings } from '../core/settings';
 import { afterMove, scheduleCpu } from './flow';
 import { sheets } from './sheets.svelte';
 import { type Phase, table, type View } from './table.svelte';
@@ -32,6 +32,9 @@ export function takeSnapshot(): Snapshot | null {
   };
 }
 
+/** Ein Typ, dem Felder fehlen dürfen, die erst eine spätere Version eingeführt hat. */
+type Older<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+
 const isSnapshot = (data: unknown): data is Snapshot =>
   typeof data === 'object' && data !== null && (data as { version?: unknown }).version === 2;
 
@@ -40,7 +43,14 @@ export function restoreSnapshot(data: unknown): void {
   // ein Spiel an zwei Geräten lebt von der Verbindung – die übersteht eine neue Version nicht;
   // ebenso ein Spiel mit einer Regel, die es in dieser Version nicht mehr gibt
   if (!isSnapshot(data) || isOnline(data.game.settings) || !data.game.rules.every(isRuleKey)) return;
-  table.game = data.game;
+  // ältere Versionen kannten weder Nachmischen noch den Zufall im Spielstand
+  const game = data.game as Older<GameState, 'reshuffles' | 'rngState'>;
+  table.game = {
+    ...game,
+    settings: normalizeSettings(game.settings),
+    reshuffles: game.reshuffles ?? 0,
+    rngState: game.rngState ?? Date.now() >>> 0,
+  };
   table.view = data.view;
   // die gewählten Karten stehen nicht im Schnappschuss – das Reihenfolge-Fenster beginnt daher neu beim Wählen
   table.phase = data.phase === 'order' ? 'play' : data.phase;

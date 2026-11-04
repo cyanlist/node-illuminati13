@@ -22,16 +22,27 @@ export interface Ending {
   beatsBest(score: number, best: number): boolean;
   /** Satz unter „Ziel“ im Regelfenster */
   aimText(solo: boolean): string;
-  /** Absatz unter „Das Ende der Offenbarung“ im Regelfenster */
-  endText(solo: boolean): string;
+  /** Absatz unter „Das Ende der Offenbarung“ im Regelfenster – samt dem Satz des Nachziehens */
+  endText(solo: boolean, draw: DrawPolicy): string;
+}
+
+/** Was beim Nachziehen gezogen und ggf. nachgemischt wurde. */
+export interface Refill {
+  /** ids der gezogenen Karten */
+  drawn: number[];
+  /** Wie viele Karten dafür nachgemischt wurden (0: keine) */
+  reshuffled: number;
 }
 
 /** Nachziehen auf die Handgröße. */
 export interface DrawPolicy {
-  /** Zieht auf `target` Karten nach; gibt die ids der gezogenen Karten zurück */
-  refill(state: GameState, player: Player, target: number): number[];
-  /** Beginnt die letzte Runde, sobald der Nachziehstapel leer ist? */
-  endsWhenEmpty: boolean;
+  id: 'stop' | 'reshuffle';
+  /** Zieht auf `target` Karten nach */
+  refill(state: GameState, player: Player, target: number): Refill;
+  /** Ist der Nachziehstapel aufgebraucht? Dann beginnt die letzte Runde. */
+  exhausted(state: GameState): boolean;
+  /** Satz im Regelfenster: was passiert, wenn der Nachziehstapel leer ist */
+  emptyText(solo: boolean): string;
 }
 
 /** Was passiert, wenn eine Karte auf ihrem Stapel landet. */

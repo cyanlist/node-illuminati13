@@ -18,9 +18,12 @@ export type RuleMode = (typeof RULE_MODES)[number];
 export const HINT_LEVELS = ['off', 'exists', 'nudge', 'full'] as const;
 export type HintLevel = (typeof HINT_LEVELS)[number];
 
-/** Wann das Spiel endet: wenn der Nachziehstapel leer ist oder – kürzer – sobald jemand 13 Punkte hat. */
-export const ENDINGS = ['deck', 'thirteen'] as const;
-export type Ending = (typeof ENDINGS)[number];
+/**
+ * Punkteziel bei „Die wahre Wahrheit erkennen“: Gespielt wird – mit Nachmischen –, bis jemand es erreicht.
+ * 13 ist das kurze Spiel (früher eine eigene Variante „Bis 13“), 100 ein langer Abend.
+ */
+export const TRUTH_GOALS = [13, 25, 50, 100] as const;
+export type TruthGoal = (typeof TRUTH_GOALS)[number];
 
 /** Wie gut der Computer Kombinationen erkennt (siehe ai.ts). */
 export const CPU_LEVELS = ['easy', 'medium', 'hard'] as const;
@@ -44,7 +47,10 @@ export interface Settings {
   hints: HintLevel;
   /** Ein Tipp kostet einen Punkt */
   hintCost: boolean;
-  ending: Ending;
+  /** Variante „Die wahre Wahrheit erkennen“: Punkteziel statt ganzem Deck, leere Nachziehstapel werden nachgemischt */
+  truth: boolean;
+  /** Punkteziel bei „Die wahre Wahrheit erkennen“ */
+  truthGoal: TruthGoal;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -59,7 +65,8 @@ export const DEFAULT_SETTINGS: Settings = {
   customRules: [...CLASSIC_RULES],
   hints: 'nudge',
   hintCost: false,
-  ending: 'deck',
+  truth: false,
+  truthGoal: 50,
 };
 
 /** Zu zweit an zwei Geräten? */
@@ -95,7 +102,10 @@ export function normalizeSettings(raw: unknown): Settings {
     customRules: validCustomRules(data.customRules) ? [...data.customRules] : [...d.customRules],
     hints: oneOf(data.hints, HINT_LEVELS, d.hints),
     hintCost: flag(data.hintCost, d.hintCost),
-    ending: oneOf(data.ending, ENDINGS, d.ending),
+    // früher eine Wahl der Länge (`ending`): „Bis 13“ ist jetzt „Die wahre Wahrheit erkennen“ mit dem Ziel 13
+    truth: flag(data.truth, data.ending === 'thirteen' || data.ending === 'truth'),
+    truthGoal:
+      data.ending === 'thirteen' ? 13 : (TRUTH_GOALS.find((goal) => goal === data.truthGoal) ?? d.truthGoal),
   };
 }
 

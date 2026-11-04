@@ -6,12 +6,12 @@ import type { Component } from 'svelte';
 import { HINTS_OFF, hintStyle } from '../../core/game';
 import { RULE_PACKS, RULES } from '../../core/rules';
 import type { Settings } from '../../core/settings';
-import EndingPanel from './EndingPanel.svelte';
 import ExtrasPanel from './ExtrasPanel.svelte';
 import HintsPanel from './HintsPanel.svelte';
 import RulesPanel from './RulesPanel.svelte';
+import VariantsPanel from './VariantsPanel.svelte';
 
-export type SectionId = 'ending' | 'rules' | 'hints' | 'extras';
+export type SectionId = 'variants' | 'rules' | 'hints' | 'extras';
 
 /** Ein Einstellungs-Panel; `plain` lässt den eigenen Kasten weg, weil das Fenster schon einer ist. */
 type SettingsPanel = Component<{ draft: Settings; plain?: boolean }, object, 'draft'>;
@@ -27,16 +27,18 @@ export interface Section {
 }
 
 export const SECTIONS: readonly Section[] = [
-  { id: 'ending', label: 'Länge', title: 'Länge des Spiels', summary: endingSummary, panel: EndingPanel },
+  { id: 'variants', label: 'Varianten', title: 'Varianten', summary: variantsSummary, panel: VariantsPanel },
   { id: 'rules', label: 'Regeln', title: 'Regeln der Stapel', summary: rulesSummary, panel: RulesPanel },
   { id: 'hints', label: 'Tipps', title: 'Tipps', summary: hintsSummary, panel: HintsPanel },
   { id: 'extras', label: 'Extras', title: 'Extras', summary: extrasSummary, panel: ExtrasPanel },
 ];
 
-/** Wie lange gespielt wird – allein ist „Bis 13“ ein Wettlauf gegen die eigenen Züge. */
-function endingSummary(draft: Settings): string {
-  if (draft.ending === 'deck') return 'Ganzes Deck';
-  return draft.mode === 'solo' ? 'Bis 13 – in möglichst wenigen Zügen' : 'Bis 13 Punkte';
+/** Alle eingeschalteten Varianten in einer Zeile – ohne Variante wird das ganze Deck gespielt. */
+function variantsSummary(draft: Settings): string {
+  const parts: string[] = [];
+  if (draft.truth) parts.push(`Wahre Wahrheit – bis ${draft.truthGoal} Punkte`);
+  if (draft.variant) parts.push(`Weltordnung ${draft.dir === 'rechts' ? 'nach rechts' : 'nach links'}`);
+  return parts.length > 0 ? parts.join(' · ') : 'Keine – das ganze Deck';
 }
 
 /** „Klassisch“, „Bei jedem Spiel neu ausgelost“ oder die vier eigenen Regeln in Kurzform. */
@@ -55,6 +57,5 @@ function hintsSummary(draft: Settings): string {
 function extrasSummary(draft: Settings): string {
   const parts = [draft.showValues ? 'Wahre Werte sichtbar' : 'Kopfrechnen'];
   if (draft.openHands && draft.mode !== 'solo') parts.push('Offene Karten');
-  if (draft.variant) parts.push('Weltordnung verschiebt sich');
   return parts.join(' · ');
 }
