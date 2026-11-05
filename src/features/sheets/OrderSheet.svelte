@@ -27,19 +27,21 @@ const groups = $derived(
         <span class="name"><SuitSymbol {suit} size="15px" /> {SUITS[suit].name}</span>
         <span class="rule">{ruleLabel(table.rules[suit])}</span>
       </span>
-      {#each cards as card (card.id)}
-        {@const on = table.topPick?.[suit] === card.id}
-        <button
-          type="button"
-          class="pick"
-          class:on
-          aria-pressed={on}
-          aria-label="{SUITS[suit].name} {card.rank} oben"
-          onclick={() => chooseTop(suit, card.id)}
-        >
-          <Card {card} />
-        </button>
-      {/each}
+      <div class="cards" style:--n={cards.length}>
+        {#each cards as card (card.id)}
+          {@const on = table.topPick?.[suit] === card.id}
+          <button
+            type="button"
+            class="pick"
+            class:on
+            aria-pressed={on}
+            aria-label="{SUITS[suit].name} {card.rank} oben"
+            onclick={() => chooseTop(suit, card.id)}
+          >
+            <Card {card} />
+          </button>
+        {/each}
+      </div>
     </div>
   {/each}
 
@@ -50,13 +52,19 @@ const groups = $derived(
 </Sheet>
 
 <style>
+  /* links Farbe und Regel, rechts die Karten – auf dem Handy die Farbe darüber, damit die Karten die ganze Breite haben */
   .row {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: 8.5em minmax(0, 1fr);
     align-items: center;
-    gap: 10px;
+    gap: 8px 10px;
     margin-top: 14px;
-    --cw: 56px;
+  }
+
+  @media (max-width: 520px) {
+    .row {
+      grid-template-columns: minmax(0, 1fr);
+    }
   }
 
   /* Farbe und darunter ihre Regel – so wie über dem Stapel auf dem Board */
@@ -64,7 +72,17 @@ const groups = $derived(
     display: flex;
     flex-direction: column;
     gap: 2px;
-    min-width: 8.5em;
+  }
+
+  /*
+   * Die Karten einer Farbe bleiben in einer Reihe: Bei vielen werden sie schmaler statt umzubrechen.
+   * Je Karte gehen 10px für den Rand der Auswahl ab, dazwischen 8px Abstand.
+   */
+  .cards {
+    container-type: inline-size;
+    display: flex;
+    gap: 8px;
+    --cw: min(56px, (100cqw - (var(--n) - 1) * 8px) / var(--n) - 10px);
   }
 
   .name {
