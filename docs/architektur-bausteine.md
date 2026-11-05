@@ -90,8 +90,8 @@ interface HintStyle {
 
 | Baustein          | Kern                                                   | Zustand und Oberfläche                                        |
 | ----------------- | ------------------------------------------------------ | ------------------------------------------------------------- |
-| `ending`          | `turns.ts` (`finishTurn`)                              | `flow.ts` (Bestwert), `GameStatus`, `PlayerSeat`, `LogText`, `ResultsSheet`, `RulesSheet` |
-| `draw`            | `moves.ts` (`refill`), `turns.ts` (letzte Runde)       | `GameStatus` (wie oft gemischt), `RulesSheet`                 |
+| `ending`          | `turns.ts` (`finishTurn`)                              | `flow.ts` (Bestwert), `PlayerSeat`, `LogText`, `ResultsSheet`, `RulesSheet` |
+| `draw`            | `moves.ts` (`refill`), `turns.ts` (letzte Runde)       | `move-animation.ts` (Nachmischen), `LogText`, `RulesSheet`    |
 | `placement`       | `moves.ts` (`placeCard`), `new-game.ts`, `ai.ts`       | `Board`, `WorldOrder`, `GameView` (Höhenbudget), `RulesSheet` |
 | `hint`            | `hints.ts` (`canTakeHint`)                             | `actions.ts` (`showHint`), `buttons.ts`, `GameView`, `RulesSheet`, `HintsPanel`, `sections.ts` |
 

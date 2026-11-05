@@ -7,7 +7,6 @@ import Board from './Board.svelte';
 import ConnectionBanner from './ConnectionBanner.svelte';
 import FinalRoundNotice from './FinalRoundNotice.svelte';
 import GameLog from './GameLog.svelte';
-import GameStatus from './GameStatus.svelte';
 import PlayerSeat from './PlayerSeat.svelte';
 import ProofStage from './ProofStage.svelte';
 import TopBar from './TopBar.svelte';
@@ -38,7 +37,6 @@ const chrome = $derived(
 
 <div class="game">
   <TopBar />
-  <GameStatus {game} />
   {#if isOnline(game.settings)}<ConnectionBanner />{/if}
   <main class="table">
     <div class="play" style:--chrome="{chrome}px">
