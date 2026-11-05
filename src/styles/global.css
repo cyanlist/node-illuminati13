@@ -36,6 +36,8 @@
 
   /* Fehler und Warnungen – im Farbton von Herz */
   --danger: var(--herz);
+  /* wackelige Verbindung: zwischen alles gut und Gefahr */
+  --warn: var(--karo);
 
   --font-title: "Kalam", "Segoe Print", "Bradley Hand", cursive;
   --font-body: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;

@@ -1,7 +1,9 @@
 <script lang="ts">
 import type { Snippet } from 'svelte';
+import type { Presence } from '../../state/online.svelte';
 import { hueFor } from '../../ui/avatar';
 import Avatar from '../../ui/Avatar.svelte';
+import PresenceDot from '../online/PresenceDot.svelte';
 import ScoreBadge from './ScoreBadge.svelte';
 import Thinking from './Thinking.svelte';
 
@@ -26,6 +28,8 @@ interface Props {
   lastTurn?: boolean;
   /** Die eigenen Karten liegen hier, aber gerade ist jemand anderes dran – der Platz tritt etwas zurück */
   waiting?: boolean;
+  /** An zwei Geräten beim Gegenüber: Punkt am Avatar für den Stand der Verbindung */
+  presence?: Presence | null;
   /** Kleine Karten neben dem Avatar statt in einer eigenen Reihe */
   compact?: boolean;
   /** Beschriftung für Screenreader, z. B. „Platz oben“ */
@@ -42,6 +46,7 @@ let {
   thinking = false,
   lastTurn = false,
   waiting = false,
+  presence = null,
   compact = false,
   label,
   children,
@@ -50,7 +55,10 @@ let {
 
 <section class="seat" class:active class:cpu class:compact class:waiting style:--hue={hueFor(name)} aria-label={label}>
   {#if lastTurn}<span class="last-turn">Letzter Zug</span>{/if}
-  <Avatar {name} {cpu} size="44px" />
+  <span class="who">
+    <Avatar {name} {cpu} size="44px" />
+    {#if presence}<span class="presence"><PresenceDot {presence} /></span>{/if}
+  </span>
   <header>
     <span class="name">{name}</span>
     {#if active}<span class="sr-only">ist am Zug</span>{/if}
@@ -115,14 +123,14 @@ let {
   /* nicht dran: Karten und Kopfzeile etwas blasser – wer dran ist, sieht man am leuchtenden Rahmen gegenüber */
   header,
   .cards,
-  .seat > :global(.avatar) {
+  .who {
     transition:
       opacity 0.3s,
       filter 0.3s;
   }
 
   .waiting header,
-  .waiting > :global(.avatar) {
+  .waiting .who {
     opacity: 0.7;
   }
 
@@ -144,9 +152,14 @@ let {
     min-width: 0;
   }
 
-  /* Ring um den Avatar in der Spielerfarbe */
-  .seat > :global(.avatar) {
+  .who {
     grid-area: avatar;
+    position: relative;
+    display: inline-grid;
+  }
+
+  /* Ring um den Avatar in der Spielerfarbe */
+  .who > :global(.avatar) {
     box-shadow:
       0 0 0 3px var(--surface),
       0 0 0 5px var(--player);
@@ -180,6 +193,14 @@ let {
     border-radius: 6px;
     font-size: 11px;
     line-height: 1.4;
+  }
+
+  /* Stand der Verbindung unten rechts am Avatar, über dem Ring */
+  .presence {
+    position: absolute;
+    right: -3px;
+    bottom: -3px;
+    display: flex;
   }
 
   /* wie ein Aufkleber auf dem oberen Rand – braucht keinen Platz in der Zeile */

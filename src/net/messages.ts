@@ -16,7 +16,9 @@ export type Message =
   /** Gast → Gastgeber*in: bitte den ganzen Stand noch einmal schicken */
   | { type: 'resync' }
   /** Gast → Gastgeber*in: noch eine Runde */
-  | { type: 'again' };
+  | { type: 'again' }
+  /** Lebenszeichen, alle paar Sekunden in beide Richtungen (heartbeat.ts) */
+  | { type: 'ping' };
 
 /** Alle Arten von Nachrichten – fehlt eine neue hier, meldet es die Typprüfung */
 const TYPES: Record<Message['type'], true> = {
@@ -26,6 +28,7 @@ const TYPES: Record<Message['type'], true> = {
   hint: true,
   resync: true,
   again: true,
+  ping: true,
 };
 
 /** Liest eine Nachricht; null, wenn sie nicht von dieser App stammt. */

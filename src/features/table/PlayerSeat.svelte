@@ -1,5 +1,7 @@
 <script lang="ts">
 import { type GameState, lastTurnPlayers, playerAt, rulesetFor } from '../../core/game';
+import { isOnline } from '../../core/settings';
+import { online } from '../../state/online.svelte';
 import { table } from '../../state/table.svelte';
 import HandCards from './HandCards.svelte';
 import Seat from './Seat.svelte';
@@ -40,6 +42,7 @@ const waiting = $derived(DIM_WHILE_WAITING && showsHand && (table.phase === 'cpu
   compact={!showsHand}
   lastTurn={lastTurnPlayers(game).includes(index)}
   {waiting}
+  presence={isOnline(game.settings) && index !== table.me ? (online.presence ?? 'lost') : null}
   thinking={((player.cpu && table.phase === 'cpu') || (index !== table.me && table.phase === 'remote')) && !table.anim}
 >
   {#if showsHand}

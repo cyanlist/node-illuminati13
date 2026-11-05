@@ -6,6 +6,7 @@
  * per Austausch zweier Codes, als QR-Code oder Text.
  */
 
+import { type Heartbeat, type Signal, startHeartbeat } from '../net/heartbeat';
 import type { Invite } from '../net/link';
 import { type Message, parseMessage } from '../net/messages';
 import { createGuest, createHost, type HostPeer, InvalidCodeError } from '../net/peer';
@@ -25,6 +26,12 @@ export type LinkStatus =
   | 'lost' // war verbunden, jetzt nicht mehr
   | 'failed';
 
+/**
+ * Wie es um das Gegenüber steht – für den Platz auf der Startseite und den Punkt am Avatar am Tisch:
+ * Verbindung wird aufgebaut, steht, wackelt oder ist weg (bzw. das Gegenüber antwortet nicht mehr).
+ */
+export type Presence = 'pending' | 'ok' | 'unstable' | 'lost';
+
 /** So lange dürfen sich die Geräte nach dem Austausch suchen (ms) */
 const CONNECT_LIMIT = 20000;
 /** So lange sucht ein Gast nach dem Raum, bevor er aufgibt (ms) */
@@ -41,6 +48,8 @@ class OnlineState {
   myName = $state('');
   peerName = $state('');
   error = $state('');
+  /** Bei bestehender Verbindung: kommen die Lebenszeichen des Gegenübers an? */
+  signal = $state<Signal>('ok');
   /** Das Verbindungsfenster ist offen */
   sheetOpen = $state(false);
   /** Eine Einladung aus einem geöffneten Link, die gleich angenommen wird */
@@ -48,6 +57,15 @@ class OnlineState {
 
   get connected(): boolean {
     return this.status === 'connected';
+  }
+
+  /** null: Es ist noch niemand eingeladen oder beigetreten. */
+  get presence(): Presence | null {
+    if (this.status === 'connected')
+      return this.signal === 'ok' ? 'ok' : this.signal === 'slow' ? 'unstable' : 'lost';
+    if (this.status === 'lost' || this.status === 'failed') return 'lost';
+    if (this.status === 'idle' && this.role === null) return null;
+    return 'pending';
   }
 }
 
@@ -57,6 +75,7 @@ let peer: Peer | HostPeer | null = null;
 /** Zählt jede neue Verbindung – Nachzügler einer alten Verbindung werden so erkannt und übergangen */
 let generation = 0;
 let connectTimer: ReturnType<typeof setTimeout> | undefined;
+let heartbeat: Heartbeat | null = null;
 let receive: (message: Message) => void = () => {};
 let opened: () => void = () => {};
 
@@ -76,6 +95,13 @@ export function openConnect(name: string): void {
   online.sheetOpen = true;
 }
 
+/** Dieses Gerät tritt bei: Im Verbindungsfenster wird als Nächstes der Raum-Code eingegeben. */
+export function chooseGuest(): void {
+  online.role = 'guest';
+  online.method = 'room';
+  online.error = '';
+}
+
 /** Ereignisse genau einer Verbindung; meldet sich eine ältere noch, wird das übergangen. */
 function handlersFor(own: number) {
   const current = (): boolean => own === generation;
@@ -84,11 +110,16 @@ function handlersFor(own: number) {
       if (current()) connectedNow();
     },
     onmessage(data: string): void {
-      const message = current() ? parseMessage(data) : null;
-      if (message) receive(message);
+      if (!current()) return;
+      const message = parseMessage(data);
+      // jede Nachricht zeigt, dass das Gegenüber noch da ist; Lebenszeichen selbst braucht der Spielablauf nicht
+      heartbeat?.heard(message?.type === 'ping');
+      if (message && message.type !== 'ping') receive(message);
     },
     onclose(): void {
-      if (current() && online.status === 'connected') online.status = 'lost';
+      if (!current() || online.status !== 'connected') return;
+      stopHeartbeat();
+      online.status = 'lost';
     },
     onfail(): void {
       if (current())
@@ -100,8 +131,19 @@ function handlersFor(own: number) {
 function connectedNow(): void {
   clearTimeout(connectTimer);
   setStatus('connected');
+  stopHeartbeat();
+  heartbeat = startHeartbeat({
+    ping: () => send({ type: 'ping' }),
+    onsignal: (signal) => (online.signal = signal),
+  });
   send({ type: 'hello', name: online.myName });
   opened();
+}
+
+function stopHeartbeat(): void {
+  heartbeat?.stop();
+  heartbeat = null;
+  online.signal = 'ok';
 }
 
 /** Gastgeber*in: Raum öffnen und auf das andere Gerät warten. */
@@ -176,11 +218,12 @@ export async function join(code: string, name: string): Promise<void> {
 
 /**
  * Nach einer Unterbrechung oder einem Fehlschlag wieder zueinanderfinden – auf demselben Weg wie zuvor.
- * Ein offener Raum bleibt einfach offen: Kommt das andere Gerät zurück, geht es von selbst weiter.
+ * Ein offener Raum bleibt einfach offen: Kommt das andere Gerät zurück, geht es von selbst weiter. Gilt die
+ * Verbindung noch als offen, antwortet das Gegenüber aber nicht mehr, wird der Raum neu betreten.
  */
 export function reconnect(): void {
   const { role, method, roomCode, myName } = online;
-  if (method === 'room' && role === 'host' && peer) {
+  if (method === 'room' && role === 'host' && peer && online.status !== 'connected') {
     setStatus('waiting');
   } else if (method === 'room' && role === 'host') {
     createRoom(myName, roomCode || undefined);
@@ -225,6 +268,7 @@ function setStatus(status: LinkStatus, error = ''): void {
 function close(): void {
   generation++;
   clearTimeout(connectTimer);
+  stopHeartbeat();
   const old = peer;
   peer = null;
   old?.close();

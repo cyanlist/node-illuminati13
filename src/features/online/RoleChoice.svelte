@@ -1,12 +1,7 @@
 <script lang="ts">
-import { createRoom, online } from '../../state/online.svelte';
+import { chooseGuest, createRoom, online } from '../../state/online.svelte';
 
 /** Erster Schritt: Lädt dieses Gerät ein (öffnet einen Raum) oder tritt es bei? */
-function chooseGuest(): void {
-  online.role = 'guest';
-  online.method = 'room';
-  online.error = '';
-}
 </script>
 
 <p>Zwei Geräte verbinden sich direkt miteinander. Ein Gerät lädt ein, das andere tritt bei – egal wo ihr seid.</p>

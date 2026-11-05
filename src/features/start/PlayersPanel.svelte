@@ -1,8 +1,8 @@
 <script lang="ts">
 import type { CpuLevel, GameMode, Settings } from '../../core/settings';
-import OnlineStatus from './OnlineStatus.svelte';
 import Panel from './Panel.svelte';
 import Segmented from '../../ui/Segmented.svelte';
+import PeerSeat from '../online/PeerSeat.svelte';
 
 /**
  * Wer spielt: zwei Plätze. Du gibst deinen Namen ein, das Gegenüber ist der Computer (mit Stärke),
@@ -59,7 +59,7 @@ const level = $derived(levels.find((option) => option.value === draft.cpuLevel))
           <small>Abwechselnd an einem Gerät, die Karten bleiben bis zur Übergabe verdeckt.</small>
         </label>
       {:else if draft.mode === 'online'}
-        <OnlineStatus name={draft.names[0]} />
+        <PeerSeat name={draft.names[0]} />
       {:else}
         <small class="detail">Allein: Wie viele Punkte schaffst du mit einem Deck?</small>
       {/if}
