@@ -47,6 +47,7 @@
 
   /* Ebenen, von unten nach oben */
   --z-overlay: 5; /* über dem Board: Beweis-Bühne, Rechenbeispiel einer Regel */
+  --z-menu: 10; /* aufgeklapptes Menü, z. B. das Zahnrad am Tisch */
   --z-sheet: 20; /* Fenster */
   --z-page: 30; /* ganze Seite darüber: Einstellungen */
   --z-flight: 40; /* fliegende Karten */

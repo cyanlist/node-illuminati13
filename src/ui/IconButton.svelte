@@ -1,19 +1,21 @@
 <script lang="ts">
 import type { Snippet } from 'svelte';
+import type { HTMLButtonAttributes } from 'svelte/elements';
 
 /**
  * Kleiner Knopf nur mit Symbol. Die Beschriftung steht für Screenreader und als Tooltip da; das Symbol ist ein
  * SVG mit viewBox 0 0 24 24 (`children`). Den Innenabstand kann die Umgebung über --icon-btn-pad verkleinern.
+ * Weitere Attribute (z. B. aria-expanded bei einem Menü) gehen direkt an den Knopf.
  */
-interface Props {
+interface Props extends Omit<HTMLButtonAttributes, 'children' | 'onclick'> {
   label: string;
   onclick: () => void;
   children: Snippet;
 }
-let { label, onclick, children }: Props = $props();
+let { label, onclick, children, ...rest }: Props = $props();
 </script>
 
-<button type="button" class="btn btn--ghost icon" aria-label={label} title={label} {onclick}>
+<button type="button" class="btn btn--ghost icon" aria-label={label} title={label} {onclick} {...rest}>
   {@render children()}
 </button>
 

@@ -1,23 +1,22 @@
 <script lang="ts">
-import { goHome } from '../../state/flow';
-import { sheets } from '../../state/sheets.svelte';
 import Logo from '../../ui/Logo.svelte';
 import Wordmark from '../../ui/Wordmark.svelte';
-import SettingsButton from '../settings/SettingsButton.svelte';
+import GameMenu from './GameMenu.svelte';
 import LogButton from './LogButton.svelte';
 </script>
 
-<!-- auf dem Handy alles in einer Zeile: nur das Logo, kleinere Knöpfe und das Protokoll als Knopf -->
+<!--
+  Rechts nur zwei Knöpfe: das Protokoll (nur wo es nicht neben dem Tisch steht) und das Zahnrad mit Regeln,
+  Einstellungen und Startseite. Auf dem Handy steht vom Titel nur das Logo da.
+-->
 <header>
   <div class="brand">
     <Logo size="var(--logo, 40px)" />
     <h1 class="wide-only"><Wordmark /></h1>
   </div>
   <nav>
-    <SettingsButton />
     <LogButton />
-    <button type="button" class="btn btn--ghost" onclick={() => (sheets.rulesOpen = true)}>Regeln</button>
-    <button type="button" class="btn" onclick={goHome}>Startseite</button>
+    <GameMenu />
   </nav>
 </header>
 
@@ -56,11 +55,6 @@ import LogButton from './LogButton.svelte';
     nav {
       --icon-btn-pad: 4px 8px;
       gap: 6px;
-    }
-
-    nav .btn {
-      padding: 6px 12px;
-      font-size: 14px;
     }
   }
 </style>
