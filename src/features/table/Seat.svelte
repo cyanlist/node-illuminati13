@@ -24,6 +24,8 @@ interface Props {
   thinking?: boolean;
   /** Letzte Runde, und diese Person hat noch einen Zug – als Marke oben am Rand des Platzes */
   lastTurn?: boolean;
+  /** Die eigenen Karten liegen hier, aber gerade ist jemand anderes dran – der Platz tritt etwas zurück */
+  waiting?: boolean;
   /** Kleine Karten neben dem Avatar statt in einer eigenen Reihe */
   compact?: boolean;
   /** Beschriftung für Screenreader, z. B. „Platz oben“ */
@@ -39,13 +41,14 @@ let {
   active,
   thinking = false,
   lastTurn = false,
+  waiting = false,
   compact = false,
   label,
   children,
 }: Props = $props();
 </script>
 
-<section class="seat" class:active class:cpu class:compact style:--hue={hueFor(name)} aria-label={label}>
+<section class="seat" class:active class:cpu class:compact class:waiting style:--hue={hueFor(name)} aria-label={label}>
   {#if lastTurn}<span class="last-turn">Letzter Zug</span>{/if}
   <Avatar {name} {cpu} size="44px" />
   <header>
@@ -107,6 +110,25 @@ let {
       inset 0 0 0 2px var(--player),
       0 0 0 4px color-mix(in srgb, var(--player) 22%, transparent),
       var(--shadow-panel);
+  }
+
+  /* nicht dran: Karten und Kopfzeile etwas blasser – wer dran ist, sieht man am leuchtenden Rahmen gegenüber */
+  header,
+  .cards,
+  .seat > :global(.avatar) {
+    transition:
+      opacity 0.3s,
+      filter 0.3s;
+  }
+
+  .waiting header,
+  .waiting > :global(.avatar) {
+    opacity: 0.7;
+  }
+
+  .waiting .cards {
+    opacity: 0.55;
+    filter: grayscale(0.6);
   }
 
   header {

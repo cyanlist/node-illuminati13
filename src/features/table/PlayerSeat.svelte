@@ -20,6 +20,13 @@ let { game, index, position }: Props = $props();
 
 const player = $derived(playerAt(game, index));
 const showsHand = $derived(index === table.viewer);
+
+/**
+ * Eigene Hand ausgrauen, während der Computer bzw. das andere Gerät am Zug ist. Vorerst ausgeschaltet – noch
+ * offen, ob der Effekt bleibt (siehe docs/ideen-oberflaeche.md). Zum Ausprobieren auf true setzen.
+ */
+const DIM_WHILE_WAITING = false;
+const waiting = $derived(DIM_WHILE_WAITING && showsHand && (table.phase === 'cpu' || table.phase === 'remote'));
 </script>
 
 <Seat
@@ -32,6 +39,7 @@ const showsHand = $derived(index === table.viewer);
   active={index === game.current && game.players.length > 1 && table.phase !== 'over'}
   compact={!showsHand}
   lastTurn={lastTurnPlayers(game).includes(index)}
+  {waiting}
   thinking={((player.cpu && table.phase === 'cpu') || (index !== table.me && table.phase === 'remote')) && !table.anim}
 >
   {#if showsHand}
