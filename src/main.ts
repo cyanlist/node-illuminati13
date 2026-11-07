@@ -1,6 +1,7 @@
 import { mount } from 'svelte';
 import App from './App.svelte';
 import { inviteFromAddress } from './net/link';
+import { initAppInstall } from './state/app-install.svelte';
 import { online, openConnect } from './state/online.svelte';
 import { initOnlineFlow } from './state/online-flow';
 import { restoreSnapshot, takeSnapshot } from './state/snapshot.svelte';
@@ -35,6 +36,7 @@ function acceptInviteLink(): void {
 
 function start(data?: unknown): void {
   initOnlineFlow();
+  initAppInstall();
   deckChoice.current = loadDeck();
   applyTheme(loadTheme());
   restoreSnapshot(data);

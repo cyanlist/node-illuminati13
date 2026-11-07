@@ -3,10 +3,12 @@ import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { defineConfig } from 'vite';
 import { buildInfo } from './build/build-info.ts';
 import { inlineAssets } from './build/inline-assets.ts';
+import { pwa } from './build/pwa.ts';
 
 export default defineConfig({
   // inlineAssets: JS und CSS landen inline in dist/index.html → lässt sich per Doppelklick (file://) öffnen
-  plugins: [svelte(), inlineAssets()],
+  // pwa: Manifest, App-Symbole und Service Worker daneben → lässt sich als App aufs Handy legen
+  plugins: [svelte(), inlineAssets(), pwa()],
   // relative Pfade: der Build lässt sich in jeden Unterordner / auf jeden Webspace legen
   base: './',
   // Schriften (src/styles/fonts.css) als data-URL ins CSS – so bleibt der Build eine einzige Datei

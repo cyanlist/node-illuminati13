@@ -1,14 +1,16 @@
 <script lang="ts">
+import { appInstall } from '../../state/app-install.svelte';
 import { sheets } from '../../state/sheets.svelte';
 import { saveTheme } from '../../storage';
 import { applyTheme, type Theme, themeChoice } from '../../ui/theme.svelte';
 import Segmented from '../../ui/Segmented.svelte';
 import DevInfo from './DevInfo.svelte';
+import InstallPanel from './InstallPanel.svelte';
 import LookPanel from './LookPanel.svelte';
 
 /**
- * Eigener Bereich für Einstellungen, die zum Gerät gehören statt zum Spiel: Kartendesign und Farbschema – und
- * ganz unten die Entwicklerinfo zum Rauskopieren.
+ * Eigener Bereich für Einstellungen, die zum Gerät gehören statt zum Spiel: Kartendesign und Farbschema, wie man
+ * das Spiel als App aufs Handy legt – und ganz unten die Entwicklerinfo zum Rauskopieren.
  * Liegt als ganze Seite über Startseite bzw. Tisch, damit dort nichts verloren geht.
  */
 const themes: { value: Theme; label: string }[] = [
@@ -59,6 +61,13 @@ function onkeydown(event: KeyboardEvent): void {
       />
       <p class="muted hint">„Automatisch“ folgt der Einstellung deines Geräts.</p>
     </section>
+
+    {#if appInstall.possible}
+      <section class="surface">
+        <h3 class="eyebrow">Als App aufs Handy</h3>
+        <InstallPanel />
+      </section>
+    {/if}
 
     <section class="surface">
       <h3 class="eyebrow">Für Tester*innen</h3>

@@ -14,9 +14,10 @@ const all = (pattern) => rest.match(pattern) ?? [];
 
 const parts = [
   ...all(/<title>[\s\S]*?<\/title>/gi),
-  ...all(/<meta\b[^>]*>/gi).filter((tag) => !/charset|name="viewport"/i.test(tag)),
-  // ein Artifact hat sein eigenes Symbol – das Favicon der Einzeldatei braucht es nicht
-  ...all(/<link\b[^>]*>/gi).filter((tag) => !/rel="icon"/i.test(tag)),
+  ...all(/<meta\b[^>]*>/gi).filter((tag) => !/charset|name="viewport"|name="apple-mobile-web-app/i.test(tag)),
+  // ein Artifact hat sein eigenes Symbol und lässt sich nicht als App installieren (build/pwa.ts) –
+  // Favicon, Manifest und App-Symbol der Einzeldatei braucht es nicht
+  ...all(/<link\b[^>]*>/gi).filter((tag) => !/rel="(icon|manifest|apple-touch-icon)"/i.test(tag)),
   ...all(/<style\b[^>]*>[\s\S]*?<\/style>/gi),
   body.trim(),
   ...scripts,

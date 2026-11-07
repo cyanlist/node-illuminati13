@@ -1,4 +1,6 @@
 <script lang="ts">
+import { EYE } from './eye';
+
 /** Farbsymbole und Logo – einmal eingebunden, überall per <use href="#…"> verwendet. */
 </script>
 
@@ -24,17 +26,12 @@
       <circle cx="12" cy="12" r="3" />
       <path d="M10.7 12h2.6l.4 4.6c.4 2.4 1.5 4.1 3.3 5.4H7c1.8-1.3 2.9-3 3.3-5.4z" />
     </symbol>
-    <symbol id="eye" viewBox="0 0 48 44">
-      <path d="M24 3 45 41H3Z" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" />
-      <path
-        d="M12.5 29Q24 18.5 35.5 29 24 38.5 12.5 29Z"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2.2"
-        stroke-linejoin="round"
-      />
-      <circle cx="24" cy="29" r="3.7" fill="currentColor" />
-      <path d="M24 12v4.5M18 15.5l2 3M30 15.5l-2 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+    <symbol id="eye" viewBox={EYE.viewBox}>
+      {#each [EYE.pyramid, EYE.eye] as line (line.d)}
+        <path d={line.d} fill="none" stroke="currentColor" stroke-width={line.stroke} stroke-linejoin="round" />
+      {/each}
+      <circle cx={EYE.pupil.cx} cy={EYE.pupil.cy} r={EYE.pupil.r} fill="currentColor" />
+      <path d={EYE.rays.d} stroke="currentColor" stroke-width={EYE.rays.stroke} stroke-linecap="round" />
     </symbol>
   </defs>
 </svg>

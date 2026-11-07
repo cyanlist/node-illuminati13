@@ -39,7 +39,9 @@ HTML-Grundgerüst, zum Veröffentlichen als Claude-Artifact.
 Für das Spielen an zwei Handys braucht die App eine eigene https-Adresse – nur dann dürfen Kamera und
 Einladungs-Links genutzt werden. Das erledigt GitHub Pages kostenlos:
 [`.github/workflows/pages.yml`](.github/workflows/pages.yml) prüft und baut bei jedem Push auf `main` und stellt
-`dist/index.html` online.
+`dist/index.html` online – samt Manifest, App-Symbolen und Service Worker, damit man das Spiel als App auf den
+Startbildschirm legen kann (Anleitung im Spiel unter Einstellungen → „Als App aufs Handy“). Die installierte App lädt
+mit Netz immer die neueste Fassung und startet ohne Netz die zuletzt geladene.
 
 Einmalig einrichten:
 
@@ -104,7 +106,9 @@ src/
   styles/global.css  Design-Tokens (hell/dunkel), Knöpfe, Formularfelder – alles andere steht in den Komponenten
   storage.ts       Einstellungen und Bestwert im Browser-Speicher
   App.svelte, main.ts
-tests/             Unit-Tests · build/  Build-Plugin · scripts/  Artifact-Fassung
+tests/             Unit-Tests · scripts/  Artifact-Fassung
+build/             Build-Plugins: inline-assets.ts (Einzeldatei), build-info.ts (Version), pwa.ts (Manifest und
+                   App-Symbole aus src/ui/eye.ts), sw.js (Service Worker der installierten App)
 legacy/            erste Version als einzelne HTML-Datei (nur zur Referenz, kann gelöscht werden)
 ```
 
