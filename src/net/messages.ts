@@ -3,10 +3,13 @@
  * schickt ihn zu Beginn einmal ganz, danach nur noch die Züge – jedes Gerät wendet sie gleich an.
  */
 import type { GameState, Move } from '../core/game';
+import type { Settings } from '../core/settings';
 
 export type Message =
   /** Gleich nach dem Verbinden: wie man heißt */
   | { type: 'hello'; name: string }
+  /** Gastgeber*in → Gast: wie das nächste Spiel gerade eingestellt ist – der Gast sieht es nur an */
+  | { type: 'settings'; settings: Settings }
   /** Gastgeber*in → Gast: neues Spiel oder der aktuelle Stand nach einer Unterbrechung */
   | { type: 'start'; game: GameState }
   /** Ein Zug; `at` ist die Länge des Protokolls davor – so fällt auf, wenn die Stände auseinanderlaufen */
@@ -23,6 +26,7 @@ export type Message =
 /** Alle Arten von Nachrichten – fehlt eine neue hier, meldet es die Typprüfung */
 const TYPES: Record<Message['type'], true> = {
   hello: true,
+  settings: true,
   start: true,
   move: true,
   hint: true,

@@ -6,6 +6,7 @@
  * per Austausch zweier Codes, als QR-Code oder Text.
  */
 
+import type { Settings } from '../core/settings';
 import { type Heartbeat, type Signal, startHeartbeat } from '../net/heartbeat';
 import type { Invite } from '../net/link';
 import { type Message, parseMessage } from '../net/messages';
@@ -48,6 +49,8 @@ class OnlineState {
   myName = $state('');
   peerName = $state('');
   error = $state('');
+  /** Als Gast: wie die Gastgeber*in das nächste Spiel gerade einstellt (null: noch nichts angekommen) */
+  hostSettings = $state<Settings | null>(null);
   /** Bei bestehender Verbindung: kommen die Lebenszeichen des Gegenübers an? */
   signal = $state<Signal>('ok');
   /** Das Verbindungsfenster ist offen */
@@ -247,6 +250,7 @@ export function disconnect(): void {
   online.roomCode = '';
   online.code = '';
   online.peerName = '';
+  online.hostSettings = null;
   setStatus('idle');
 }
 
@@ -256,6 +260,7 @@ function reset(role: Role, name: string, method: Method): void {
   online.method = method;
   online.myName = name;
   online.code = '';
+  online.hostSettings = null;
   setStatus('preparing');
 }
 

@@ -3,7 +3,7 @@
  * während hier noch Karten fliegen, warten in einer Schlange und werden der Reihe nach abgespielt.
  */
 import { takeHint } from '../core/game';
-import { isOnline } from '../core/settings';
+import { isOnline, normalizeSettings, type Settings } from '../core/settings';
 import type { Message } from '../net/messages';
 import { enterGame, onRemoteTurn, playAgain, playTurn } from './flow';
 import { onLink, online, send } from './online.svelte';
@@ -30,6 +30,10 @@ function receive(message: Message): void {
       online.peerName =
         message.name.trim().slice(0, 20) || (online.role === 'host' ? 'Gast' : 'Gastgeber*in');
       return;
+    case 'settings':
+      // kommt vom anderen Gerät – nur Gültiges übernehmen
+      if (online.role === 'guest') online.hostSettings = normalizeSettings(message.settings);
+      return;
     case 'start':
       if (online.role !== 'guest') return;
       queue.length = 0;
@@ -48,6 +52,11 @@ function receive(message: Message): void {
       if (online.role === 'host' && table.game?.over) playAgain();
       return;
   }
+}
+
+/** Gastgeber*in: zeigt dem Gast, wie das nächste Spiel gerade eingestellt ist. */
+export function shareSettings(settings: Settings): void {
+  if (online.role === 'host' && online.connected) send({ type: 'settings', settings });
 }
 
 /** Spielt den nächsten wartenden Zug ab, sobald das andere Gerät dran ist und hier nichts mehr fliegt. */

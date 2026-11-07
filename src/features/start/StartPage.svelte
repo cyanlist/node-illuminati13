@@ -1,7 +1,8 @@
 <script lang="ts">
 import { normalizeSettings, resolveRuleMode, settingsForEditing } from '../../core/settings';
 import { resume, startGame } from '../../state/flow';
-import { online, openConnect } from '../../state/online.svelte';
+import { online } from '../../state/online.svelte';
+import { shareSettings } from '../../state/online-flow';
 import { sheets } from '../../state/sheets.svelte';
 import { table } from '../../state/table.svelte';
 import { loadSettings, saveSettings } from '../../storage';
@@ -11,6 +12,7 @@ import PlayersPanel from './PlayersPanel.svelte';
 import { SECTIONS, type SectionId } from './sections';
 import SettingsSheet from './SettingsSheet.svelte';
 import SettingsSummary from './SettingsSummary.svelte';
+import { startButton } from './start-button';
 
 /**
  * Startseite: links der Titel, rechts das nächste Spiel. Sichtbar ist nur, wer spielt; Varianten, Regeln, Tipps und Extras
@@ -22,22 +24,32 @@ const section = $derived(SECTIONS.find((s) => s.id === openSection));
 
 const running = $derived(table.game !== null && table.phase !== 'over');
 const onlineMode = $derived(draft.mode === 'online');
-/** Als Gast stellt das andere Gerät das Spiel ein – hier gibt es nichts weiter zu wählen. */
+/** Als Gast stellt das andere Gerät das Spiel ein – hier sieht man nur mit, was es einstellt. */
 const guest = $derived(onlineMode && online.role === 'guest' && online.connected);
-const startLabel = $derived.by(() => {
-  if (guest) return `Warte auf ${online.peerName || 'das andere Gerät'} …`;
-  if (onlineMode && !online.connected) return 'Verbinden …';
-  return 'Spiel starten';
+const start = $derived(
+  startButton(onlineMode, {
+    role: online.role,
+    connected: online.connected,
+    pending: online.presence === 'pending',
+    silent: online.connected && online.signal === 'gone',
+    peerName: online.peerName,
+  }),
+);
+
+// Gastgeber*in an zwei Geräten: Der Gast sieht jede Änderung mit – kurz gesammelt, damit nicht jeder Tastendruck
+// beim Namen eine Nachricht wird. Läuft auch beim (Wieder-)Verbinden, dann bekommt der Gast den aktuellen Stand.
+$effect(() => {
+  if (!onlineMode || online.role !== 'host' || !online.connected) return;
+  const settings = $state.snapshot(draft);
+  const timer = setTimeout(() => shareSettings(settings), 250);
+  return () => clearTimeout(timer);
 });
 
 function onsubmit(event: SubmitEvent): void {
   event.preventDefault();
+  if (start.disabled) return;
   const settings = resolveRuleMode(normalizeSettings($state.snapshot(draft)));
   saveSettings(settings);
-  if (onlineMode && !online.connected) {
-    openConnect(settings.names[0]);
-    return;
-  }
   startGame(settings);
 }
 </script>
@@ -47,12 +59,17 @@ function onsubmit(event: SubmitEvent): void {
   <Hero />
   <form {onsubmit}>
     <PlayersPanel bind:draft />
-    {#if !guest}<SettingsSummary {draft} onopen={(id) => (openSection = id)} />{/if}
+    {#if !guest}
+      <SettingsSummary {draft} onopen={(id) => (openSection = id)} />
+    {:else if online.hostSettings}
+      <SettingsSummary draft={online.hostSettings} note="{online.peerName || 'Das andere Gerät'} stellt ein – du siehst mit." />
+    {/if}
     <div class="actions">
       <button type="button" class="btn btn--ghost" onclick={() => (sheets.rulesOpen = true)}>Regeln lesen</button>
       {#if running}<button type="button" class="btn" onclick={resume}>Weiterspielen</button>{/if}
-      <button type="submit" class="btn btn--primary btn--large" disabled={guest}>{startLabel}</button>
+      <button type="submit" class="btn btn--primary btn--large" disabled={start.disabled}>{start.label}</button>
     </div>
+    {#if start.reason}<p class="reason" aria-live="polite">{start.reason}</p>{/if}
   </form>
 </div>
 
@@ -100,5 +117,13 @@ function onsubmit(event: SubmitEvent): void {
     flex-wrap: wrap;
     gap: 10px;
     justify-content: flex-end;
+  }
+
+  /* warum es noch nicht losgehen kann – direkt unter dem Knopf */
+  .reason {
+    margin: -6px 0 0;
+    text-align: right;
+    color: var(--muted);
+    font-size: 14px;
   }
 </style>
