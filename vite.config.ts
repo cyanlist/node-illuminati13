@@ -9,6 +9,8 @@ export default defineConfig({
   plugins: [svelte(), inlineAssets()],
   // relative Pfade: der Build lässt sich in jeden Unterordner / auf jeden Webspace legen
   base: './',
+  // Schriften (src/styles/fonts.css) als data-URL ins CSS – so bleibt der Build eine einzige Datei
+  build: { assetsInlineLimit: (file) => (file.endsWith('.woff2') ? true : undefined) },
   // Version, Commit und Build-Zeitpunkt – für die Entwicklerinfo in den Einstellungen (src/build.ts)
   define: { __BUILD__: JSON.stringify(buildInfo()) },
   test: {

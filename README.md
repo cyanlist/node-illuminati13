@@ -57,6 +57,10 @@ Build) gescheitert ist – dieselben Prüfungen laufen lokal mit `npm run verify
 TypeScript · [Svelte 5](https://svelte.dev) (Oberfläche) · [Vite](https://vite.dev) (Build) · Vitest (Tests) ·
 Biome (Lint/Format).
 
+Die Schriften Kalam und Atkinson Hyperlegible (SIL Open Font License, über [Fontsource](https://fontsource.org)) sind
+in die App eingebettet – kein Abruf bei Google Fonts. An zwei Geräten bleibt der Bildschirm an, solange die
+Verbindung steht oder entsteht (`src/ui/keep-awake.ts`).
+
 ## Ordnerstruktur
 
 ```

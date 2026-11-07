@@ -1,6 +1,6 @@
 // Erzeugt aus dist/index.html die Fassung für ein Claude-Artifact: dist/artifact.html.
 // Ein Artifact bettet die Seite selbst in ein Grundgerüst (doctype, head, body mit charset und viewport) ein,
-// daher kommen hier nur Titel, Meta-Angaben, Schriften, Styles, Markup und Skript hinein – der Titel ganz vorne.
+// daher kommen hier nur Titel, Meta-Angaben, Styles (samt eingebetteter Schriften), Markup und Skript hinein – der Titel ganz vorne.
 import { readFileSync, writeFileSync } from 'node:fs';
 
 const source = readFileSync('dist/index.html', 'utf8');

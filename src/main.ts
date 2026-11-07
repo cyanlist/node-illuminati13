@@ -5,6 +5,7 @@ import { online, openConnect } from './state/online.svelte';
 import { initOnlineFlow } from './state/online-flow';
 import { restoreSnapshot, takeSnapshot } from './state/snapshot.svelte';
 import { loadDeck, loadSettings, loadTheme, saveSettings } from './storage';
+import './styles/fonts.css';
 import './styles/global.css';
 import { deckChoice } from './ui/deck.svelte';
 import { applyTheme } from './ui/theme.svelte';

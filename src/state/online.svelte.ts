@@ -62,6 +62,11 @@ class OnlineState {
     return this.status === 'connected';
   }
 
+  /** Ein 2. Gerät ist verbunden, wird erwartet oder soll zurückkommen – dann bleibt der Bildschirm an */
+  get active(): boolean {
+    return this.status !== 'idle' && this.status !== 'failed';
+  }
+
   /** null: Es ist noch niemand eingeladen oder beigetreten. */
   get presence(): Presence | null {
     if (this.status === 'connected')
