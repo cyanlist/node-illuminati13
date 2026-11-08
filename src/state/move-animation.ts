@@ -11,6 +11,7 @@ import { applyMove, currentPlayer, type Move, type PlacementStep, type ProofPart
 import type { RuleKey } from '../core/rules';
 import { flyCard } from './flights.svelte';
 import { drawPileRect, launchRect, pileRect, stageRect } from './positions';
+import { inColumnOrder } from './stage-order';
 import { requireGame, table } from './table.svelte';
 
 /**
@@ -162,7 +163,8 @@ export async function animateMove(move: Move): Promise<boolean> {
   await wait(TIMING.beforeFirstCard);
   const laid =
     result.parts.length > 0
-      ? await presentProof(anim, result.parts, result.steps, running)
+      ? // auf der Bühne nach den Stapeln geordnet, wie sie gerade auf dem Board liegen (Stand vor dem Zug)
+        await presentProof(anim, inColumnOrder(result.parts, table.columns), result.steps, running)
       : await layDown(anim, result.steps, watched, running);
   if (!laid || !(await drawUp(anim, result.reshuffled, running))) return false;
   await wait(watched ? TIMING.afterMoveWatched : TIMING.afterMove);
