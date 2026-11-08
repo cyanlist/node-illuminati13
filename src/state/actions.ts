@@ -4,7 +4,6 @@
 import type { Card, SuitIndex } from '../core/cards';
 import { canTakeHint, NO_THIRTEEN, rulesetFor, takeHint } from '../core/game';
 import { isOnline } from '../core/settings';
-import { num } from '../ui/format';
 import { playTurn } from './flow';
 import { send } from './online.svelte';
 import { judgeSelection } from './selection';
@@ -56,8 +55,9 @@ export function playSelection(): void {
       void playTurn({ type: 'discard', cardId: selection.card.id });
       return;
     case 'invalid':
-      // kurz genug für zwei Zeilen auf schmalen Handys – mehr Platz hat die Rückmeldung nicht
-      table.message = `Ergibt ${num(selection.sum)}, keine 13 – wähle eine 13 oder eine Karte zum Abwerfen.`;
+      // ohne Summe – sonst könnte man sich beim Kopfrechnen zur 13 durchprobieren; der Knopf schüttelt den Kopf
+      table.message = 'Keine 13er-Kombination.';
+      table.rejected++;
       return;
   }
 }

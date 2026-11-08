@@ -14,6 +14,19 @@ let { game }: { game: GameState } = $props();
 
 const main = $derived(mainButton());
 const hint = $derived(hintButton());
+
+/*
+ * Kopfschütteln: Ergibt die Auswahl keine 13, wackelt der Knopf kurz (dazu die Rückmeldung darunter). Jeder neue
+ * Versuch startet die Bewegung von vorn – erst Klasse weg, im nächsten Bild wieder dran.
+ */
+let shaking = $state(false);
+let seen = table.rejected;
+$effect(() => {
+  if (table.rejected === seen) return;
+  seen = table.rejected;
+  shaking = false;
+  requestAnimationFrame(() => (shaking = true));
+});
 const waitingLabel = $derived(
   table.anim
     ? 'Wird abgelegt …'
@@ -28,7 +41,15 @@ const waitingLabel = $derived(
     <button type="button" class="btn btn--primary" onclick={() => (sheets.resultsHidden = false)}>Ergebnis ansehen</button>
     <button type="button" class="btn btn--ghost" onclick={goHome}>Andere Einstellungen</button>
   {:else if table.canPlay}
-    <button type="button" class="btn btn--primary" class:btn--win={main.win} disabled={main.disabled} onclick={playSelection}>
+    <button
+      type="button"
+      class="btn btn--primary"
+      class:btn--win={main.win}
+      class:shake={shaking}
+      disabled={main.disabled}
+      onclick={playSelection}
+      onanimationend={() => (shaking = false)}
+    >
       {main.label}
     </button>
     {#if !hint.hidden}
@@ -61,6 +82,26 @@ const waitingLabel = $derived(
 
   .actions > :global(.btn--ghost) {
     justify-self: start;
+  }
+
+  /* Kopfschütteln – wer „Bewegung reduzieren“ eingestellt hat, sieht nur die Rückmeldung */
+  .shake {
+    animation: shake 0.4s ease-out;
+  }
+
+  @keyframes shake {
+    20% {
+      transform: translateX(-7px);
+    }
+    40% {
+      transform: translateX(6px);
+    }
+    60% {
+      transform: translateX(-4px);
+    }
+    80% {
+      transform: translateX(2px);
+    }
   }
 
   /* Handy: Ablegen über die ganze Breite, der Tipp klein darunter */

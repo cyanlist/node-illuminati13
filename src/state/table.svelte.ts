@@ -34,6 +34,8 @@ class TableState {
   hintCombo = $state<number[] | null>(null);
   /** Kurze Rückmeldung unter dem Knopf */
   message = $state('');
+  /** Zählt Versuche, Karten abzulegen, die keine 13 ergeben – der Ablegen-Knopf schüttelt dann kurz den Kopf */
+  rejected = $state(0);
   /** Gewählte oberste Karte je Farbe, solange das Reihenfolge-Fenster offen ist */
   topPick = $state<Partial<Record<SuitIndex, number>> | null>(null);
   anim = $state<MoveAnimation | null>(null);
