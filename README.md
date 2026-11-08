@@ -96,7 +96,7 @@ src/
     online/          Verbindungsfenster: ConnectSheet, CodeShare (QR + Teilen), CodeInput (Kamera + Einfügen)
     start/           Startseite: Hero, PlayersPanel, SettingsSummary (Kurzfassung) mit SettingsSheet für RulesPanel, HintsPanel, OptionsPanel, ChoiceGroup, Segmented, CheckOption, Panel
     table/           Spieltisch: TopBar, GameStatus, PlayerSeat (Seat + HandCards oder SmallCards), Board, Pile, DrawPile, ProofStage, HandCard, Actions, GameLog, …
-    sheets/          Fenster: Regeln, Übergabe, Reihenfolge, Ergebnis (results/: Duell, Verlauf, Bestwert, Text zum Teilen)
+    sheets/          Fenster: Regeln, Übergabe, Reihenfolge, Ergebnis (results/: Duell, Verlauf, Bestwert, Bild zum Teilen)
   ui/              gemeinsame Bausteine: Card, CardBack, CardSlot (leerer Platz), SuitSymbol, Avatar, Chip, SuitIcon, Logo, Sheet,
                    Subject, Scramble, DependentOptions (abhängige Einstellungen: ausgegraut statt ausgeblendet), format.ts,
                    deck.svelte.ts und theme.svelte.ts (Kartendesign und Farbschema dieses Geräts)
