@@ -55,6 +55,7 @@ let {
 
 <section class="seat" class:active class:cpu class:compact class:waiting style:--hue={hueFor(name)} aria-label={label}>
   {#if lastTurn}<span class="last-turn">Letzter Zug</span>{/if}
+  {#if thinking}<span class="thinking"><Thinking /></span>{/if}
   <span class="who">
     <Avatar {name} {cpu} size="44px" />
     {#if presence}<span class="presence"><PresenceDot {presence} /></span>{/if}
@@ -66,7 +67,6 @@ let {
     <span class="combos" aria-label="{combos}-mal die 13" title="{combos}-mal die 13 gefunden">
       <span class="token">13</span><span class="times">×{combos}</span>
     </span>
-    {#if thinking}<Thinking />{/if}
   </header>
   <div class="cards">{@render children()}</div>
 </section>
@@ -201,6 +201,23 @@ let {
     right: -3px;
     bottom: -3px;
     display: flex;
+  }
+
+  /* „überlegt …“ ebenso als Aufkleber, links – stünde es in der Kopfzeile, würde der Name kürzer und die Punkte
+     rückten, sobald es erscheint */
+  .thinking {
+    position: absolute;
+    top: -9px;
+    left: 16px;
+    z-index: 1;
+    padding: 1px 10px 2px;
+    border-radius: 999px;
+    background: var(--surface);
+    box-shadow:
+      inset 0 0 0 1.5px var(--line),
+      0 0 0 3px var(--bg);
+    line-height: 1.3;
+    white-space: nowrap;
   }
 
   /* wie ein Aufkleber auf dem oberen Rand – braucht keinen Platz in der Zeile */

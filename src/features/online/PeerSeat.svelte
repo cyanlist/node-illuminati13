@@ -16,6 +16,10 @@ import PresenceDot from './PresenceDot.svelte';
  * zeigt der Platz, wie weit die Verbindung ist. Leer mit „Einladen“ und „Beitreten“, dann der offene Raum mit
  * seinem Code, schließlich Avatar und Name des Gegenübers mit einem Punkt für den Stand der Verbindung.
  * Code eingeben, teilen und der QR-Ausweichweg bleiben im Verbindungsfenster.
+ *
+ * Der Platz ist in jedem Zustand gleich hoch – eine Zeile Titel (mit dem Raum-Code darin), eine Zeile Stand,
+ * zwei Zeilen Erklärung und eine Reihe Knöpfe –, damit beim Verbinden nichts darunter nachrückt. Längere
+ * Erklärungen kürzt er nach zwei Zeilen ab; ganz stehen sie im Verbindungsfenster.
  */
 let { name }: { name: string } = $props();
 
@@ -71,17 +75,14 @@ const view = $derived.by((): View => {
         title: peer,
         avatar: true,
         state: 'Antwortet nicht',
-        note: 'Vielleicht ist dort der Bildschirm aus oder die App im Hintergrund. Sobald das Gerät wieder da ist, geht es weiter.',
+        note: 'Bildschirm aus? Sobald das Gerät zurück ist, geht es weiter.',
         actions: [retry('Neu verbinden'), leave],
       };
     return {
       title: peer,
       avatar: true,
       state: 'Verbunden',
-      note:
-        role === 'host'
-          ? 'Stell das Spiel ein und starte es – das andere Gerät setzt sich mit an den Tisch.'
-          : `${peer} stellt das Spiel ein und startet es.`,
+      note: role === 'host' ? 'Stell das Spiel ein und starte es für euch beide.' : `${peer} stellt das Spiel ein und startet es.`,
       actions: [leave],
     };
   }
@@ -99,7 +100,7 @@ const view = $derived.by((): View => {
   if (role === null)
     return {
       title: 'Noch niemand verbunden',
-      note: 'Ein Gerät lädt ein, das andere tritt bei – auch an verschiedenen Orten. Keine Anmeldung nötig.',
+      note: 'Ein Gerät lädt ein, das andere tritt bei – ohne Anmeldung.',
       actions: [invite, join],
     };
   if (role === 'host' && status !== 'connecting') {
@@ -109,7 +110,7 @@ const view = $derived.by((): View => {
         code: roomCode,
         state: 'Warte auf das andere Gerät …',
         note: 'Dort „2. Gerät“ → „Beitreten“ wählen und den Code eingeben.',
-        actions: [show('Teilen oder QR-Code'), cancel],
+        actions: [show('Code teilen'), cancel],
       };
     return { title: 'Einladung per Code', state: 'Warte auf den Antwort-Code …', actions: [show('Fortsetzen', true), cancel] };
   }
@@ -133,11 +134,14 @@ const view = $derived.by((): View => {
     {#if presence}<span class="dot"><PresenceDot {presence} /></span>{/if}
   </div>
 
+  <!-- jede Zeile ist immer da, auch leer – so bleibt der Platz in jedem Zustand gleich hoch -->
   <div class="info" aria-live="polite">
-    <b class="title">{view.title}</b>
-    {#if view.code}<span class="code" aria-label="Raum-Code {view.code.split('').join(' ')}">{view.code}</span>{/if}
-    {#if view.state}<span class="state">{view.state}</span>{/if}
-    {#if view.note}<small class="note">{view.note}</small>{/if}
+    <b class="title">
+      <span class="label">{view.title}</span>
+      {#if view.code}<span class="code" aria-label="Raum-Code {view.code.split('').join(' ')}">{view.code}</span>{/if}
+    </b>
+    <span class="state">{view.state ?? ''}</span>
+    <small class="note" title={view.note}>{view.note ?? ''}</small>
   </div>
 
   <div class="actions">
@@ -160,13 +164,13 @@ const view = $derived.by((): View => {
     --tone: var(--muted);
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
+    /* die Knöpfe über die ganze Breite, damit zwei nebeneinander passen und nie umbrechen */
     grid-template-areas:
       "slot info"
-      "slot actions";
+      "actions actions";
     align-items: center;
     column-gap: 14px;
     row-gap: 10px;
-    margin-top: 8px;
     padding: 12px 14px;
     background: var(--surface-2);
     border: 1.5px solid var(--line);
@@ -228,38 +232,62 @@ const view = $derived.by((): View => {
     grid-area: info;
     display: flex;
     flex-direction: column;
-    gap: 2px;
     min-width: 0;
   }
 
+  /* Titel und Raum-Code in einer Zeile, so hoch wie der Code */
   .title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 30px;
+    min-width: 0;
     font-size: 16px;
-    overflow-wrap: anywhere;
+  }
+
+  .label,
+  .state {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .code {
-    font-size: 28px;
-    font-weight: 700;
-    letter-spacing: 0.16em;
+    flex: none;
+    font-size: 24px;
+    letter-spacing: 0.14em;
     font-variant-numeric: tabular-nums;
-    line-height: 1.2;
+    line-height: 1;
   }
 
   .state {
+    min-height: 1.45em;
+    line-height: 1.45;
     color: var(--tone);
     font-weight: 700;
     font-size: 14px;
   }
 
+  /* immer Platz für genau zwei Zeilen; was länger ist, endet mit „…“ */
   .note {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    min-height: 2.8em;
+    line-height: 1.4;
     color: var(--muted);
   }
 
   .actions {
     grid-area: actions;
     display: flex;
-    flex-wrap: wrap;
     gap: 8px;
+  }
+
+  .actions .btn {
+    white-space: nowrap;
   }
 
   @media (prefers-reduced-motion: reduce) {

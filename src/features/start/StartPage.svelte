@@ -61,8 +61,10 @@ function onsubmit(event: SubmitEvent): void {
     <PlayersPanel bind:draft />
     {#if !guest}
       <SettingsSummary {draft} onopen={(id) => (openSection = id)} />
-    {:else if online.hostSettings}
-      <SettingsSummary draft={online.hostSettings} note="{online.peerName || 'Das andere Gerät'} stellt ein – du siehst mit." />
+    {:else}
+      <!-- als Gast nur zum Ansehen; bis die Einstellungen der Gastgeber*in ankommen, stehen die eigenen da –
+           so verschwindet die Kurzfassung beim Verbinden nicht kurz -->
+      <SettingsSummary draft={online.hostSettings ?? draft} note="{online.peerName || 'Das andere Gerät'} stellt ein" />
     {/if}
     <div class="actions">
       <button type="button" class="btn btn--ghost" onclick={() => (sheets.rulesOpen = true)}>Regeln lesen</button>

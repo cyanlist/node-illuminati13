@@ -44,36 +44,50 @@ const waitingLabel = $derived(
 <p class="message" aria-live="polite">{table.message}</p>
 
 <style>
+  /* Ablegen genau in der Mitte, der Tipp rechts daneben – ändert der Tipp seine Beschriftung, bleibt Ablegen stehen */
   .actions {
-    display: flex;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     align-items: center;
-    flex-wrap: wrap;
     gap: 10px;
   }
 
-  .actions :global(.btn--primary) {
-    min-width: min(260px, 100%);
+  /* breit genug für die längsten Beschriftungen („… ist am Zug …“, „13 beweisen · +4 Punkte“) – sonst wanderte
+     der Tipp bei jedem Wechsel mit */
+  .actions > :global(.btn--primary) {
+    grid-column: 2;
+    min-width: 300px;
+  }
+
+  .actions > :global(.btn--ghost) {
+    justify-self: start;
   }
 
   /* Handy: Ablegen über die ganze Breite, der Tipp klein darunter */
   @media (max-width: 620px) {
     .actions {
-      flex-direction: column;
-      align-items: stretch;
+      grid-template-columns: minmax(0, 1fr);
       gap: 8px;
     }
 
-    .actions :global(.btn--ghost) {
-      align-self: center;
+    .actions > :global(.btn--primary) {
+      grid-column: 1;
+      min-width: 0;
+    }
+
+    .actions > :global(.btn--ghost) {
+      justify-self: center;
       padding: 6px 14px;
       font-size: 14px;
     }
   }
 
+  /* Platz für zwei Zeilen, auch wenn gerade nichts dasteht – sonst rückt der Tisch hoch, sobald ein Tipp
+     auf dem Handy umbricht (die Höhe ist in GameView unter CHROME eingerechnet) */
   .message {
     margin: 0;
-    min-height: 1.45em;
+    min-height: 2.9em;
+    line-height: 1.45;
     text-align: center;
     color: var(--muted);
     font-weight: 700;

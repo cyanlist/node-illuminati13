@@ -98,7 +98,7 @@ src/
     table/           Spieltisch: TopBar, GameStatus, PlayerSeat (Seat + HandCards oder SmallCards), Board, Pile, DrawPile, ProofStage, HandCard, Actions, GameLog, …
     sheets/          Fenster: Regeln, Übergabe, Reihenfolge, Ergebnis
   ui/              gemeinsame Bausteine: Card, CardBack, CardSlot (leerer Platz), SuitSymbol, Avatar, Chip, SuitIcon, Logo, Sheet,
-                   Subject, Scramble, format.ts,
+                   Subject, Scramble, DependentOptions (abhängige Einstellungen: ausgegraut statt ausgeblendet), format.ts,
                    deck.svelte.ts und theme.svelte.ts (Kartendesign und Farbschema dieses Geräts)
     decks/           ein Kartendesign pro Datei (Klassisch, Pinnwand, Dollarnote, Geheimakte, Entschlüsselt, Okkult),
                      CardFace für die gemeinsame Anordnung, EmptySlot für leere Stapel, index.ts trägt sie ein,

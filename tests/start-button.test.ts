@@ -37,11 +37,11 @@ describe('Start-Knopf', () => {
     });
   });
 
-  it('sagt dem Gast, wer startet', () => {
+  it('sagt dem Gast unter dem Knopf, wer startet', () => {
     expect(startButton(true, link({ role: 'guest', connected: true }))).toEqual({
-      label: 'Lena startet das Spiel …',
+      label: 'Spiel starten',
       disabled: true,
-      reason: null,
+      reason: 'Lena startet das Spiel.',
     });
   });
 

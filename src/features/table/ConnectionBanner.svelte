@@ -33,13 +33,21 @@ function resume(): void {
 {/if}
 
 <style>
+  /* schwebt oben über dem Tisch (über dem Platz des anderen Geräts), damit beim Erscheinen nichts nachrückt */
   .banner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: var(--z-overlay);
+    box-shadow: var(--shadow-panel);
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     gap: 10px;
     padding: 10px 14px;
+    /* deckend, weil darunter der Platz gegenüber liegt */
     background: color-mix(in srgb, var(--danger) 12%, var(--surface));
     border: 1.5px solid color-mix(in srgb, var(--danger) 40%, transparent);
     border-radius: 12px;

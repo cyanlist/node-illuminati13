@@ -6,8 +6,6 @@
 
 <style>
   .thinking {
-    margin-left: auto;
-    flex: none;
     color: var(--muted);
     font-size: 13px;
     font-style: italic;

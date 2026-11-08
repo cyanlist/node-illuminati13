@@ -56,7 +56,8 @@ export function playSelection(): void {
       void playTurn({ type: 'discard', cardId: selection.card.id });
       return;
     case 'invalid':
-      table.message = `Deine Auswahl ergibt ${num(selection.sum)}, nicht 13. Wähle eine 13 oder eine einzelne Karte zum Abwerfen.`;
+      // kurz genug für zwei Zeilen auf schmalen Handys – mehr Platz hat die Rückmeldung nicht
+      table.message = `Ergibt ${num(selection.sum)}, keine 13 – wähle eine 13 oder eine Karte zum Abwerfen.`;
       return;
   }
 }

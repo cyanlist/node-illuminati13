@@ -14,7 +14,15 @@ let { points, goal = null }: { points: number; goal?: number | null } = $props()
   aria-label={goal !== null ? `${points} von ${goal} Punkten` : `${points} ${pointWord(points)}`}
 >
   {#key points}<b class="points">{points}</b>{/key}
-  <span class="unit">{goal !== null ? `/ ${goal}` : pointWord(points)}</span>
+  {#if goal !== null}
+    <span class="unit">/ {goal}</span>
+  {:else}
+    <!-- „Punkt“ und „Punkte“ teilen sich den Platz des längeren Worts – beim ersten Punkt rückt so nichts daneben -->
+    <span class="unit word">
+      <span>{pointWord(points)}</span>
+      <span class="spacer" aria-hidden="true">Punkte</span>
+    </span>
+  {/if}
 </span>
 
 <style>
@@ -41,6 +49,18 @@ let { points, goal = null }: { points: number; goal?: number | null } = $props()
     color: var(--muted);
     font-size: 12px;
     font-weight: 700;
+  }
+
+  .word {
+    display: inline-grid;
+  }
+
+  .word > * {
+    grid-area: 1 / 1;
+  }
+
+  .spacer {
+    visibility: hidden;
   }
 
   /* „Bis 13“: Ziel erreicht – das Feld leuchtet in der vollen Farbe */

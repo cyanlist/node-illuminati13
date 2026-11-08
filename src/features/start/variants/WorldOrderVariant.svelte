@@ -2,6 +2,7 @@
 import { DIR_LABELS, ROTATION_DIRS } from '../../../core/rules';
 import type { Settings } from '../../../core/settings';
 import CheckOption from '../../../ui/CheckOption.svelte';
+import DependentOptions from '../../../ui/DependentOptions.svelte';
 
 /** Variante „Wenn die Weltordnung sich verschiebt“ – und in welche Richtung die Stapel dann rücken. */
 let { draft = $bindable() }: { draft: Settings } = $props();
@@ -13,14 +14,14 @@ let { draft = $bindable() }: { draft: Settings } = $props();
   bind:checked={draft.variant}
 />
 
-{#if draft.variant}
+<DependentOptions enabled={draft.variant}>
   <label class="field">
     Richtung, in die die Stapel rücken
     <select bind:value={draft.dir}>
       {#each ROTATION_DIRS as dir (dir)}<option value={dir}>{DIR_LABELS[dir]}</option>{/each}
     </select>
   </label>
-{/if}
+</DependentOptions>
 
 <style>
   .field {

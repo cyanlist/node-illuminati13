@@ -46,23 +46,22 @@ const level = $derived(levels.find((option) => option.value === draft.cpuLevel))
       <span class="field-label">Gegenüber</span>
       <Segmented name="opponent" label="Gegenüber" options={opponents} bind:value={draft.mode} />
 
-      {#if draft.mode === 'cpu'}
-        <div class="detail">
+      <!-- Alle vier liegen übereinander und teilen sich die Höhe des größten (des Platzes für das 2. Gerät, der in
+           jedem Zustand gleich hoch ist) – beim Umschalten und beim Verbinden rückt so nichts darunter. -->
+      <div class="details">
+        <div class="detail" class:shown={draft.mode === 'online'}><PeerSeat name={draft.names[0]} /></div>
+        <div class="detail" class:shown={draft.mode === 'cpu'}>
           <span class="field-label">Stärke</span>
           <Segmented name="cpu-level" label="Stärke des Computers" options={levels} bind:value={draft.cpuLevel} />
           <small>{level?.description}</small>
         </div>
-      {:else if together}
-        <label class="field detail">
+        <label class="field detail" class:shown={together}>
           Spieler*in 2
           <input type="text" maxlength="20" autocomplete="off" placeholder="Spieler*in 2" bind:value={draft.names[1]} />
           <small>Abwechselnd an einem Gerät, die Karten bleiben bis zur Übergabe verdeckt.</small>
         </label>
-      {:else if draft.mode === 'online'}
-        <PeerSeat name={draft.names[0]} />
-      {:else}
-        <small class="detail">Allein: Wie viele Punkte schaffst du mit einem Deck?</small>
-      {/if}
+        <small class="detail" class:shown={draft.mode === 'solo'}>Allein: Wie viele Punkte schaffst du mit einem Deck?</small>
+      </div>
     </div>
   </div>
 </Panel>
@@ -93,11 +92,21 @@ const level = $derived(levels.find((option) => option.value === draft.cpuLevel))
     font-weight: 700;
   }
 
+  .details {
+    display: grid;
+    margin-top: 8px;
+  }
+
   .detail {
+    grid-area: 1 / 1;
     display: flex;
     flex-direction: column;
     gap: 6px;
-    margin-top: 8px;
+    visibility: hidden;
+  }
+
+  .detail.shown {
+    visibility: visible;
   }
 
   small {

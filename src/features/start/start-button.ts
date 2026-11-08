@@ -1,6 +1,7 @@
 /**
  * Der Start-Knopf der Startseite. Er heißt immer „Spiel starten“ – an zwei Geräten bleibt er grau, bis es losgehen
- * kann, und darunter steht, warum noch nicht. Der Gast startet nie selbst: Sein Knopf sagt, wer startet.
+ * kann, und darunter steht, warum noch nicht. Der Gast startet nie selbst: Darunter steht, wer startet. (Stünde das
+ * im Knopf, bräche er bei langen Namen auf dem Handy in eine eigene Zeile um.)
  */
 import type { Role } from '../../state/online.svelte';
 
@@ -29,8 +30,7 @@ const blocked = (reason: string): StartButton => ({ label: 'Spiel starten', disa
 export function startButton(onlineMode: boolean, link: Link): StartButton {
   if (!onlineMode) return READY;
   const peer = link.peerName || 'Das andere Gerät';
-  if (link.role === 'guest' && link.connected)
-    return { label: `${peer} startet das Spiel …`, disabled: true, reason: null };
+  if (link.role === 'guest' && link.connected) return blocked(`${peer} startet das Spiel.`);
   if (!link.connected && link.pending) return blocked('Warte auf das andere Gerät …');
   if (!link.connected) return blocked('Verbinde erst ein 2. Gerät – oben bei „Gegenüber“.');
   if (link.silent) return blocked(`${peer} antwortet gerade nicht.`);

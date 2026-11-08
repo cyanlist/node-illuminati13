@@ -37,9 +37,10 @@ const chrome = $derived(
 
 <div class="game">
   <TopBar />
-  {#if isOnline(game.settings)}<ConnectionBanner />{/if}
   <main class="table">
     <div class="play" style:--chrome="{chrome}px">
+      <!-- legt sich über den Platz gegenüber, statt den Tisch nach unten zu schieben -->
+      {#if isOnline(game.settings)}<ConnectionBanner />{/if}
       {#if game.players.length > 1}<PlayerSeat {game} index={1 - bottom} position="top" />{/if}
       <div class="board-area">
         <Board />
@@ -97,6 +98,7 @@ const chrome = $derived(
   }
 
   .play {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: 14px;

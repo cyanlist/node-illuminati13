@@ -14,7 +14,7 @@ import { SECTIONS, type SectionId } from './sections';
 interface Props {
   draft: Settings;
   onopen?: (section: SectionId) => void;
-  /** Ein Satz über den Zeilen, z. B. wer einstellt */
+  /** Kurz rechts in der Überschrift, z. B. wer einstellt – ohne eigene Zeile, damit nichts rückt */
   note?: string;
 }
 let { draft, onopen, note }: Props = $props();
@@ -28,8 +28,7 @@ function flash(_node: Element): TransitionConfig {
 }
 </script>
 
-<Panel title="Dieses Spiel">
-  {#if note}<p class="note">{note}</p>{/if}
+<Panel title="Dieses Spiel" aside={note}>
   <ul>
     {#each SECTIONS as section (section.id)}
       {@const summary = section.summary(draft)}
@@ -62,12 +61,6 @@ function flash(_node: Element): TransitionConfig {
 
   li + li {
     border-top: 1px solid var(--line);
-  }
-
-  .note {
-    margin: 0 0 4px;
-    color: var(--muted);
-    font-size: 14px;
   }
 
   .row {

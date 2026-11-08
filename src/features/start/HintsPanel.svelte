@@ -3,6 +3,7 @@ import { HINT_CHOICES } from '../../core/game';
 import type { HintLevel, Settings } from '../../core/settings';
 import CheckOption from '../../ui/CheckOption.svelte';
 import ChoiceGroup, { type Choice } from '../../ui/ChoiceGroup.svelte';
+import DependentOptions from '../../ui/DependentOptions.svelte';
 import Panel from './Panel.svelte';
 
 /** Wie viel der Tipp verrät und ob er einen Punkt kostet. */
@@ -13,15 +14,15 @@ const levels: Choice<HintLevel>[] = HINT_CHOICES;
 
 <Panel title="Tipps" {plain}>
   <ChoiceGroup name="hints" options={levels} bind:value={draft.hints} />
-  {#if draft.hints !== 'off'}
-    <div class="cost">
+  <div class="cost">
+    <DependentOptions enabled={draft.hints !== 'off'}>
       <CheckOption
         title="Ein Tipp kostet einen Punkt"
         description="Bezahlt wird einmal pro Zug. Ohne Punkte gibt es keinen Tipp."
         bind:checked={draft.hintCost}
       />
-    </div>
-  {/if}
+    </DependentOptions>
+  </div>
 </Panel>
 
 <style>

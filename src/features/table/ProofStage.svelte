@@ -53,7 +53,7 @@ function onkeydown(event: KeyboardEvent): void {
     {#if deckOf() === 'pinboard'}<ProofThread container={stage} ids={onStage} />{/if}
     <p class="title">
       <Subject {player} third="beweist die 13" second="beweist die 13" />
-      {#if !proof.skipped}<span class="skip">· antippen zum Überspringen</span>{/if}
+      <span class="skip" class:gone={proof.skipped}>· antippen zum Überspringen</span>
     </p>
 
     <div class="row">
@@ -67,22 +67,24 @@ function onkeydown(event: KeyboardEvent): void {
           >
             <Card card={part.card} />
           </div>
+          <!-- Rechenweg und Wert liegen übereinander und sind von Anfang an da (unsichtbar): Die Reihe ist so von
+               Beginn an so breit, wie sie wird, und nichts rückt, wenn sie nacheinander erscheinen -->
           <div class="calc">
-            {#if i < proof.revealed}
-              <b class="value">
-                {#if deckOf() === 'cipher' && !proof.skipped}<Scramble text={num(part.value)} />{:else}{num(part.value)}{/if}
-              </b>
-            {:else if i === proof.revealing}
-              <span class="formula">{formulaText(part)}</span>
-            {/if}
+            <span class="formula" class:shown={i === proof.revealing && i >= proof.revealed}>{formulaText(part)}</span>
+            <b class="value" class:shown={i < proof.revealed}>
+              {#if i < proof.revealed && deckOf() === 'cipher' && !proof.skipped}<Scramble
+                  text={num(part.value)}
+                />{:else}{num(part.value)}{/if}
+            </b>
           </div>
         </div>
       {/each}
     </div>
 
+    <!-- Summe und Punkte haben ihren Platz schon, bevor sie erscheinen -->
     <p class="sum" class:solved={proof.solved}>
-      {#if proof.revealed > 0}= {num(sum)}{/if}
-      {#if proof.solved}<span class="points">+{pts(proof.parts.length)}</span>{/if}
+      <span class="total" class:shown={proof.revealed > 0}>= <span class="number">{num(sum)}</span></span>
+      <span class="points" class:shown={proof.solved}>+{pts(proof.parts.length)}</span>
     </p>
   </div>
 {/if}
@@ -133,6 +135,11 @@ function onkeydown(event: KeyboardEvent): void {
     font-size: 12px;
   }
 
+  /* übersprungen: der Hinweis geht, sein Platz bleibt – sonst rückte der Titel */
+  .gone {
+    visibility: hidden;
+  }
+
   .row {
     display: flex;
     align-items: flex-start;
@@ -172,6 +179,22 @@ function onkeydown(event: KeyboardEvent): void {
     min-height: 28px;
   }
 
+  /* Rechenweg und Wert in derselben Zelle übereinander */
+  .calc > * {
+    grid-area: 1 / 1;
+  }
+
+  .formula,
+  .value,
+  .total,
+  .points {
+    visibility: hidden;
+  }
+
+  .shown {
+    visibility: visible;
+  }
+
   .value {
     display: grid;
     place-items: center;
@@ -194,9 +217,9 @@ function onkeydown(event: KeyboardEvent): void {
    * Werte und Punkte ploppen nur über die Größe auf, ohne Einblenden: Steht die Animation einmal still
    * (z. B. bei verdecktem Fenster), bleiben sie trotzdem lesbar.
    */
-  .value,
-  .formula,
-  .points {
+  .value.shown,
+  .formula.shown,
+  .points.shown {
     animation: pop 0.22s ease-out;
   }
 
@@ -215,6 +238,13 @@ function onkeydown(event: KeyboardEvent): void {
     font-size: 22px;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
+  }
+
+  /* Platz für zwei Ziffern, damit „= 5“ zu „= 13“ wachsen kann, ohne dass die Zeile rückt */
+  .number {
+    display: inline-block;
+    min-width: 2ch;
+    text-align: start;
   }
 
   .solved {

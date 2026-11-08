@@ -1,6 +1,7 @@
 <script lang="ts">
 import { type Settings, TRUTH_GOALS } from '../../../core/settings';
 import CheckOption from '../../../ui/CheckOption.svelte';
+import DependentOptions from '../../../ui/DependentOptions.svelte';
 
 /**
  * Variante „Die wahre Wahrheit erkennen“: Statt das ganze Deck zu spielen, geht es um ein Punkteziel – leere
@@ -18,7 +19,7 @@ const GOAL_NAMES: Partial<Record<number, string>> = { 13: 'kurz', 100: 'lang' };
 
 <CheckOption title="Die wahre Wahrheit erkennen" {description} bind:checked={draft.truth} />
 
-{#if draft.truth}
+<DependentOptions enabled={draft.truth}>
   <label class="field">
     Punkteziel
     <select bind:value={draft.truthGoal}>
@@ -27,7 +28,7 @@ const GOAL_NAMES: Partial<Record<number, string>> = { 13: 'kurz', 100: 'lang' };
       {/each}
     </select>
   </label>
-{/if}
+</DependentOptions>
 
 <style>
   .field {

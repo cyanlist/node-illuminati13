@@ -130,8 +130,7 @@ function handlersFor(own: number) {
       online.status = 'lost';
     },
     onfail(): void {
-      if (current())
-        fail('Die Geräte haben keinen Weg zueinander gefunden. Am zuverlässigsten klappt es im selben WLAN.');
+      if (current()) fail('Kein Weg zueinander gefunden – im selben WLAN klappt es am besten.');
     },
   };
 }
@@ -173,10 +172,7 @@ export function joinRoom(code: string, name: string): void {
   try {
     peer = enterRoom(code, handlersFor(generation));
     online.status = 'connecting';
-    waitForConnection(
-      ROOM_LIMIT,
-      `Im Raum ${code} ist niemand. Stimmt der Code, und ist das Verbindungsfenster auf dem anderen Gerät noch offen?`,
-    );
+    waitForConnection(ROOM_LIMIT, `Im Raum ${code} ist niemand. Stimmt der Code?`);
   } catch (error) {
     fail(describe(error));
   }
@@ -203,7 +199,7 @@ export async function acceptAnswer(code: string): Promise<void> {
     setStatus('connecting');
     waitForConnection(
       CONNECT_LIMIT,
-      'Die Verbindung kam nicht zustande. Am zuverlässigsten klappt es, wenn beide Geräte im selben WLAN sind.',
+      'Die Verbindung kam nicht zustande – im selben WLAN klappt es am besten.',
     );
   } catch (error) {
     // ein falscher Code ist kein Grund, alles neu zu beginnen

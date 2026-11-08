@@ -3,13 +3,25 @@ import type { Snippet } from 'svelte';
 
 /**
  * Ein Einstellungsbereich der Startseite mit Überschrift. `plain`: ohne eigenen Kasten, z. B. in einem Fenster,
- * das schon eine Überschrift hat – die Legende bleibt dann nur für Screenreader.
+ * das schon eine Überschrift hat – die Legende bleibt dann nur für Screenreader. `aside`: ein kurzer Zusatz rechts
+ * in der Überschriftenzeile (z. B. wer einstellt) – er braucht keine eigene Zeile, damit nichts darunter rückt.
  */
-let { title, plain = false, children }: { title: string; plain?: boolean; children: Snippet } = $props();
+interface Props {
+  title: string;
+  plain?: boolean;
+  aside?: string;
+  children: Snippet;
+}
+let { title, plain = false, aside, children }: Props = $props();
 </script>
 
 <fieldset class="surface" class:plain>
-  <legend class="eyebrow" class:sr-only={plain}>{title}</legend>
+  <legend class="eyebrow" class:sr-only={plain}>
+    <span class="head">
+      <span>{title}</span>
+      {#if aside}<span class="aside">{aside}</span>{/if}
+    </span>
+  </legend>
   {@render children()}
 </fieldset>
 
@@ -31,6 +43,23 @@ let { title, plain = false, children }: { title: string; plain?: boolean; childr
 
   legend + :global(*) {
     clear: both;
+  }
+
+  .head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .aside {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-transform: none;
+    letter-spacing: normal;
+    font-weight: 400;
   }
 
   .plain {
