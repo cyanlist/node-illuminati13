@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { leadStory, newGame, type Player, rulesAtStart, scoreHistory } from '../src/core/game';
 import { rotateRules } from '../src/core/rules';
-import { PUBLIC_URL, shareText } from '../src/features/sheets/results/share-text';
+import { PUBLIC_URL, shareCaption, summarize } from '../src/features/sheets/results/result-summary';
 import { storyLine } from '../src/features/sheets/results/story';
 import { playOut, seededRng, settings } from './helpers';
 
@@ -82,8 +82,8 @@ describe('Verlauf', () => {
   });
 });
 
-describe('Ergebnis teilen', () => {
-  it('nennt den Stand, die Stapelregeln vom Spielbeginn, die Varianten und den Link', () => {
+describe('Was das Ergebnis zeigt und teilt', () => {
+  it('nennt die Stapelregeln vom Spielbeginn, die Varianten und erzählt den Verlauf', () => {
     const game = newGame(
       settings({ variant: true, dir: 'rechts', truth: true, truthGoal: 50 }),
       seededRng(5),
@@ -96,26 +96,33 @@ describe('Ergebnis teilen', () => {
 
     const [a, b] = game.players as [Player, Player];
     a.name = 'Anna';
+    a.you = false;
     a.points = 24;
     a.combos = 7;
     b.name = 'Ben';
     b.points = 19;
     b.combos = 6;
-    const lines = shareText(game).split('\n');
-    expect(lines[0]).toBe('Illuminati 13');
-    expect(lines[1]).toBe('Anna 24 : 19 Ben (13er: 7 : 6)');
-    expect(lines[2]).toMatch(/^Stapel: Herz .+ · Pik .+ · Karo .+ · Kreuz .+$/);
-    expect(lines[3]).toBe('Varianten: Wahre Wahrheit – bis 50 Punkte · Weltordnung nach rechts');
-    expect(lines.at(-1)).toBe(`Selbst spielen: ${PUBLIC_URL}`);
+    const summary = summarize(game, 0);
+    expect(summary.title).toBe('Anna gewinnt!');
+    expect(summary.order.map((p) => p.name)).toEqual(['Anna', 'Ben']);
+    expect(summary.rules.map((r) => r.suit)).toEqual([0, 1, 2, 3]);
+    expect(summary.rules).toHaveLength(4);
+    expect(summary.variants).toEqual(['Wahre Wahrheit – bis 50 Punkte', 'Weltordnung nach rechts']);
+    expect(summary.goal).toBe(50);
+    expect(shareCaption(game)).toBe(`Illuminati 13 – Anna 24 : 19 Ben
+Selbst spielen: ${PUBLIC_URL}`);
   });
 
-  it('lässt die Zeile mit den Varianten weg, wenn keine gespielt wurden', () => {
+  it('vergleicht allein mit dem Bestwert – erst, wenn es einen gibt', () => {
     const game = newGame(settings({ mode: 'solo' }), seededRng(6));
     (game.players[0] as Player).points = 31;
     (game.players[0] as Player).combos = 9;
-    const text = shareText(game);
-    expect(text).toContain('Allein: 31 Punkte (9× die 13)');
-    expect(text).toContain('Stapel: Herz S + H · Pik S − H · Karo = Stapel · Kreuz max(S, H)');
-    expect(text).not.toContain('Varianten');
+    expect(summarize(game, 0).comparison).toBeNull();
+    const summary = summarize(game, 34);
+    expect(summary.title).toBe('31 Punkte');
+    expect(summary.comparison).toEqual({ today: 31, best: 34, unit: 'Punkte', fewerIsBetter: false });
+    expect(summary.variants).toEqual([]);
+    expect(summary.rules.map((r) => r.short)).toEqual(['S + H', 'S − H', '= Stapel', 'max(S, H)']);
+    expect(shareCaption(game)).toContain('Allein: 31 Punkte');
   });
 });

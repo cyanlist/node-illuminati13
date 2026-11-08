@@ -1,45 +1,56 @@
 /**
- * Text weitergeben: auf Handys über das Teilen-Menü des Geräts (WhatsApp, Signal, Mail …), sonst – und wo das
- * Menü gesperrt ist, etwa eingebettet als Claude-Artifact – in die Zwischenablage.
+ * Ein Bild weitergeben: auf Handys über das Teilen-Menü des Geräts (WhatsApp, Signal, Mail …), am Rechner – und wo
+ * das Menü gesperrt ist – in die Zwischenablage zum Einfügen in einen Chat, notfalls als Datei speichern.
+ *
+ * Wichtig: Das Bild muss schon fertig sein, wenn jemand tippt. Telefone erlauben das Teilen nur unmittelbar nach dem
+ * Tippen – deshalb geht hier vor dem Aufruf nichts Wartendes voraus.
  */
 
-export type ShareOutcome = 'shared' | 'copied' | 'cancelled' | 'failed';
+export type ShareOutcome = 'shared' | 'copied' | 'saved' | 'cancelled' | 'failed';
 
-export async function shareOrCopy(title: string, text: string): Promise<ShareOutcome> {
+export async function shareImage(image: Blob, fileName: string, caption: string): Promise<ShareOutcome> {
+  const file = new File([image], fileName, { type: image.type });
   const touch = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
-  if (touch && typeof navigator.share === 'function') {
+  if (touch && navigator.canShare?.({ files: [file] })) {
     try {
-      await navigator.share({ title, text });
+      await navigator.share({ files: [file], text: caption });
       return 'shared';
     } catch (error) {
-      // abgebrochen heißt: bewusst nicht geteilt; alles andere (gesperrt) → kopieren
+      // abgebrochen heißt: bewusst nicht geteilt; alles andere (gesperrt) → kopieren oder speichern
       if (error instanceof DOMException && error.name === 'AbortError') return 'cancelled';
     }
   }
-  return (await copyText(text)) ? 'copied' : 'failed';
+  if (await copyImage(image)) return 'copied';
+  return saveFile(file) ? 'saved' : 'failed';
 }
 
-/** In die Zwischenablage – notfalls über ein kurz eingefügtes, unsichtbares Textfeld. */
-export async function copyText(text: string): Promise<boolean> {
+async function copyImage(image: Blob): Promise<boolean> {
   try {
-    await navigator.clipboard.writeText(text);
+    if (typeof ClipboardItem === 'undefined' || !navigator.clipboard?.write) return false;
+    await navigator.clipboard.write([new ClipboardItem({ [image.type]: image })]);
     return true;
   } catch {
-    // Zwischenablage gesperrt (eingebettet, ältere Browser) – dann der alte Weg
+    return false;
   }
-  const field = document.createElement('textarea');
-  field.value = text;
-  field.setAttribute('readonly', '');
-  field.style.position = 'fixed';
-  field.style.opacity = '0';
-  document.body.append(field);
-  field.select();
-  let copied = false;
+}
+
+/**
+ * Als Datei herunterladen – der letzte Ausweg. Eingebettet (Claude-Artifact) dürfen Seiten nichts herunterladen;
+ * dort lieber ehrlich „ging nicht“ melden als „gespeichert“.
+ */
+function saveFile(file: File): boolean {
+  if (window.top !== window.self) return false;
   try {
-    copied = document.execCommand('copy');
+    const url = URL.createObjectURL(file);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = file.name;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10_000);
+    return true;
   } catch {
-    copied = false;
+    return false;
   }
-  field.remove();
-  return copied;
 }
