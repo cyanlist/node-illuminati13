@@ -1,5 +1,5 @@
 export { canTakeHint, HINT_COST, takeHint } from './hints';
-export { starter, turnsTaken } from './history';
+export { type LeadStory, leadStory, rulesAtStart, scoreHistory, starter, turnsTaken } from './history';
 export { applyMove } from './moves';
 export { newGame } from './new-game';
 export { currentPlayer, markYou, playerAt } from './players';

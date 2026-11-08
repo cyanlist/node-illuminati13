@@ -9,7 +9,7 @@ class SheetState {
   logOpen = $state(false);
   /** Einstellungen dieses Geräts (Kartendesign, Farbschema) */
   settingsOpen = $state(false);
-  /** Ergebnisfenster weggeklickt, um den Tisch anzusehen */
+  /** Ergebnisfenster ausgeblendet – als Gast an zwei Geräten, solange die Gastgeber*in neu mischt */
   resultsHidden = $state(false);
 }
 
