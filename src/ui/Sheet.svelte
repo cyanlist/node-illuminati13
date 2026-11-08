@@ -4,14 +4,19 @@ import type { Snippet } from 'svelte';
 /**
  * Fenster über dem Tisch. Mit `onclose` lässt es sich per Escape oder Klick daneben schließen;
  * ohne verlangt der Spielablauf eine Entscheidung im Fenster.
+ *
+ * `docked`: unten am Rand statt in der Mitte und ohne den Tisch abzudunkeln – für Entscheidungen, bei denen man
+ * das Board weiter im Blick haben will (welche Karte oben liegt). Geschlossen wird es dann nur über seine Knöpfe
+ * oder Escape; ein Tipp daneben trifft den Tisch.
  */
 interface Props {
   title: string;
   onclose?: () => void;
+  docked?: boolean;
   children: Snippet;
   actions: Snippet;
 }
-let { title, onclose, children, actions }: Props = $props();
+let { title, onclose, docked = false, children, actions }: Props = $props();
 
 let dialog: HTMLDivElement;
 
@@ -33,8 +38,8 @@ function onclick(event: MouseEvent): void {
 <svelte:window {onkeydown} />
 
 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions (Escape schließt über window) -->
-<div class="overlay" {onclick}>
-  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" bind:this={dialog}>
+<div class="overlay" class:docked onclick={docked ? undefined : onclick}>
+  <div class="sheet" role="dialog" aria-modal={!docked} aria-labelledby="sheet-title" bind:this={dialog}>
     <h2 id="sheet-title">{title}</h2>
     {@render children()}
     <div class="actions">{@render actions()}</div>
@@ -52,6 +57,20 @@ function onclick(event: MouseEvent): void {
     background: var(--scrim);
     padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px))
       max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  }
+
+  /* unten angedockt: kein Abdunkeln, der Tisch darüber bleibt sichtbar und erreichbar */
+  .docked {
+    place-items: end center;
+    background: none;
+    pointer-events: none;
+  }
+
+  .docked .sheet {
+    pointer-events: auto;
+    box-shadow:
+      0 0 0 1.5px var(--line),
+      0 12px 40px var(--shadow);
   }
 
   .sheet {
