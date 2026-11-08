@@ -31,10 +31,11 @@ export function calcText(part: ProofPart): string {
 }
 
 /**
- * Die Beispielkarten für alle Regeln. Mit Stapel 6 zeigt diese Hand jede Regel samt Sonderfällen:
- * kleiner, gleich und größer als der Stapel – also auch 0, negative Werte, Abrunden und Reste.
+ * Die Beispielkarten für alle Regeln. Mit Stapel 6 zeigt diese Hand jede Regel samt Sonderfällen: kleiner und
+ * größer als der Stapel – also negative Werte, Abrunden und Reste, mit der 12 auch den Rest 0. Eine 6 fehlt mit
+ * Absicht: Jede Zahl gibt es pro Farbe nur einmal, und eine Handkarte zählt immer mit dem Stapel ihrer Farbe.
  */
-export const RULE_EXAMPLE = { stack: 6, hand: [2, 4, 6, 9, 13] } as const;
+export const RULE_EXAMPLE = { stack: 6, hand: [2, 4, 9, 12, 13] } as const;
 
 /** Ein Beispiel in einer Zeile fürs Regelfenster – mit der 9, die bei den meisten Regeln etwas Besonderes zeigt. */
 export function ruleExample(key: RuleKey): string {
