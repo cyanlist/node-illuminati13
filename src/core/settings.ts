@@ -20,10 +20,18 @@ export type HintLevel = (typeof HINT_LEVELS)[number];
 
 /**
  * Punkteziel bei „Die wahre Wahrheit erkennen“: Gespielt wird – mit Nachmischen –, bis jemand es erreicht.
- * 13 ist das kurze Spiel (früher eine eigene Variante „Bis 13“), 100 ein langer Abend.
+ * Zahlen mit Geschichte: 13 (die Stufen der Pyramide – das kurze Spiel, früher eine eigene Variante „Bis 13“),
+ * 23 (das 23-Rätsel aus der Illuminatus!-Trilogie), 33 (der höchste Grad der Freimaurer), 52 (4 × 13 – ein
+ * ganzes Deck) und 100 für einen langen Abend.
  */
-export const TRUTH_GOALS = [13, 25, 50, 100] as const;
+export const TRUTH_GOALS = [13, 23, 33, 52, 100] as const;
 export type TruthGoal = (typeof TRUTH_GOALS)[number];
+
+/** Gespeicherte Ziele früherer Versionen (25, 50) und andere Zahlen landen beim nächstgelegenen Ziel. */
+function nearestGoal(value: unknown, fallback: TruthGoal): TruthGoal {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return fallback;
+  return TRUTH_GOALS.reduce((best, goal) => (Math.abs(goal - value) < Math.abs(best - value) ? goal : best));
+}
 
 /** Wie gut der Computer Kombinationen erkennt (siehe ai.ts). */
 export const CPU_LEVELS = ['easy', 'medium', 'hard'] as const;
@@ -66,7 +74,7 @@ export const DEFAULT_SETTINGS: Settings = {
   hints: 'nudge',
   hintCost: false,
   truth: false,
-  truthGoal: 50,
+  truthGoal: 33,
 };
 
 /** Zu zweit an zwei Geräten? */
@@ -104,8 +112,7 @@ export function normalizeSettings(raw: unknown): Settings {
     hintCost: flag(data.hintCost, d.hintCost),
     // früher eine Wahl der Länge (`ending`): „Bis 13“ ist jetzt „Die wahre Wahrheit erkennen“ mit dem Ziel 13
     truth: flag(data.truth, data.ending === 'thirteen' || data.ending === 'truth'),
-    truthGoal:
-      data.ending === 'thirteen' ? 13 : (TRUTH_GOALS.find((goal) => goal === data.truthGoal) ?? d.truthGoal),
+    truthGoal: data.ending === 'thirteen' ? 13 : nearestGoal(data.truthGoal, d.truthGoal),
   };
 }
 

@@ -15,8 +15,10 @@ Weitere Namensideen: „Die Verschwörung nimmt kein Ende“, „Der Kreis schli
 - Ist der Nachziehstapel leer, werden alle Ablagestapel **außer ihrer obersten Karte** gemischt und bilden den
   neuen Nachziehstapel. Die obersten Karten bleiben liegen, damit die Regeln weiter etwas zum Rechnen haben.
 - Gespielt wird, bis jemand das Punkteziel erreicht – dann wie bei „Bis 13“ die Runde fair zu Ende.
-- Ziel: Standard **50**, wählbar 25 / 50 / 100. (Ein Deck bringt beiden zusammen grob 40–50 Punkte;
-  100 Punkte für eine Person wären etwa 4–5 Mischungen.)
+- Ziel: Standard **33**, wählbar 13 / 23 / 33 / 52 / 100 – Zahlen mit Geschichte: die Stufen der Pyramide,
+  das 23-Rätsel (Illuminatus!-Trilogie), der 33. Grad der Freimaurer, ein ganzes Deck (4 × 13) und ein langer Abend.
+  (Ein Deck bringt beiden zusammen grob 40–50 Punkte; 100 Punkte für eine Person wären etwa 4–5 Mischungen.)
+  Früher 25 / 50 / 100 (Standard 50); gespeicherte Werte landen beim nächstgelegenen Ziel.
 
 ### Umsetzung
 

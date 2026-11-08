@@ -85,7 +85,7 @@ describe('Verlauf', () => {
 describe('Was das Ergebnis zeigt und teilt', () => {
   it('nennt die Stapelregeln vom Spielbeginn, die Varianten und erzählt den Verlauf', () => {
     const game = newGame(
-      settings({ variant: true, dir: 'rechts', truth: true, truthGoal: 50 }),
+      settings({ variant: true, dir: 'rechts', truth: true, truthGoal: 33 }),
       seededRng(5),
     );
     const start = [...game.rules];
@@ -107,8 +107,8 @@ describe('Was das Ergebnis zeigt und teilt', () => {
     expect(summary.order.map((p) => p.name)).toEqual(['Anna', 'Ben']);
     expect(summary.rules.map((r) => r.suit)).toEqual([0, 1, 2, 3]);
     expect(summary.rules).toHaveLength(4);
-    expect(summary.variants).toEqual(['Wahre Wahrheit – bis 50 Punkte', 'Weltordnung nach rechts']);
-    expect(summary.goal).toBe(50);
+    expect(summary.variants).toEqual(['Wahre Wahrheit – bis 33 Punkte', 'Weltordnung nach rechts']);
+    expect(summary.goal).toBe(33);
     expect(shareCaption(game)).toBe(`Illuminati 13 – Anna 24 : 19 Ben
 Selbst spielen: ${PUBLIC_URL}`);
   });

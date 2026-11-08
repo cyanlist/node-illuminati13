@@ -41,18 +41,21 @@ describe('Einstellungen', () => {
 
   it('macht aus der früheren Länge „Bis 13“ die wahre Wahrheit mit dem Ziel 13', () => {
     expect(normalizeSettings({ ending: 'thirteen' })).toMatchObject({ truth: true, truthGoal: 13 });
-    expect(normalizeSettings({ ending: 'truth', truthGoal: 25 })).toMatchObject({
+    expect(normalizeSettings({ ending: 'truth', truthGoal: 23 })).toMatchObject({
       truth: true,
-      truthGoal: 25,
+      truthGoal: 23,
     });
-    expect(normalizeSettings({ ending: 'deck' })).toMatchObject({ truth: false, truthGoal: 50 });
+    expect(normalizeSettings({ ending: 'deck' })).toMatchObject({ truth: false, truthGoal: 33 });
     expect(normalizeSettings({}).truth).toBe(false);
   });
 
-  it('nimmt nur bekannte Punkteziele für „Die wahre Wahrheit erkennen“', () => {
+  it('nimmt nur bekannte Punkteziele – frühere (25, 50) und andere Zahlen landen beim nächstgelegenen', () => {
     expect(normalizeSettings({ truthGoal: 100 }).truthGoal).toBe(100);
-    expect(normalizeSettings({ truthGoal: 77 }).truthGoal).toBe(50);
-    expect(normalizeSettings({ truthGoal: '25' }).truthGoal).toBe(50);
+    expect(normalizeSettings({ truthGoal: 25 }).truthGoal).toBe(23);
+    expect(normalizeSettings({ truthGoal: 50 }).truthGoal).toBe(52);
+    expect(normalizeSettings({ truthGoal: 70 }).truthGoal).toBe(52);
+    expect(normalizeSettings({ truthGoal: 80 }).truthGoal).toBe(100);
+    expect(normalizeSettings({ truthGoal: '25' }).truthGoal).toBe(33);
   });
 
   it('macht aus einem früher gespeicherten Namen „Du“ ein leeres Feld', () => {

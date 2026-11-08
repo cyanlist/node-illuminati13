@@ -57,9 +57,9 @@ describe('Regelwerk', () => {
   });
 
   it('„Die wahre Wahrheit erkennen“: Punkteziel aus den Einstellungen und Nachmischen', () => {
-    const truth = rulesetFor(settings({ truth: true, truthGoal: 25 }));
-    expect(truth.ending.goal).toBe(25);
-    expect(truth.ending.recordName).toBe('best-solo-25');
+    const truth = rulesetFor(settings({ truth: true, truthGoal: 23 }));
+    expect(truth.ending.goal).toBe(23);
+    expect(truth.ending.recordName).toBe('best-solo-23');
     expect(truth.draw).toBe(reshuffle);
   });
 });
@@ -165,11 +165,11 @@ describe('Nachziehen', () => {
 describe('Die wahre Wahrheit erkennen', () => {
   it('ganze Partie Computer gegen Computer: es wird nachgemischt, bis jemand das Ziel erreicht', () => {
     const rng = seededRng(21);
-    const game = newGame(settings({ mode: 'hotseat', truth: true, truthGoal: 50 }), rng);
+    const game = newGame(settings({ mode: 'hotseat', truth: true, truthGoal: 52 }), rng);
     playOut(game, rng, 5000, () => expect(cardsInPlay(game)).toBe(createDeck().length));
     expect(game.over).toBe(true);
     expect(game.reshuffles).toBeGreaterThan(0);
-    expect(Math.max(...game.players.map((p) => p.points))).toBeGreaterThanOrEqual(50);
+    expect(Math.max(...game.players.map((p) => p.points))).toBeGreaterThanOrEqual(52);
     expect(turnsTaken(game, 0)).toBe(turnsTaken(game, 1));
     // jede Mischung steht im Protokoll, und zwar nach dem Zug, bei dem nachgezogen wurde
     const entries = game.log.filter((entry) => entry.kind === 'reshuffle');
@@ -180,7 +180,7 @@ describe('Die wahre Wahrheit erkennen', () => {
 
   it('zwei Geräte, die nur die Züge austauschen, bleiben über alle Mischungen gleich', () => {
     const rng = seededRng(34);
-    const host = newGame(settings({ mode: 'hotseat', truth: true, truthGoal: 25 }), rng);
+    const host = newGame(settings({ mode: 'hotseat', truth: true, truthGoal: 23 }), rng);
     const guest: GameState = JSON.parse(JSON.stringify(host));
     for (let turn = 0; turn < 3000 && !host.over; turn++) {
       const move = chooseCpuMove(host, rng);
