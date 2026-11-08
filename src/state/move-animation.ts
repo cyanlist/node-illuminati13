@@ -10,6 +10,7 @@ import type { Card } from '../core/cards';
 import { applyMove, currentPlayer, type Move, type PlacementStep, type ProofPart } from '../core/game';
 import type { RuleKey } from '../core/rules';
 import { flyCard } from './flights.svelte';
+import { gatheredCards } from './gathered';
 import { drawPileRect, launchRect, pileRect, stageRect } from './positions';
 import { inColumnOrder } from './stage-order';
 import { requireGame, table } from './table.svelte';
@@ -41,6 +42,20 @@ export interface MoveAnimation {
   arrived: number[];
   /** Bei einem Beweis: die Bühne, auf der die Karten vorgezeigt werden */
   proof: ProofAnimation | null;
+  /**
+   * Je Stapel die Karten, die beim Nachmischen eingesammelt werden. Im Spielstand sind sie schon im neuen
+   * Nachziehstapel – die Anzeige lässt sie liegen, bis sie zum Nachziehstapel abheben.
+   */
+  gathering: Card[][];
+  /** Nachmischen läuft gerade (sonst null) */
+  reshuffle: ReshuffleAnimation | null;
+}
+
+/** Nachmischen sichtbar gemacht: Karten fliegen von den Ablagestapeln zum leeren Nachziehstapel, der mischt kurz durch. */
+export interface ReshuffleAnimation {
+  phase: 'gathering' | 'shuffling' | 'done';
+  /** Angetippt: ohne weitere Pausen */
+  skipped: boolean;
 }
 
 /**
@@ -72,8 +87,12 @@ const TIMING = {
   betweenCards: 300,
   /** Züge, denen man nur zusieht (Computer, anderes Gerät), laufen etwas gemächlicher */
   betweenCardsWatched: 450,
-  /** Pause, in der der leere Nachziehstapel sich neu füllt */
-  reshuffle: 600,
+  /** Nachmischen: Abstand, in dem die Ablagestapel ihre Karten (von links nach rechts) losschicken */
+  gatherStagger: 180,
+  /** … und die Karten eines Stapels untereinander */
+  gatherCardStagger: 70,
+  /** So lange mischt der Nachziehstapel sichtbar durch */
+  shuffle: 750,
   /** Abstand, in dem die Karten eines Beweises zur Bühne starten */
   stageStagger: 90,
   /** So lange ist der Rechenweg zu sehen, bevor der wahre Wert erscheint */
@@ -97,21 +116,28 @@ const wait = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(
 
 /* ---------- Überspringen ---------- */
 
-const stageWaits = new Set<() => void>();
+const skippableWaits = new Set<() => void>();
 
-/** Pause auf der Bühne, die ein Antippen sofort beendet. */
-function stageWait(ms: number): Promise<void> {
-  if (table.anim?.proof?.skipped) return Promise.resolve();
+/** Pause, die ein Antippen sofort beendet – `skipped` sagt, ob schon übersprungen wurde. */
+function skippableWait(ms: number, skipped: boolean): Promise<void> {
+  if (skipped) return Promise.resolve();
   return new Promise((resolve) => {
     const done = (): void => {
       clearTimeout(timer);
-      stageWaits.delete(done);
+      skippableWaits.delete(done);
       resolve();
     };
     const timer = setTimeout(done, ms);
-    stageWaits.add(done);
+    skippableWaits.add(done);
   });
 }
+
+const endWaits = (): void => {
+  for (const done of [...skippableWaits]) done();
+};
+
+/** Pause auf der Bühne, die ein Antippen sofort beendet. */
+const stageWait = (ms: number): Promise<void> => skippableWait(ms, !!table.anim?.proof?.skipped);
 
 /** Antippen der Bühne: alle Werte sofort zeigen und ohne weitere Pausen ablegen. */
 export function skipProof(): void {
@@ -120,7 +146,15 @@ export function skipProof(): void {
   proof.skipped = true;
   proof.revealed = proof.parts.length;
   proof.revealing = -1;
-  for (const done of [...stageWaits]) done();
+  endWaits();
+}
+
+/** Antippen des Nachziehstapels beim Nachmischen: ohne weitere Pausen weiter. */
+export function skipReshuffle(): void {
+  const reshuffle = table.anim?.reshuffle;
+  if (!reshuffle || reshuffle.skipped || reshuffle.phase === 'done') return;
+  reshuffle.skipped = true;
+  endWaits();
 }
 
 /* ---------- Zug abspielen ---------- */
@@ -140,6 +174,7 @@ export async function animateMove(move: Move): Promise<boolean> {
     logLength: game.log.length,
     handBefore: [...currentPlayer(game).hand],
   };
+  const pilesBefore = game.piles.map((pile) => [...pile]);
   const result = applyMove(game, move);
   const drawnIds = new Set(result.drawn);
   table.anim = {
@@ -152,6 +187,8 @@ export async function animateMove(move: Move): Promise<boolean> {
     incoming: [],
     arrived: [],
     proof: null,
+    gathering: result.reshuffled > 0 ? gatheredCards(pilesBefore, result.steps, game.piles) : [],
+    reshuffle: null,
   };
   // weiter mit dem Stand aus table.anim: nur Änderungen an diesem reaktiven Objekt erreichen die Anzeige
   const anim = table.anim;
@@ -278,10 +315,8 @@ async function drawUp(anim: MoveAnimation, reshuffled: number, running: () => bo
   for (const card of anim.drawn) {
     if (!running()) return false;
     if (anim.deck === 0 && refill > 0) {
-      anim.deck = refill;
+      if (!(await showReshuffle(anim, refill, running))) return false;
       refill = 0;
-      await wait(TIMING.reshuffle);
-      if (!running()) return false;
     }
 
     const from = drawPileRect();
@@ -294,6 +329,50 @@ async function drawUp(anim: MoveAnimation, reshuffled: number, running: () => bo
     anim.arrived.push(card.id);
     await wait(TIMING.betweenDraws);
   }
+  return running();
+}
+
+/* ---------- Nachmischen ---------- */
+
+/** So viele Karten fliegen je Ablagestapel sichtbar mit – sie stehen für den ganzen eingesammelten Teil */
+const GATHER_SHOWN = 3;
+
+/**
+ * Der Nachziehstapel ist leer und wird aus den Ablagestapeln neu gemischt („Die wahre Wahrheit erkennen“):
+ * 1. Einsammeln: Von links nach rechts schickt jeder Ablagestapel seine Karten unter der obersten zum
+ *    Nachziehstapel; dessen Zahl wächst, sobald sie ankommen.
+ * 2. Mischen: Der Nachziehstapel mischt kurz sichtbar durch (DrawPile.svelte).
+ * Antippen des Nachziehstapels überspringt die Pausen; ohne Bewegung (Systemeinstellung) wächst nur die Zahl.
+ */
+async function showReshuffle(anim: MoveAnimation, cards: number, running: () => boolean): Promise<boolean> {
+  anim.reshuffle = { phase: 'gathering', skipped: false };
+  const reshuffle = anim.reshuffle;
+  const to = drawPileRect();
+  const piles = table.columns.filter((suit) => (anim.gathering[suit]?.length ?? 0) > 0);
+  await Promise.all(
+    piles.map(async (suit, order) => {
+      await skippableWait(order * TIMING.gatherStagger, reshuffle.skipped);
+      if (!running()) return;
+      const gathered = anim.gathering[suit] ?? [];
+      const from = pileRect(suit);
+      // ab jetzt liegt auf dem Ablagestapel nur noch die oberste Karte
+      anim.gathering[suit] = [];
+      await Promise.all(
+        gathered.slice(-GATHER_SHOWN).map(async (card, i) => {
+          await wait(i * TIMING.gatherCardStagger);
+          await flyCard(card, from, to, { faceDown: true });
+        }),
+      );
+      anim.deck += gathered.length;
+    }),
+  );
+  if (!running()) return false;
+  // falls die Stapel weniger zeigten, als gemischt wurde – die Zahl stimmt am Ende immer
+  anim.deck = cards;
+
+  reshuffle.phase = 'shuffling';
+  await skippableWait(TIMING.shuffle, reshuffle.skipped);
+  reshuffle.phase = 'done';
   return running();
 }
 

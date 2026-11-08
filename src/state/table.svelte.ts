@@ -95,8 +95,11 @@ class TableState {
   get piles(): Card[][] {
     const { game, anim } = this;
     if (!game) return [];
+    // beim Nachmischen liegen die eingesammelten Karten noch unter der obersten, bis sie abheben
     return anim
-      ? game.piles.map((pile) => pile.filter((card) => !anim.pending.includes(card.id)))
+      ? game.piles.map((pile, suit) =>
+          [...(anim.gathering[suit] ?? []), ...pile].filter((card) => !anim.pending.includes(card.id)),
+        )
       : game.piles;
   }
 

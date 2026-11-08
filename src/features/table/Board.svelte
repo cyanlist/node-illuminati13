@@ -2,6 +2,7 @@
 import { cubicInOut } from 'svelte/easing';
 import { flip } from 'svelte/animate';
 import { rulesetFor } from '../../core/game';
+import { skipReshuffle } from '../../state/move-animation';
 import { table } from '../../state/table.svelte';
 import DrawPile from './DrawPile.svelte';
 import Pile from './Pile.svelte';
@@ -27,7 +28,9 @@ const worldOrder = $derived(!!table.game && rulesetFor(table.game.settings).plac
     </div>
   {/each}
   <div class="draw">
-    <DrawPile count={table.deckCount}>{#if worldOrder}<WorldOrder />{/if}</DrawPile>
+    <DrawPile count={table.deckCount} reshuffle={table.anim?.reshuffle ?? null} onskip={skipReshuffle}>
+      {#if worldOrder}<WorldOrder />{/if}
+    </DrawPile>
   </div>
 </section>
 

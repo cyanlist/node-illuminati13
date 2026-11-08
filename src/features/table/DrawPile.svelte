@@ -1,23 +1,38 @@
 <script lang="ts">
 import type { Snippet } from 'svelte';
+import type { ReshuffleAnimation } from '../../state/move-animation';
 import CardBack from '../../ui/CardBack.svelte';
 import { cardCount } from '../../ui/format';
 
 /**
  * Der Nachziehstapel rechts neben den Ablagestapeln: verdeckte Karte und wie viele noch übrig sind.
  * Darunter ist Platz für einen Zusatz (`children`), z. B. den Zähler der Weltordnung.
+ *
+ * Beim Nachmischen (`reshuffle`): Während die Karten eintreffen, wächst die Zahl; dann mischt der Stapel kurz
+ * sichtbar durch – zwei Hälften, die ineinanderrutschen. Antippen überspringt das (`onskip`).
  */
-let { count, children }: { count: number; children?: Snippet } = $props();
+interface Props {
+  count: number;
+  reshuffle?: ReshuffleAnimation | null;
+  onskip?: () => void;
+  children?: Snippet;
+}
+let { count, reshuffle = null, onskip, children }: Props = $props();
+
+const shuffling = $derived(reshuffle?.phase === 'shuffling');
+const busy = $derived(!!reshuffle && reshuffle.phase !== 'done' && !reshuffle.skipped);
 </script>
 
 <div class="draw">
   <div class="label">Nachziehen</div>
 
-  <div class="stack" class:empty={count === 0} data-draw-pile>
+  <div class="stack" class:empty={count === 0} class:shuffling data-draw-pile>
     {#if count > 1}<div class="under"></div>{/if}
     {#if count > 0}
+      {#if shuffling}<div class="half"><CardBack style="width: 100%" /></div>{/if}
       <div class="top"><CardBack style="width: 100%" /></div>
     {/if}
+    {#if busy}<button type="button" class="skip" aria-label="Mischen überspringen" onclick={onskip}></button>{/if}
   </div>
 
   <!-- in der schmalen Spalte auf dem Handy nur die Zahl, damit die Zeile nicht umbricht -->
@@ -62,9 +77,37 @@ let { count, children }: { count: number; children?: Snippet } = $props();
     border-radius: 10px;
   }
 
-  .top {
+  .top,
+  .half {
     position: absolute;
     inset: 0;
+  }
+
+  /* Mischen: zwei Hälften gehen auseinander und rutschen wieder ineinander */
+  .shuffling .top {
+    animation: riffle-right 0.75s ease-in-out;
+  }
+
+  .shuffling .half {
+    animation: riffle-left 0.75s ease-in-out;
+  }
+
+  @keyframes riffle-left {
+    35% {
+      transform: translate(-42%, -6%) rotate(-10deg);
+    }
+    70% {
+      transform: translate(-12%, 0) rotate(-3deg);
+    }
+  }
+
+  @keyframes riffle-right {
+    35% {
+      transform: translate(42%, -6%) rotate(10deg);
+    }
+    70% {
+      transform: translate(12%, 0) rotate(3deg);
+    }
   }
 
   /* angedeutete Karten darunter */
@@ -75,6 +118,16 @@ let { count, children }: { count: number; children?: Snippet } = $props();
     border-radius: 6px;
     background: var(--surface-2);
     transform: translate(3px, 3px) rotate(2.5deg);
+  }
+
+  .skip {
+    position: absolute;
+    inset: -8px;
+    z-index: 1;
+    padding: 0;
+    background: none;
+    border: 0;
+    cursor: pointer;
   }
 
   .count {
