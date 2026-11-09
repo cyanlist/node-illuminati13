@@ -14,6 +14,13 @@ export type Selection =
   /** Mehrere Karten, die nicht 13 ergeben */
   | { kind: 'invalid'; sum: number };
 
+/** Die Karten, die mit dieser Auswahl auf Stapeln landen würden – beim Beweis alle, beim Abwurf die eine. */
+export function cardsToPlace(selection: Selection): Card[] {
+  if (selection.kind === 'proof') return selection.cards;
+  if (selection.kind === 'discard') return [selection.card];
+  return [];
+}
+
 export function judgeSelection(): Selection {
   const game = table.game;
   const cards = table.selectedCards;

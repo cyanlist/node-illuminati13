@@ -5,9 +5,11 @@
  */
 import { SUIT_INDICES, type SuitIndex } from '../../../core/cards';
 import {
+  type Ending,
   type GameState,
   leadStory,
   type Player,
+  type Ranking,
   ranking,
   rulesAtStart,
   rulesetFor,
@@ -60,43 +62,9 @@ export function summarize(game: GameState, soloBest: number): ResultSummary {
   const winnerIndex = winner ? game.players.indexOf(winner) : -1;
   const { ending } = rulesetFor(game.settings);
   const goal = ending.goal;
-  // allein: Punkte oder mit Punkteziel die Züge; null, wenn das Ziel nicht erreicht wurde
-  const score = ending.soloScore(game);
   const history = scoreHistory(game);
   const startRules = rulesAtStart(game);
-
-  let title = '';
-  let subtitle = '';
-  let comparison: Comparison | null = null;
-  if (winner && solo && goal !== null) {
-    title = score !== null ? `${goal} Punkte ${inTurns(score)}` : pts(winner.points);
-    const record = soloBest === 0 ? '' : ` Dein Bestwert: ${goal} Punkte ${inTurns(soloBest)}.`;
-    if (score === null) subtitle = `Der Stapel war leer, bevor du ${goal} Punkte hattest.${record}`;
-    else if (soloBest === 0) subtitle = `Du hast die 13 ${winner.combos}-mal gefunden.`;
-    else
-      subtitle = ending.beatsBest(score, soloBest)
-        ? `Neuer Bestwert! Bisher waren es ${turnCount(soloBest)}.`
-        : record.trim();
-    if (score !== null && soloBest > 0)
-      comparison = { today: score, best: soloBest, unit: 'Züge', fewerIsBetter: true };
-  } else if (winner && solo) {
-    title = pts(winner.points);
-    const found = `Du hast die 13 ${winner.combos}-mal gefunden.`;
-    if (soloBest === 0) subtitle = found;
-    else
-      subtitle = ending.beatsBest(winner.points, soloBest)
-        ? `${found} Neuer Bestwert! Bisher waren es ${soloBest}.`
-        : `${found} Dein Bestwert: ${soloBest}.`;
-    if (soloBest > 0)
-      comparison = { today: winner.points, best: soloBest, unit: 'Punkte', fewerIsBetter: false };
-  } else if (winner) {
-    title = result.tie ? 'Gleichstand' : winner.you ? 'Du gewinnst!' : `${winner.name} gewinnt!`;
-    subtitle = result.tie
-      ? 'Gleich viele Punkte und gleich viele 13er. Die Wahrheit bleibt geteilt.'
-      : result.decidedByCombos
-        ? 'Punktgleich, aber mit mehr gefundenen 13er-Kombinationen.'
-        : 'Die Wahrheit wurde am klarsten bewiesen.';
-  }
+  const { title, subtitle, comparison } = headline(game, result, ending, soloBest);
 
   return {
     solo,
@@ -115,6 +83,77 @@ export function summarize(game: GameState, soloBest: number): ResultSummary {
     rules: SUIT_INDICES.map((suit) => ({ suit, short: RULES[startRules[suit] ?? 'plus'].short })),
     variants: variantNames(game.settings),
   };
+}
+
+/** Überschrift, Satz darunter und – allein – der Vergleich mit dem Bestwert */
+interface Headline {
+  title: string;
+  subtitle: string;
+  comparison: Comparison | null;
+}
+
+function headline(game: GameState, result: Ranking, ending: Ending, soloBest: number): Headline {
+  const winner = result.order[0];
+  if (!winner) return { title: '', subtitle: '', comparison: null };
+  if (game.players.length > 1) return duelHeadline(result, winner);
+  if (ending.goal === null) return soloPointsHeadline(winner, ending, soloBest);
+  return soloGoalHeadline(winner, ending, ending.goal, ending.soloScore(game), soloBest);
+}
+
+/** Zu zweit: wer gewinnt und wodurch – oder Gleichstand */
+function duelHeadline(result: Ranking, winner: Player): Headline {
+  if (result.tie)
+    return {
+      title: 'Gleichstand',
+      subtitle: 'Gleich viele Punkte und gleich viele 13er. Die Wahrheit bleibt geteilt.',
+      comparison: null,
+    };
+  return {
+    title: winner.you ? 'Du gewinnst!' : `${winner.name} gewinnt!`,
+    subtitle: result.decidedByCombos
+      ? 'Punktgleich, aber mit mehr gefundenen 13er-Kombinationen.'
+      : 'Die Wahrheit wurde am klarsten bewiesen.',
+    comparison: null,
+  };
+}
+
+/** Allein, ganzes Deck: die Punkte – mehr ist besser */
+function soloPointsHeadline(player: Player, ending: Ending, best: number): Headline {
+  const found = `Du hast die 13 ${player.combos}-mal gefunden.`;
+  const title = pts(player.points);
+  if (best === 0) return { title, subtitle: found, comparison: null };
+  const subtitle = ending.beatsBest(player.points, best)
+    ? `${found} Neuer Bestwert! Bisher waren es ${best}.`
+    : `${found} Dein Bestwert: ${best}.`;
+  return {
+    title,
+    subtitle,
+    comparison: { today: player.points, best, unit: 'Punkte', fewerIsBetter: false },
+  };
+}
+
+/** Allein mit Punkteziel: in wie vielen Zügen (`turns`; null, wenn das Ziel nicht erreicht wurde) – weniger ist besser */
+function soloGoalHeadline(
+  player: Player,
+  ending: Ending,
+  goal: number,
+  turns: number | null,
+  best: number,
+): Headline {
+  const record = best === 0 ? '' : `Dein Bestwert: ${goal} Punkte ${inTurns(best)}.`;
+  if (turns === null)
+    return {
+      title: pts(player.points),
+      subtitle: `Der Stapel war leer, bevor du ${goal} Punkte hattest. ${record}`.trim(),
+      comparison: null,
+    };
+  const title = `${goal} Punkte ${inTurns(turns)}`;
+  if (best === 0)
+    return { title, subtitle: `Du hast die 13 ${player.combos}-mal gefunden.`, comparison: null };
+  const subtitle = ending.beatsBest(turns, best)
+    ? `Neuer Bestwert! Bisher waren es ${turnCount(best)}.`
+    : record;
+  return { title, subtitle, comparison: { today: turns, best, unit: 'Züge', fewerIsBetter: true } };
 }
 
 /** Kurz unter das geteilte Bild: der Stand als Anzeigetafel und wo man selbst spielen kann. */

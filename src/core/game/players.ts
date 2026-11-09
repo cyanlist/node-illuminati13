@@ -36,3 +36,35 @@ export function playerAt(state: GameState, index: number): Player {
 }
 
 export const currentPlayer = (state: GameState): Player => playerAt(state, state.current);
+
+/* ---------- Punkte ---------- */
+
+/** Ein gelungener Beweis: je Karte ein Punkt – und die 13 einmal mehr gefunden (entscheidet bei Gleichstand). */
+export function scoreProof(player: Player, cardCount: number): void {
+  player.points += cardCount;
+  player.combos++;
+}
+
+/** Punkte abgeben, z. B. für einen Tipp. */
+export function deductPoints(player: Player, points: number): void {
+  player.points -= points;
+}
+
+/* ---------- Hand ---------- */
+
+export const hasCards = (player: Player): boolean => player.hand.length > 0;
+
+/** Die Karten mit diesen ids aus der Hand – wirft, wenn eine fehlt oder doppelt gewählt ist. */
+export function cardsInHand(player: Player, ids: readonly number[]): Card[] {
+  if (new Set(ids).size !== ids.length) throw new Error('Eine Karte wurde doppelt gewählt.');
+  return ids.map((id) => {
+    const card = player.hand.find((c) => c.id === id);
+    if (!card) throw new Error(`Die Karte ${id} ist nicht auf der Hand.`);
+    return card;
+  });
+}
+
+export function removeFromHand(player: Player, cards: readonly Card[]): void {
+  const ids = new Set(cards.map((card) => card.id));
+  player.hand = player.hand.filter((card) => !ids.has(card.id));
+}

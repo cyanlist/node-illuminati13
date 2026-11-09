@@ -1,6 +1,6 @@
 <script lang="ts">
 import { rulesetFor } from '../../core/game';
-import { judgeSelection } from '../../state/selection';
+import { cardsToPlace, judgeSelection } from '../../state/selection';
 import { table } from '../../state/table.svelte';
 
 /**
@@ -15,9 +15,7 @@ const armed = $derived.by(() => {
   const game = table.game;
   if (!game?.settings.showValues || !table.canPlay) return false;
   const { placement } = rulesetFor(game.settings);
-  const selection = judgeSelection();
-  const placed = selection.kind === 'proof' ? selection.cards : selection.kind === 'discard' ? [selection.card] : [];
-  return placed.some((card) => placement.triggers(game, card));
+  return cardsToPlace(judgeSelection()).some((card) => placement.triggers(game, card));
 });
 </script>
 

@@ -21,11 +21,20 @@ interface Props extends HTMLAttributes<HTMLElement> {
 }
 let { card, value = null, selected = false, hinted = false, disabled = false, onclick, ...rest }: Props = $props();
 
+/**
+ * Eine von sieben Schräglagen zwischen −2,1° und +2,1° (für die Karten des Decks, ids ab 0), abgeleitet aus der id –
+ * die 37 sorgt dafür, dass benachbarte Karten verschieden schräg liegen.
+ */
+function tiltFor(id: number): number {
+  const step = ((id * 37) % 7) - 3;
+  return step * 0.7;
+}
+
 const deckOf = useDeck();
 const deck = $derived(deckInfo(deckOf()));
 const Face = $derived(DECK_COMPONENTS[deck.id]);
-/** Schräglage für Notizzettel – immer gleich für dieselbe Karte */
-const tilt = $derived(deck.tilt ? `${(((card.id * 37) % 7) - 3) * 0.7}deg` : undefined);
+/** Schräglage für Notizzettel – wirkt zufällig, ist aber für dieselbe Karte immer gleich */
+const tilt = $derived(deck.tilt ? `${tiltFor(card.id)}deg` : undefined);
 
 const label = $derived(`${SUITS[card.suit].name} ${card.rank}${value !== null ? `, wahrer Wert ${num(value)}` : ''}`);
 </script>

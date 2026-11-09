@@ -53,9 +53,11 @@ function choose(item: MenuItem): void {
 function onkeydown(event: KeyboardEvent): void {
   const all = entries();
   const at = all.indexOf(document.activeElement as HTMLButtonElement);
+  // vom letzten Eintrag geht es oben weiter, vom ersten unten
+  const wrapped = (index: number): number => (index + all.length) % all.length;
   const move = (to: number) => {
     event.preventDefault();
-    all[(to + all.length) % all.length]?.focus();
+    all[wrapped(to)]?.focus();
   };
   if (event.key === 'ArrowDown') move(at + 1);
   else if (event.key === 'ArrowUp') move(at - 1);

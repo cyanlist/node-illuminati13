@@ -19,6 +19,8 @@ let copied = $state(false);
 let textarea: HTMLTextAreaElement | undefined = $state();
 const shareable = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
 const payload = $derived(link ?? code);
+/** Was weitergegeben wird – ein Einladungs-Link oder der Code selbst */
+const what = $derived(link ? 'Link' : 'Code');
 
 async function share(): Promise<void> {
   try {
@@ -46,12 +48,12 @@ async function copy(): Promise<void> {
   <div class="buttons">
     {#if shareable}<button type="button" class="btn btn--small" onclick={share}>Teilen …</button>{/if}
     <button type="button" class="btn btn--small" onclick={copy}>
-      {copied ? 'Kopiert ✓' : link ? 'Link kopieren' : 'Code kopieren'}
+      {copied ? 'Kopiert ✓' : `${what} kopieren`}
     </button>
   </div>
 
   <details>
-    <summary>{link ? 'Link' : 'Code'} als Text</summary>
+    <summary>{what} als Text</summary>
     <textarea readonly rows="3" bind:this={textarea} onfocus={(event) => event.currentTarget.select()}>{payload}</textarea>
   </details>
 </div>

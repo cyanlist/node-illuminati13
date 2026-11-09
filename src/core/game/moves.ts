@@ -1,6 +1,6 @@
 import type { Card, SuitIndex } from '../cards';
-import { TARGET, trueValue } from '../values';
-import { currentPlayer } from './players';
+import { sumOfValues, TARGET, trueValue } from '../values';
+import { cardsInHand, currentPlayer, removeFromHand, scoreProof } from './players';
 import { type Ruleset, rulesetFor } from './ruleset';
 import {
   type GameState,
@@ -31,20 +31,16 @@ function applyProof(
   cardIds: number[],
   topPick: Partial<Record<SuitIndex, number>>,
 ): MoveResult {
-  const cards = cardsFromHand(player, cardIds);
+  const cards = cardsInHand(player, cardIds);
   if (cards.length === 0) throw new Error('Ein Beweis braucht mindestens eine Karte.');
-  const parts: ProofPart[] = cards.map((card) => ({ card, ...trueValue(card, state.piles, state.rules) }));
-  const sum = parts.reduce((total, part) => total + part.value, 0);
+  const sum = sumOfValues(cards, state.piles, state.rules);
   if (sum !== TARGET) throw new Error(`Die Karten ergeben ${sum}, nicht ${TARGET}.`);
+  // der Rechenweg mit den Stapeln vor dem Ablegen – fürs Protokoll und die Beweis-Bühne
+  const parts: ProofPart[] = cards.map((card) => ({ card, ...trueValue(card, state.piles, state.rules) }));
 
   removeFromHand(player, cards);
-  player.points += cards.length;
-  player.combos++;
-  // die gewählte oberste Karte jeder Farbe kommt zuletzt auf ihren Stapel
-  const ordered = [...cards].sort(
-    (a, b) => Number(topPick[a.suit] === a.id) - Number(topPick[b.suit] === b.id),
-  );
-  const steps = ordered.map((card) => placeCard(state, ruleset, card));
+  scoreProof(player, cards.length);
+  const steps = topCardsLast(cards, topPick).map((card) => placeCard(state, ruleset, card));
   const { drawn, reshuffled } = ruleset.draw.refill(state, player, HAND_SIZE);
 
   logMove(state, { kind: 'proof', player: state.current, parts, points: cards.length });
@@ -55,7 +51,7 @@ function applyProof(
 
 /** Noch keine Erleuchtung: eine Karte auf ihren Stapel, eine nachziehen. */
 function applyDiscard(state: GameState, ruleset: Ruleset, player: Player, cardId: number): MoveResult {
-  const [card] = cardsFromHand(player, [cardId]);
+  const [card] = cardsInHand(player, [cardId]);
   if (!card) throw new Error('Keine Karte zum Abwerfen gewählt.');
   const handSize = player.hand.length;
 
@@ -69,18 +65,10 @@ function applyDiscard(state: GameState, ruleset: Ruleset, player: Player, cardId
   return { steps, drawn, parts: [], reshuffled };
 }
 
-function cardsFromHand(player: Player, ids: readonly number[]): Card[] {
-  if (new Set(ids).size !== ids.length) throw new Error('Eine Karte wurde doppelt gewählt.');
-  return ids.map((id) => {
-    const card = player.hand.find((c) => c.id === id);
-    if (!card) throw new Error(`Die Karte ${id} ist nicht auf der Hand.`);
-    return card;
-  });
-}
-
-function removeFromHand(player: Player, cards: readonly Card[]): void {
-  const ids = new Set(cards.map((card) => card.id));
-  player.hand = player.hand.filter((card) => !ids.has(card.id));
+/** Die gewählte oberste Karte jeder Farbe kommt zuletzt auf ihren Stapel – so liegt sie danach oben. */
+function topCardsLast(cards: readonly Card[], topPick: Partial<Record<SuitIndex, number>>): Card[] {
+  const isTop = (card: Card): boolean => topPick[card.suit] === card.id;
+  return [...cards.filter((card) => !isTop(card)), ...cards.filter(isTop)];
 }
 
 /** Legt die Karte auf ihren Stapel; was danach passiert (z. B. die Weltordnung verschieben), regelt der Baustein. */
@@ -92,8 +80,10 @@ function placeCard(state: GameState, ruleset: Ruleset, card: Card): PlacementSte
   return { card, rules: [...state.rules], rotations: state.rotations, rotated };
 }
 
+/** Der Zug ins Protokoll – `lastMove` merkt sich, wo er steht (für die Marke „Letzter Zug“). */
 function logMove(state: GameState, entry: LogEntry): void {
-  state.lastMove = state.log.push(entry) - 1;
+  state.log.push(entry);
+  state.lastMove = state.log.length - 1;
 }
 
 function logRotations(state: GameState, steps: readonly PlacementStep[]): void {

@@ -1,4 +1,4 @@
-import { starter, turnsTaken } from '../../history';
+import { turnsTaken, turnsUntilRoundEnds } from '../../history';
 import type { GameState } from '../../types';
 import type { Ending } from '../types';
 
@@ -21,8 +21,7 @@ export function firstTo(points: number): Ending {
     checkFinalRound(state) {
       const player = state.players[state.current];
       if (!player || player.points < points || reached(state)) return;
-      const count = state.players.length;
-      const untilRoundEnds = (starter(state) - state.current - 1 + count) % count;
+      const untilRoundEnds = turnsUntilRoundEnds(state);
       state.finalTurnsLeft = Math.min(state.finalTurnsLeft ?? untilRoundEnds, untilRoundEnds);
       state.log.push({ kind: 'goal', player: state.current, turnsLeft: state.finalTurnsLeft });
     },

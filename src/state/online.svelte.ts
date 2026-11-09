@@ -33,6 +33,9 @@ export type LinkStatus =
  */
 export type Presence = 'pending' | 'ok' | 'unstable' | 'lost';
 
+/** Bei bestehender Verbindung: was die Lebenszeichen (heartbeat.ts) über das Gegenüber sagen */
+const PRESENCE_BY_SIGNAL: Record<Signal, Presence> = { ok: 'ok', slow: 'unstable', gone: 'lost' };
+
 /** So lange dürfen sich die Geräte nach dem Austausch suchen (ms) */
 const CONNECT_LIMIT = 20000;
 /** So lange sucht ein Gast nach dem Raum, bevor er aufgibt (ms) */
@@ -69,8 +72,7 @@ class OnlineState {
 
   /** null: Es ist noch niemand eingeladen oder beigetreten. */
   get presence(): Presence | null {
-    if (this.status === 'connected')
-      return this.signal === 'ok' ? 'ok' : this.signal === 'slow' ? 'unstable' : 'lost';
+    if (this.status === 'connected') return PRESENCE_BY_SIGNAL[this.signal];
     if (this.status === 'lost' || this.status === 'failed') return 'lost';
     if (this.status === 'idle' && this.role === null) return null;
     return 'pending';

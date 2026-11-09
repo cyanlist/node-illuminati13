@@ -84,5 +84,6 @@ function discardScore(state: GameState, hand: readonly Card[], card: Card): numb
     rules,
   );
   const [largest] = largestCombos(combos);
+  // die Größe der besten 13 zählt zuerst (als Zehner), ihre Anzahl nur bei Gleichstand (als Einer, höchstens 9)
   return largest ? largest.length * 10 + Math.min(combos.length, 9) : 0;
 }

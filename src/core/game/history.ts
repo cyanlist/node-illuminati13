@@ -8,15 +8,20 @@ import type { GameState } from './types';
  */
 export function scoreHistory(state: GameState): number[][] {
   const points = state.players.map(() => 0);
+  const add = (player: number, delta: number): void => {
+    points[player] = (points[player] ?? 0) + delta;
+  };
   const history = [[...points]];
   for (const entry of state.log) {
-    if (entry.kind === 'hint') points[entry.player] = (points[entry.player] ?? 0) - entry.cost;
-    if (entry.kind === 'proof') points[entry.player] = (points[entry.player] ?? 0) + entry.points;
-    if (entry.kind === 'proof' || entry.kind === 'discard' || entry.kind === 'skip')
-      history.push([...points]);
+    if (entry.kind === 'hint') add(entry.player, -entry.cost);
+    if (entry.kind === 'proof') add(entry.player, entry.points);
+    if (isTurn(entry.kind)) history.push([...points]);
   }
   return history;
 }
+
+/** Protokolleinträge, die für einen Zug stehen – auch Aussetzen zählt */
+const isTurn = (kind: string): boolean => kind === 'proof' || kind === 'discard' || kind === 'skip';
 
 /** Wie die Führung im Lauf des Spiels verlief – aus Sicht derjenigen, die am Ende vorn liegt. */
 export interface LeadStory {
@@ -70,4 +75,13 @@ export function turnsTaken(state: GameState, player: number): number {
 export function starter(state: GameState): number {
   const begins = state.log.find((entry) => entry.kind === 'begins');
   return begins?.kind === 'begins' ? begins.player : 0;
+}
+
+/**
+ * Wie viele Züge nach dem der Person am Zug die Runde noch dauert – bis die Person dran wäre, die begonnen hat.
+ * Zu zweit: 1, wenn die Startperson am Zug ist, sonst 0.
+ */
+export function turnsUntilRoundEnds(state: GameState): number {
+  const count = state.players.length;
+  return (starter(state) - state.current - 1 + count) % count;
 }

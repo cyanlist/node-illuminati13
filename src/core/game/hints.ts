@@ -1,6 +1,6 @@
 import type { Card, Rng } from '../cards';
 import { bestCombo } from '../combos';
-import { currentPlayer } from './players';
+import { currentPlayer, deductPoints } from './players';
 import { rulesetFor } from './ruleset';
 import type { GameState } from './types';
 
@@ -22,7 +22,7 @@ export function takeHint(state: GameState, rng: Rng = Math.random): Card[] | nul
   if (!canTakeHint(state)) throw new Error('Ein Tipp ist gerade nicht möglich.');
   const player = currentPlayer(state);
   if (state.settings.hintCost) {
-    player.points -= HINT_COST;
+    deductPoints(player, HINT_COST);
     state.log.push({ kind: 'hint', player: state.current, cost: HINT_COST });
   }
   return bestCombo(player.hand, state.piles, state.rules, rng);

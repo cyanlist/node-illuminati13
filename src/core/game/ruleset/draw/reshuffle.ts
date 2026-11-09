@@ -1,5 +1,6 @@
 import { shuffle } from '../../../cards';
 import { stateRng } from '../../../random';
+import { drawUpTo } from '../../deck';
 import type { GameState } from '../../types';
 import type { DrawPolicy } from '../types';
 
@@ -14,19 +15,12 @@ export const MAX_RESHUFFLES = 10;
 export const reshuffle: DrawPolicy = {
   id: 'reshuffle',
   refill(state, player, target) {
-    const drawn: number[] = [];
-    let reshuffled = 0;
-    while (player.hand.length < target) {
-      if (state.deck.length === 0) {
-        const cards = reshuffleDeck(state);
-        if (cards === 0) break;
-        reshuffled += cards;
-      }
-      const card = state.deck.pop();
-      if (!card) break;
-      player.hand.push(card);
-      drawn.push(card.id);
-    }
+    const drawn = drawUpTo(state, player, target);
+    if (player.hand.length >= target) return { drawn, reshuffled: 0 };
+    // der Nachziehstapel hat nicht gereicht: einmal nachmischen und weiterziehen (ein zweites Mal brächte nichts –
+    // auf den Ablagestapeln liegt danach nur noch je die oberste Karte)
+    const reshuffled = reshuffleDeck(state);
+    if (reshuffled > 0) drawn.push(...drawUpTo(state, player, target));
     return { drawn, reshuffled };
   },
   // die letzte Runde beginnt erst, wenn nicht mehr gemischt wird – oder niemand mehr Karten hat

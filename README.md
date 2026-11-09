@@ -73,7 +73,8 @@ src/
     values.ts        wahrer Wert einer Handkarte
     combos.ts        13er-Kombinationen finden
     settings.ts      Einstellungen und deren Prüfung
-    game/            Spielzustand: types, new-game, moves (Beweis/Abwurf), turns (Rundenablauf), hints (Tipp), ranking
+    game/            Spielzustand: types, new-game, moves (Beweis/Abwurf), turns (Rundenablauf), hints (Tipp), ranking,
+                     players (Punkte und Hand: scoreProof, deductPoints …), deck (Nachziehen), history (aus dem Protokoll)
     ai.ts            Zugwahl des Computers in drei Stärken (übersieht Kombinationen wie ein Mensch)
   state/           Zustand und Ablauf der Oberfläche
     table.svelte.ts  was der Tisch zeigt (Spiel, Phase, Auswahl, laufende Ablege-Animation)
