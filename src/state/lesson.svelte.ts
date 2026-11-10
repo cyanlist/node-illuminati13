@@ -1,7 +1,7 @@
 /**
  * Die Lernrunde am Tisch: Sie begleitet das Spiel als `Guide` (flow.ts) – Weishaupt spielt nach Drehbuch, eigene Züge
- * werden geprüft, und vor manchen Zügen wartet der Tisch, bis man die Erklärung gelesen hat. Was in der Erklärzeile
- * steht, liefert `coach()` (Coach.svelte zeigt es an).
+ * werden geprüft, und vor manchen Zügen wartet der Tisch, bis man die Erklärung gelesen hat. Was in der Sprechblase
+ * steht und wohin die Sprechblase zeigt, liefert `coach()` (LessonOverlay.svelte zeigt es an).
  */
 import { chooseCpuMove } from '../core/ai';
 import type { GameState } from '../core/game';
@@ -25,7 +25,7 @@ class LessonState {
   game = $state.raw<GameState | null>(null);
   /** Welche Erklärung vor dem aktuellen Zug gerade dasteht */
   page = $state(0);
-  /** Nach dem Drehbuch frei weitergespielt – die Erklärzeile verschwindet */
+  /** Nach dem Drehbuch frei weitergespielt – Sprechblase und Grauschleier verschwinden */
   free = $state(false);
 
   get active(): boolean {
@@ -67,9 +67,32 @@ export function playOn(): void {
   if (table.phase === 'cpu') scheduleCpu();
 }
 
-/** Was die Erklärzeile gerade zeigt. */
+/**
+ * Bereiche am Tisch, auf die die Sprechblase zeigen kann: die Ziele aus dem Drehbuch und dazu das Board, der eigene
+ * Platz und die Knöpfe unter der Hand.
+ */
+export type Target = Focus | 'board' | 'you' | 'actions';
+
+/**
+ * Wo die Sprechblase steht: in der Mitte, über einem Bereich, der gerade nicht gebraucht wird (`over`), oder neben
+ * ihrem Ziel mit einem Pfeil darauf (`beside`, bevorzugt darüber oder darunter).
+ */
+export type Placement =
+  | { kind: 'center' }
+  | { kind: 'over'; target: Target }
+  | { kind: 'beside'; target: Target; prefer: 'above' | 'below' };
+
+/** Wie stark der Rest des Tisches abgedunkelt wird. */
+export type Dim = 'none' | 'light' | 'strong';
+
+/** Was die Lernrunde gerade zeigt. */
 export interface Coach {
   line: Line;
+  place: Placement;
+  dim: Dim;
+  /** Bereiche, die vom Grauschleier frei bleiben */
+  free: Target[];
+  /** Das, worum es geht – mit einem pulsierenden Rahmen */
   focus: Focus | null;
   /** Der wievielte eigene Zug (ab 1) und wie viele es gibt */
   step: number;
@@ -78,20 +101,59 @@ export interface Coach {
   action: 'next' | 'end' | null;
 }
 
+/**
+ * Bei einer Erklärung: was vom Grauschleier frei bleibt und wo die Blase steht – neben dem Ziel, dort, wo sie nichts
+ * verdeckt, was der Satz braucht. Die Regeln rechnen mit den Stapeln darunter, also bleiben beide frei; was ein
+ * Stapel verändert, sieht man an der Hand.
+ */
+const EXPLAIN: Record<Focus, { free: Target[]; place: Placement }> = {
+  rules: { free: ['rules', 'piles'], place: { kind: 'beside', target: 'board', prefer: 'above' } },
+  hand: { free: ['hand'], place: { kind: 'beside', target: 'hand', prefer: 'above' } },
+  piles: { free: ['piles', 'hand'], place: { kind: 'beside', target: 'board', prefer: 'above' } },
+  hint: { free: ['hint'], place: { kind: 'beside', target: 'hint', prefer: 'above' } },
+  opponent: { free: ['opponent'], place: { kind: 'beside', target: 'opponent', prefer: 'below' } },
+};
+
+/** Während man selbst wählt, bleiben Hand, Knöpfe und Stapel frei – womit die Karten rechnen, muss man sehen. */
+const WHILE_YOU_PLAY: Target[] = ['hand', 'actions', 'board'];
+
 export function coach(game: GameState): Coach {
-  const view = { step: yourTurnNumber(game), steps: YOUR_TURNS };
-  // während ein Zug abgespielt wird, kommentiert die Zeile ihn
+  const base = { step: yourTurnNumber(game), steps: YOUR_TURNS, focus: null, action: null };
+  // was gerade abgespielt wird, soll man ungestört sehen: Die Blase liegt über dem Platz, der gerade nichts zu tun hat
   if (table.anim) {
     const played = previousTurn(game);
-    const line = played?.who === 'you' ? played.done : (played?.line ?? []);
-    return { ...view, line, focus: null, action: null };
+    if (played?.who === 'you')
+      return { ...base, line: played.done, place: over('opponent'), dim: 'none', free: [] };
+    return { ...base, line: played?.line ?? [], place: over('you'), dim: 'none', free: [] };
   }
   const turn = lessonTurn(game);
-  if (!turn) return { ...view, line: LESSON_END, focus: null, action: 'end' };
-  if (turn.who === 'opponent') return { ...view, line: turn.line, focus: null, action: null };
+  if (!turn)
+    return { ...base, line: LESSON_END, place: { kind: 'center' }, dim: 'strong', free: [], action: 'end' };
+  if (turn.who === 'opponent') return { ...base, line: turn.line, place: over('you'), dim: 'none', free: [] };
   const page = table.paused ? turn.pages[lesson.page] : undefined;
-  if (page) return { ...view, line: page.line, focus: page.focus ?? null, action: 'next' };
-  if (table.phase === 'order' && turn.order) return { ...view, line: turn.order, focus: null, action: null };
+  if (page) {
+    const explain = page.focus ? EXPLAIN[page.focus] : { free: [], place: { kind: 'center' } as const };
+    return {
+      ...base,
+      line: page.line,
+      place: explain.place,
+      dim: 'strong',
+      free: explain.free,
+      focus: page.focus ?? null,
+      action: 'next',
+    };
+  }
+  if (table.phase === 'order' && turn.order)
+    return { ...base, line: turn.order, place: over('opponent'), dim: 'none', free: [] };
   const task = turn.hint && table.hintCombo !== null ? turn.hint.next : turn.task;
-  return { ...view, line: task.line, focus: task.focus ?? null, action: null };
+  return {
+    ...base,
+    line: task.line,
+    place: over('opponent'),
+    dim: 'light',
+    free: WHILE_YOU_PLAY,
+    focus: task.focus ?? null,
+  };
 }
+
+const over = (target: Target): Placement => ({ kind: 'over', target });

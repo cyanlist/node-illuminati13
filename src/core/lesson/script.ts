@@ -213,7 +213,7 @@ export const LESSON: LessonTurn[] = [
     pages: [
       {
         line: say`Jetzt ohne wahre Werte, wie im echten Spiel. Rechne selbst – der Tipp verrät, aus wie vielen Karten die 13 besteht.`,
-        focus: 'rules',
+        focus: 'piles',
       },
     ],
     task: { line: say`Finde die 13 und tippe auf „Ablegen“.`, focus: 'hand' },

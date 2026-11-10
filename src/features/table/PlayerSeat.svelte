@@ -33,7 +33,7 @@ const waiting = $derived(DIM_WHILE_WAITING && showsHand && (table.phase === 'cpu
 
 <Seat
   label={position === 'bottom' ? 'Platz unten' : 'Platz oben'}
-  tour={position === 'top' ? 'opponent' : undefined}
+  tour={position === 'top' ? 'opponent' : 'you'}
   name={player.name}
   cpu={player.cpu}
   points={table.points(index)}

@@ -36,7 +36,7 @@ const waitingLabel = $derived(
 );
 </script>
 
-<div class="actions">
+<div class="actions" data-tour="actions">
   {#if table.phase === 'over' && !table.anim}
     <button type="button" class="btn btn--primary" onclick={() => (sheets.resultsHidden = false)}>Ergebnis ansehen</button>
     <button type="button" class="btn btn--ghost" onclick={goHome}>Andere Einstellungen</button>

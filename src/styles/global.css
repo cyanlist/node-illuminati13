@@ -49,6 +49,8 @@
 
   /* Ebenen, von unten nach oben */
   --z-overlay: 5; /* über dem Board: Beweis-Bühne, Rechenbeispiel einer Regel */
+  --z-scrim: 4; /* Lernrunde: Grauschleier über dem Tisch – Rechenbeispiele der Regeln liegen darüber */
+  --z-bubble: 9; /* Lernrunde: Sprechblase über allem am Tisch, aber unter Menü und Fenstern */
   --z-menu: 10; /* aufgeklapptes Menü, z. B. das Zahnrad am Tisch */
   --z-sheet: 20; /* Fenster */
   --z-page: 30; /* ganze Seite darüber: Einstellungen */

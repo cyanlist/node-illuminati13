@@ -5,10 +5,10 @@ import Actions from './Actions.svelte';
 import { table } from '../../state/table.svelte';
 import { lesson } from '../../state/lesson.svelte';
 import Board from './Board.svelte';
-import Coach from './Coach.svelte';
 import ConnectionBanner from './ConnectionBanner.svelte';
 import FinalRoundNotice from './FinalRoundNotice.svelte';
 import GameLog from './GameLog.svelte';
+import LessonOverlay from './LessonOverlay.svelte';
 import PlayerSeat from './PlayerSeat.svelte';
 import ProofStage from './ProofStage.svelte';
 import TopBar from './TopBar.svelte';
@@ -39,7 +39,6 @@ const chrome = $derived(
 
 <div class="game">
   <TopBar />
-  {#if lesson.active}<Coach {game} />{/if}
   <main class="table">
     <div class="play" style:--chrome="{chrome}px">
       <!-- legt sich über den Platz gegenüber, statt den Tisch nach unten zu schieben -->
@@ -55,6 +54,8 @@ const chrome = $derived(
     <GameLog {game} />
     <div class="controls"><Actions {game} /></div>
   </main>
+  <!-- liegt über dem Tisch und nimmt ihm keinen Platz weg -->
+  {#if lesson.active}<LessonOverlay {game} />{/if}
 </div>
 
 <style>
