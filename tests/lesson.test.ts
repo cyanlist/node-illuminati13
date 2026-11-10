@@ -49,13 +49,29 @@ const words = (line: Line): string =>
   line.map((part) => (typeof part === 'string' ? part : `X ${part.rank}`)).join('');
 
 describe('Lernrunde', () => {
-  it('beginnt mit dir, angespielten Stapeln und allen 52 Karten', () => {
+  it('beginnt wie jedes Spiel mit leeren Stapeln – du fängst an, alle 52 Karten sind da', () => {
     const game = lessonGame(seededRng(1));
     const all = [...game.deck, ...game.piles.flat(), ...game.players.flatMap((p) => p.hand)];
     expect(new Set(all.map((card) => card.id)).size).toBe(52);
     expect(game.current).toBe(0);
     expect(game.players.map((p) => p.name)).toEqual(['Du', 'Weishaupt']);
-    expect(game.piles.every((pile) => pile.length === 1)).toBe(true);
+    expect(game.piles.every((pile) => pile.length === 0)).toBe(true);
+  });
+
+  it('geht die Regeln erst durch, wenn auf jedem Stapel eine Karte liegt – und zu jeder Farbe gibt es eine Handkarte', () => {
+    const game = lessonGame(seededRng(5));
+    const opponent = scriptedOpponent(chooseCpuMove);
+    for (const turn of LESSON.slice(0, 2)) {
+      applyMove(game, turn.who === 'you' ? yourMove(turn, 'last') : opponent(game));
+      finishTurn(game);
+    }
+    const tour = lessonTurn(game) as YourTurn;
+    const suits = tour.pages.flatMap((page) =>
+      page.focus?.startsWith('suit-') ? [Number(page.focus.slice(5))] : [],
+    );
+    expect(suits).toEqual([0, 1, 2, 3]);
+    expect(game.piles.map((pile) => pile.length)).toEqual([1, 1, 1, 1]);
+    for (const suit of suits) expect(currentPlayer(game).hand.some((card) => card.suit === suit)).toBe(true);
   });
 
   it.each(['first', 'last'] as const)(
@@ -65,7 +81,7 @@ describe('Lernrunde', () => {
       playScript(game, top);
       expect(lessonTurn(game)).toBeNull();
       expect(game.over).toBe(false);
-      expect(game.players.map((p) => p.points)).toEqual([2 + 3 + 2, 2]);
+      expect(game.players.map((p) => p.points)).toEqual([2 + 2 + 3 + 2, 2 + 2]);
       expect(yourTurnNumber(game)).toBe(YOUR_TURNS);
     },
   );

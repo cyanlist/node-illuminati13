@@ -15,8 +15,8 @@ let { game }: { game: GameState } = $props();
 
 const view = $derived(coach(game));
 
-/** Woran die Bereiche im Tisch zu erkennen sind (data-tour an den Komponenten) */
-const SELECTORS: Record<Target | 'menu', string> = {
+/** Woran die Bereiche im Tisch zu erkennen sind (data-tour, data-pile und data-suit an den Komponenten) */
+const SELECTORS: Record<string, string> = {
   rules: '[data-tour="rule"]',
   hand: '[data-tour="hand"]',
   piles: '[data-pile]',
@@ -29,11 +29,20 @@ const SELECTORS: Record<Target | 'menu', string> = {
   menu: '.game > header nav',
 };
 
+/** Eine Farbe: ihre Spalte (Regel und Stapel) – und als `suit-…` auch ihre Handkarten. */
+function selectorFor(target: Target | 'menu'): string {
+  const [kind, suit] = target.split('-');
+  const column = `[data-tour="rule"][data-suit="${suit}"], [data-pile="${suit}"]`;
+  if (kind === 'column') return column;
+  if (kind === 'suit') return `${column}, [data-tour="hand"] [data-suit="${suit}"]`;
+  return SELECTORS[target] ?? '';
+}
+
 /** So viel Luft bleibt um einen freien Bereich – Platz für den pulsierenden Rahmen */
 const HOLE_PADDING = 10;
 
 function rectsOf(target: Target | 'menu'): Rect[] {
-  return [...document.querySelectorAll(SELECTORS[target])].map((element) => {
+  return [...document.querySelectorAll(selectorFor(target))].map((element) => {
     const { x, y, width, height } = element.getBoundingClientRect();
     return { x, y, width, height };
   });
@@ -242,7 +251,11 @@ $effect(() => {
       html[data-coach='hand'] [data-tour='hand'],
       html[data-coach='piles'] [data-pile],
       html[data-coach='hint'] [data-tour='hint'],
-      html[data-coach='opponent'] [data-tour='opponent']
+      html[data-coach='opponent'] [data-tour='opponent'],
+      html[data-coach='suit-0'] :is([data-tour='rule'][data-suit='0'], [data-pile='0']),
+      html[data-coach='suit-1'] :is([data-tour='rule'][data-suit='1'], [data-pile='1']),
+      html[data-coach='suit-2'] :is([data-tour='rule'][data-suit='2'], [data-pile='2']),
+      html[data-coach='suit-3'] :is([data-tour='rule'][data-suit='3'], [data-pile='3'])
     )) {
     outline: 3px solid var(--focus);
     outline-offset: 4px;

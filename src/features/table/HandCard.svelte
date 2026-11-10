@@ -23,7 +23,7 @@ let { card, piles, rules, showValues, selected, hinted, arriving, disabled, oncl
 const value = $derived(trueValue(card, piles, rules));
 </script>
 
-<div class="slot" class:arriving>
+<div class="slot" class:arriving data-suit={card.suit}>
   <Card
     {card}
     value={showValues ? value.value : null}

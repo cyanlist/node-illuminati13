@@ -4,6 +4,7 @@
  * steht und wohin die Sprechblase zeigt, liefert `coach()` (LessonOverlay.svelte zeigt es an).
  */
 import { chooseCpuMove } from '../core/ai';
+import type { SuitIndex } from '../core/cards';
 import type { GameState } from '../core/game';
 import {
   type Focus,
@@ -13,6 +14,7 @@ import {
   lessonTurn,
   previousTurn,
   reviewLessonMove,
+  type SuitFocus,
   scriptedOpponent,
   YOUR_TURNS,
   yourTurnNumber,
@@ -69,9 +71,9 @@ export function playOn(): void {
 
 /**
  * Bereiche am Tisch, auf die die Sprechblase zeigen kann: die Ziele aus dem Drehbuch und dazu das Board, der eigene
- * Platz und die Knöpfe unter der Hand.
+ * Platz, die Knöpfe unter der Hand und eine Spalte des Boards (Regel und Stapel einer Farbe).
  */
-export type Target = Focus | 'board' | 'you' | 'actions';
+export type Target = Focus | 'board' | 'you' | 'actions' | `column-${SuitIndex}`;
 
 /**
  * Wo die Sprechblase steht: in der Mitte, über einem Bereich, der gerade nicht gebraucht wird (`over`), oder neben
@@ -104,15 +106,32 @@ export interface Coach {
 /**
  * Bei einer Erklärung: was vom Grauschleier frei bleibt und wo die Blase steht – neben dem Ziel, dort, wo sie nichts
  * verdeckt, was der Satz braucht. Die Regeln rechnen mit den Stapeln darunter, also bleiben beide frei; was ein
- * Stapel verändert, sieht man an der Hand.
+ * Stapel verändert, sieht man an der Hand. Bei einer einzelnen Farbe zeigt die Blase auf ihre Spalte; frei bleiben
+ * Regel, Stapel und die Handkarten dieser Farbe.
  */
-const EXPLAIN: Record<Focus, { free: Target[]; place: Placement }> = {
-  rules: { free: ['rules', 'piles'], place: { kind: 'beside', target: 'board', prefer: 'above' } },
-  hand: { free: ['hand'], place: { kind: 'beside', target: 'hand', prefer: 'above' } },
-  piles: { free: ['piles', 'hand'], place: { kind: 'beside', target: 'board', prefer: 'above' } },
-  hint: { free: ['hint'], place: { kind: 'beside', target: 'hint', prefer: 'above' } },
-  opponent: { free: ['opponent'], place: { kind: 'beside', target: 'opponent', prefer: 'below' } },
-};
+function explain(focus: Focus): { free: Target[]; place: Placement } {
+  const beside = (target: Target, prefer: 'above' | 'below'): Placement => ({
+    kind: 'beside',
+    target,
+    prefer,
+  });
+  switch (focus) {
+    case 'rules':
+      return { free: ['rules', 'piles'], place: beside('board', 'above') };
+    case 'hand':
+      return { free: ['hand'], place: beside('hand', 'above') };
+    case 'piles':
+      return { free: ['piles', 'hand'], place: beside('board', 'above') };
+    case 'hint':
+      return { free: ['hint'], place: beside('hint', 'above') };
+    case 'opponent':
+      return { free: ['opponent'], place: beside('opponent', 'below') };
+    default:
+      return { free: [focus], place: beside(`column-${suitOf(focus)}`, 'above') };
+  }
+}
+
+const suitOf = (focus: SuitFocus): SuitIndex => Number(focus.slice('suit-'.length)) as SuitIndex;
 
 /** Während man selbst wählt, bleiben Hand, Knöpfe und Stapel frei – womit die Karten rechnen, muss man sehen. */
 const WHILE_YOU_PLAY: Target[] = ['hand', 'actions', 'board'];
@@ -132,13 +151,13 @@ export function coach(game: GameState): Coach {
   if (turn.who === 'opponent') return { ...base, line: turn.line, place: over('you'), dim: 'none', free: [] };
   const page = table.paused ? turn.pages[lesson.page] : undefined;
   if (page) {
-    const explain = page.focus ? EXPLAIN[page.focus] : { free: [], place: { kind: 'center' } as const };
+    const explained = page.focus ? explain(page.focus) : { free: [], place: { kind: 'center' } as const };
     return {
       ...base,
       line: page.line,
-      place: explain.place,
+      place: explained.place,
       dim: 'strong',
-      free: explain.free,
+      free: explained.free,
       focus: page.focus ?? null,
       action: 'next',
     };

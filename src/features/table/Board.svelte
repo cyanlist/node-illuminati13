@@ -20,7 +20,7 @@ const worldOrder = $derived(!!table.game && rulesetFor(table.game.settings).plac
 
 <section class="board surface" data-tour="board" aria-label="Vier Ablagestapel und Nachziehstapel">
   {#each table.columns as suit, column (column)}
-    <div class="rule" data-tour="rule" style:grid-column={column + 1} style:--column={column}><RuleLabel ruleKey={table.rules[suit]} {suit} /></div>
+    <div class="rule" data-tour="rule" data-suit={suit} style:grid-column={column + 1} style:--column={column}><RuleLabel ruleKey={table.rules[suit]} {suit} /></div>
   {/each}
   {#each table.columns as suit (suit)}
     <div class="slot" animate:flip={{ duration: 700, easing: cubicInOut }}>

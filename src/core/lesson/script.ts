@@ -11,8 +11,11 @@ import { DEFAULT_SETTINGS, type Settings } from '../settings';
 /** Ein Satz der Lernrunde: Text und Karten, die darin als kleine Karte erscheinen. */
 export type Line = readonly (string | Card)[];
 
+/** Eine Farbe für sich: Regel und Stapel ihrer Spalte und die Handkarten dieser Farbe (`suit-0` ist Herz). */
+export type SuitFocus = `suit-${SuitIndex}`;
+
 /** Worauf ein Satz zeigt – der Tisch hebt es hervor. */
-export type Focus = 'rules' | 'hand' | 'piles' | 'hint' | 'opponent';
+export type Focus = 'rules' | 'hand' | 'piles' | 'hint' | 'opponent' | SuitFocus;
 
 export interface Page {
   line: Line;
@@ -86,6 +89,11 @@ function say(strings: TemplateStringsArray, ...cards: Card[]): Line {
 }
 
 // Karten, die in den Sätzen vorkommen
+const herz4 = card(HERZ, 4);
+const pik9 = card(PIK, 9);
+const karo10 = card(KARO, 10);
+const kreuz3 = card(KREUZ, 3);
+const kreuz8 = card(KREUZ, 8);
 const herz2 = card(HERZ, 2);
 const kreuz7 = card(KREUZ, 7);
 const pik5 = card(PIK, 5);
@@ -99,15 +107,24 @@ const karo6 = card(KARO, 6);
 const kreuz11 = card(KREUZ, 11);
 const pik12 = card(PIK, 12);
 
-/** Der Tisch zu Beginn: Auf jedem Stapel liegt schon eine Karte, damit die Regeln gleich etwas zu rechnen haben. */
+/**
+ * Der Tisch zu Beginn – wie in jedem Spiel sind die Stapel leer. Nach dem ersten Beweis auf jeder Seite liegt auf
+ * jedem Stapel eine Karte, und die Regeln haben etwas zu rechnen.
+ */
 export const LESSON_SETUP = {
-  piles: [[card(HERZ, 4)], [card(PIK, 9)], [card(KARO, 10)], [card(KREUZ, 6)]],
+  piles: [[], [], [], []] as Card[][],
   hands: [
-    [herz2, kreuz7, pik5, karo12, card(KREUZ, 8)],
-    [karo3, herz3, herz6, pik12, card(KREUZ, 2)],
+    [herz4, pik9, karo12, kreuz8, kreuz7],
+    [karo10, kreuz3, karo3, herz3, herz6],
   ],
   /** In der Reihenfolge, in der sie gezogen werden – danach kommt der Rest des Decks gemischt */
   draws: [
+    // du nach dem Beweis bei leeren Stapeln
+    herz2,
+    pik5,
+    // Weishaupt
+    pik12,
+    card(KREUZ, 2),
     // du nach dem ersten Beweis
     pik3,
     card(HERZ, 9),
@@ -136,11 +153,49 @@ export const LESSON: LessonTurn[] = [
         line: say`Willkommen in der Loge! Bilde aus deinen Handkarten die 13 – jede Karte darin bringt dir einen Punkt.`,
       },
       {
-        line: say`Über jedem Stapel steht seine Regel. Jede Handkarte wird mit der obersten Karte ihrer Farbe verrechnet.`,
+        line: say`Zu Beginn sind alle Stapel leer. Solange ein Stapel leer ist, zählt jede Karte seiner Farbe einfach ihre Zahl.`,
+        focus: 'piles',
+      },
+    ],
+    task: {
+      line: say`Wähle zwei Karten, deren Zahlen zusammen 13 ergeben, und tippe auf „13 beweisen“.`,
+      focus: 'hand',
+    },
+    expected: { type: 'proof', cards: [herz4, pik9] },
+    help: 'Nicht ganz: Herz 4 und Pik 9 ergeben zusammen 13.',
+    pointOut: true,
+    done: say`Zwei Karten, zwei Punkte! Sie liegen jetzt oben auf Herz und Pik – ab sofort rechnen diese Stapel mit ihnen.`,
+  },
+  {
+    who: 'opponent',
+    move: { type: 'proof', cardIds: [karo10.id, kreuz3.id] },
+    line: say`Jetzt ist Weishaupt am Zug. Auch er sucht die 13.`,
+  },
+  {
+    who: 'you',
+    pages: [
+      {
+        line: say`Jetzt liegt auf jedem Stapel eine Karte. Über jedem steht seine Regel – schauen wir sie uns einzeln an.`,
         focus: 'rules',
       },
       {
-        line: say`Heraus kommt ihr wahrer Wert: Er steht in der Ecke deiner Karte, der Rechenweg darunter.`,
+        line: say`Herz rechnet Stapel + Hand: Oben liegt die 4, deine ${herz2} zählt also 4 + 2 = 6.`,
+        focus: 'suit-0',
+      },
+      {
+        line: say`Pik rechnet Stapel − Hand: Deine ${pik5} zählt 9 − 5 = 4. Ist deine Zahl größer, wird es negativ.`,
+        focus: 'suit-1',
+      },
+      {
+        line: say`Karo kopiert den Stapel: Deine ${karo12} zählt genau 10 wie die oberste Karte – ihre eigene Zahl ist egal.`,
+        focus: 'suit-2',
+      },
+      {
+        line: say`Kreuz nimmt die größere Zahl: Gegen die 3 auf dem Stapel zählen ${kreuz7} und ${kreuz8} einfach 7 und 8.`,
+        focus: 'suit-3',
+      },
+      {
+        line: say`Das Ergebnis ist der wahre Wert: Er steht in der Ecke deiner Karte, der Rechenweg darunter.`,
         focus: 'hand',
       },
     ],
@@ -151,7 +206,7 @@ export const LESSON: LessonTurn[] = [
     expected: { type: 'proof', cards: [herz2, kreuz7] },
     help: 'Nicht ganz: Herz 2 zählt hier 6, Kreuz 7 zählt 7.',
     pointOut: true,
-    done: say`Zwei Karten, zwei Punkte! Deine Karten liegen jetzt oben – die Stapel rechnen ab sofort mit ihnen.`,
+    done: say`Wieder zwei Punkte! Deine Karten liegen jetzt oben – ab sofort rechnen Herz und Kreuz mit ihnen.`,
   },
   {
     who: 'opponent',
@@ -179,7 +234,7 @@ export const LESSON: LessonTurn[] = [
   {
     who: 'opponent',
     move: { type: 'proof', cardIds: [herz3.id, herz6.id], topPick: { [HERZ]: herz6.id } },
-    line: say`Weishaupt ist am Zug. Auch er sucht die 13.`,
+    line: say`Weishaupt ist wieder am Zug.`,
   },
   {
     who: 'you',
