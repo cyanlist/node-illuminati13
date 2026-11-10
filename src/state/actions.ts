@@ -2,9 +2,9 @@
  * Was die Person am Gerät tun kann: Karten markieren, Tipp holen, ablegen, Reihenfolge wählen, aufdecken.
  */
 import type { Card, SuitIndex } from '../core/cards';
-import { canTakeHint, NO_THIRTEEN, rulesetFor, takeHint } from '../core/game';
+import { canTakeHint, type Move, NO_THIRTEEN, rulesetFor, takeHint } from '../core/game';
 import { isOnline } from '../core/settings';
-import { playTurn } from './flow';
+import { playTurn, reviewMove } from './flow';
 import { send } from './online.svelte';
 import { judgeSelection } from './selection';
 import { requireGame, table } from './table.svelte';
@@ -52,14 +52,31 @@ export function playSelection(): void {
       playProof(selection.cards);
       return;
     case 'discard':
-      void playTurn({ type: 'discard', cardId: selection.card.id });
+      playIfAllowed({ type: 'discard', cardId: selection.card.id });
       return;
     case 'invalid':
-      // ohne Summe – sonst könnte man sich beim Kopfrechnen zur 13 durchprobieren; der Knopf schüttelt den Kopf
-      table.message = 'Keine 13er-Kombination.';
-      table.rejected++;
+      // ohne Summe – sonst könnte man sich beim Kopfrechnen zur 13 durchprobieren
+      reject('Keine 13er-Kombination.');
       return;
   }
+}
+
+/** Der Knopf schüttelt den Kopf, darunter steht warum – `cards` werden dazu markiert. */
+function reject(message: string, cards: number[] = []): void {
+  table.message = message;
+  table.hinted = cards;
+  table.rejected++;
+}
+
+/** In der Lernrunde darf nur der vorgesehene Zug gespielt werden – sonst gibt es einen Einwand statt des Zugs. */
+function allowed(move: Move): boolean {
+  const objection = reviewMove(move);
+  if (objection) reject(objection.message, objection.cards);
+  return !objection;
+}
+
+function playIfAllowed(move: Move): void {
+  if (allowed(move)) void playTurn(move);
 }
 
 /** Beweis ablegen – liegen zwei Karten derselben Farbe dabei, erst wählen lassen, welche oben landet. */
@@ -67,6 +84,7 @@ function playProof(cards: Card[]): void {
   // standardmäßig liegt die zuletzt gewählte Karte einer Farbe oben
   const topPick: Partial<Record<SuitIndex, number>> = {};
   for (const card of cards) topPick[card.suit] = card.id;
+  if (!allowed({ type: 'proof', cardIds: cards.map((card) => card.id), topPick })) return;
   const sameSuitTwice = cards.some((card) => cards.filter((c) => c.suit === card.suit).length > 1);
   if (sameSuitTwice) {
     table.topPick = topPick;

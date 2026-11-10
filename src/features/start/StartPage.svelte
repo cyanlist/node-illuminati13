@@ -1,6 +1,7 @@
 <script lang="ts">
 import { normalizeSettings, resolveRuleMode, settingsForEditing } from '../../core/settings';
 import { resume, startGame } from '../../state/flow';
+import { startLesson } from '../../state/lesson.svelte';
 import { online } from '../../state/online.svelte';
 import { shareSettings } from '../../state/online-flow';
 import { sheets } from '../../state/sheets.svelte';
@@ -67,6 +68,7 @@ function onsubmit(event: SubmitEvent): void {
       <SettingsSummary draft={online.hostSettings ?? draft} note="{online.peerName || 'Das andere Gerät'} stellt ein" />
     {/if}
     <div class="actions">
+      <button type="button" class="btn btn--ghost" onclick={startLesson}>Spiel lernen</button>
       <button type="button" class="btn btn--ghost" onclick={() => (sheets.rulesOpen = true)}>Regeln lesen</button>
       {#if running}<button type="button" class="btn" onclick={resume}>Weiterspielen</button>{/if}
       <button type="submit" class="btn btn--primary btn--large" disabled={start.disabled}>{start.label}</button>

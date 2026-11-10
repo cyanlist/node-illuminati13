@@ -53,13 +53,20 @@ const waitingLabel = $derived(
       {main.label}
     </button>
     {#if !hint.hidden}
-      <button type="button" class="btn btn--ghost" disabled={hint.disabled} title={hint.title} onclick={showHint}>
+      <button
+        type="button"
+        class="btn btn--ghost"
+        data-tour="hint"
+        disabled={hint.disabled}
+        title={hint.title}
+        onclick={showHint}
+      >
         {hint.label}
       </button>
     {/if}
   {:else}
     <button type="button" class="btn btn--primary" disabled>{waitingLabel}</button>
-    {#if !hint.hidden}<button type="button" class="btn btn--ghost" disabled>Tipp</button>{/if}
+    {#if !hint.hidden}<button type="button" class="btn btn--ghost" data-tour="hint" disabled>Tipp</button>{/if}
   {/if}
 </div>
 <p class="message" aria-live="polite">{table.message}</p>

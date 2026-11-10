@@ -34,6 +34,8 @@ interface Props {
   compact?: boolean;
   /** Beschriftung für Screenreader, z. B. „Platz oben“ */
   label: string;
+  /** Ziel für Hervorhebungen der Lernrunde (data-tour) */
+  tour?: string;
   children: Snippet;
 }
 let {
@@ -49,11 +51,12 @@ let {
   presence = null,
   compact = false,
   label,
+  tour,
   children,
 }: Props = $props();
 </script>
 
-<section class="seat" class:active class:cpu class:compact class:waiting style:--hue={hueFor(name)} aria-label={label}>
+<section class="seat" class:active class:cpu class:compact class:waiting style:--hue={hueFor(name)} aria-label={label} data-tour={tour}>
   {#if lastTurn}<span class="last-turn">Letzter Zug</span>{/if}
   {#if thinking}<span class="thinking"><Thinking /></span>{/if}
   <span class="who">

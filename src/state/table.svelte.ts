@@ -39,6 +39,8 @@ class TableState {
   /** Gewählte oberste Karte je Farbe, solange das Reihenfolge-Fenster offen ist */
   topPick = $state<Partial<Record<SuitIndex, number>> | null>(null);
   anim = $state<MoveAnimation | null>(null);
+  /** Die Lernrunde erklärt gerade etwas: Karten, Knöpfe und der Computer warten auf „Weiter“ */
+  paused = $state(false);
   /** Bisheriger Bestwert im Solo-Spiel (Punkte, bei „Bis 13“ Züge), für das Ergebnisfenster */
   soloBest = $state(0);
 
@@ -58,9 +60,9 @@ class TableState {
     return this.view === 'game' ? this.game : null;
   }
 
-  /** Die Person am Gerät darf Karten wählen: Sie ist am Zug und es fliegt gerade nichts. */
+  /** Die Person am Gerät darf Karten wählen: Sie ist am Zug, es fliegt gerade nichts und keine Erklärung wartet. */
   get canPlay(): boolean {
-    return this.game !== null && this.phase === 'play' && !this.anim;
+    return this.game !== null && this.phase === 'play' && !this.anim && !this.paused;
   }
 
   /**

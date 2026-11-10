@@ -25,6 +25,12 @@ export const CPU_PROFILES: Record<CpuLevel, CpuProfile> = {
   hard: { spotSingle: 1, perExtraCard: 1, prefersLargest: true, smartDiscard: true },
 };
 
+/**
+ * Wer für den Computer die Züge wählt – sonst `chooseCpuMove`, in der Lernrunde ein Gegner nach Drehbuch
+ * (core/lesson).
+ */
+export type CpuPlayer = (state: GameState, rng?: Rng) => Move;
+
 /** Wahrscheinlichkeit, dass der Computer eine 13 aus `size` Karten bemerkt. */
 export const spotChance = (profile: CpuProfile, size: number): number =>
   profile.spotSingle * profile.perExtraCard ** (size - 1);

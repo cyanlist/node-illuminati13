@@ -3,7 +3,7 @@
  * Wie ein Zug Karte für Karte abgespielt wird, steht in move-animation.ts. An zwei Geräten gehen eigene
  * Züge gleich hier hinaus; was mit Nachrichten des anderen Geräts passiert, steht in online-flow.ts.
  */
-import { chooseCpuMove } from '../core/ai';
+import { type CpuPlayer, chooseCpuMove } from '../core/ai';
 import {
   currentPlayer,
   finishTurn,
@@ -13,6 +13,7 @@ import {
   newGame,
   rulesetFor,
 } from '../core/game';
+import type { Objection } from '../core/lesson';
 import { isOnline, type Settings } from '../core/settings';
 import { loadSoloBest, saveSoloBest } from '../storage';
 import { animateMove } from './move-animation';
@@ -30,6 +31,23 @@ const TIMING = {
 export const FINAL_NOTICE_MS = 3200;
 
 let cpuTimer: ReturnType<typeof setTimeout> | undefined;
+
+/**
+ * Wer ein Spiel begleitet: wählt die Züge des Computers, prüft eigene Züge, bevor sie gespielt werden, und erfährt,
+ * wann ein Zug beginnt. Im normalen Spiel spielt der Computer selbst und jeder Zug gilt; die Lernrunde
+ * (lesson.svelte.ts) gibt dagegen beide Seiten vor.
+ */
+export interface Guide {
+  opponent: CpuPlayer;
+  /** null: Der Zug darf gespielt werden – sonst der Einwand */
+  review(game: GameState, move: Move): Objection | null;
+  /** Ein Zug beginnt – vor der Entscheidung, wer jetzt was tut */
+  turnBegins(game: GameState): void;
+}
+
+const FREE_PLAY: Guide = { opponent: chooseCpuMove, review: () => null, turnBegins: () => {} };
+
+let guide = FREE_PLAY;
 
 /** Wird gerufen, sobald das andere Gerät am Zug ist (online-flow.ts spielt dann wartende Züge ab). */
 let remoteTurn: () => void = () => {};
@@ -49,9 +67,14 @@ export function startGame(settings: Settings): void {
   enterGame(newGame(settings), 0);
 }
 
-/** Setzt sich an den Tisch: neues Spiel oder – an zwei Geräten – der Stand, den das andere Gerät geschickt hat. */
-export function enterGame(game: GameState, me: number): void {
+/**
+ * Setzt sich an den Tisch: neues Spiel oder – an zwei Geräten – der Stand, den das andere Gerät geschickt hat.
+ * `withGuide` begleitet das Spiel (die Lernrunde); ohne spielt der Computer selbst.
+ */
+export function enterGame(game: GameState, me: number, withGuide: Guide = FREE_PLAY): void {
   stopCpu();
+  guide = withGuide;
+  table.paused = false;
   if (isOnline(game.settings)) markYou(game, me);
   table.me = me;
   table.game = game;
@@ -68,11 +91,12 @@ export function enterGame(game: GameState, me: number): void {
 function beginTurn(): void {
   const game = requireGame();
   table.resetTurn();
+  guide.turnBegins(game);
   if (currentPlayer(game).cpu) {
     table.phase = 'cpu';
     // hat gerade die letzte Runde begonnen, darf man die Ankündigung erst in Ruhe lesen
     const pause = finalRoundJustStarted(game) ? FINAL_NOTICE_MS : 0;
-    if (table.view === 'game') scheduleCpu(TIMING.cpuThinking + pause);
+    if (table.view === 'game' && !table.paused) scheduleCpu(TIMING.cpuThinking + pause);
     return;
   }
   if (isOnline(game.settings) && game.current !== table.me) {
@@ -98,6 +122,9 @@ export async function playTurn(move: Move): Promise<void> {
   if (await animateMove(move)) afterMove();
 }
 
+/** Darf die Person am Gerät diesen Zug spielen? null: ja – sonst der Einwand (nur in der Lernrunde). */
+export const reviewMove = (move: Move): Objection | null => guide.review(requireGame(), move);
+
 export function scheduleCpu(delay = TIMING.cpuResume): void {
   stopCpu();
   cpuTimer = setTimeout(cpuTurn, delay);
@@ -109,8 +136,8 @@ function stopCpu(): void {
 
 function cpuTurn(): void {
   const game = table.game;
-  if (!game || table.phase !== 'cpu' || table.anim) return;
-  void playTurn(chooseCpuMove(game));
+  if (!game || table.phase !== 'cpu' || table.anim || table.paused) return;
+  void playTurn(guide.opponent(game));
 }
 
 /** Nach dem Zug: Rundenablauf weiterführen und entweder den nächsten Zug vorbereiten oder werten. */
@@ -140,7 +167,7 @@ export function goHome(): void {
 
 export function resume(): void {
   showView('game');
-  if (table.phase === 'cpu' && !table.anim) scheduleCpu();
+  if (table.phase === 'cpu' && !table.anim && !table.paused) scheduleCpu();
 }
 
 /** Nochmal spielen – an zwei Geräten mischt das einladende Gerät, der Gast bittet nur darum. */

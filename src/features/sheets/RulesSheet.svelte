@@ -2,6 +2,8 @@
 import { SUIT_INDICES, SUITS } from '../../core/cards';
 import { fullDeck, MAX_RESHUFFLES, rulesetFor, stopWhenEmpty } from '../../core/game';
 import { CLASSIC_RULES, RULE_KEYS, RULES } from '../../core/rules';
+import { TRUTH_GOALS } from '../../core/settings';
+import { startLesson } from '../../state/lesson.svelte';
 import { sheets } from '../../state/sheets.svelte';
 import { table } from '../../state/table.svelte';
 import { ruleExample, ruleLabel } from '../../ui/format';
@@ -22,8 +24,17 @@ const extraRules = RULE_KEYS.filter((key) => !CLASSIC_RULES.includes(key));
 const solo = $derived(game?.players.length === 1);
 const HINT_COST_TEXT = 'Ein Tipp kostet einen Punkt – einmal pro Zug, und nur, wenn du einen Punkt hast.';
 
+/** „13, 23, 33, 52 oder 100“ – wie im Fenster der Variante */
+const goalList = `${TRUTH_GOALS.slice(0, -1).join(', ')} oder ${TRUTH_GOALS.at(-1)}`;
+
 const close = (): void => {
   sheets.rulesOpen = false;
+};
+
+/** Vom Regelfenster der Startseite direkt in die Lernrunde */
+const learn = (): void => {
+  close();
+  startLesson();
 };
 </script>
 
@@ -114,7 +125,7 @@ const close = (): void => {
     <p>Auf der Startseite unter „Varianten“ lässt sich der Spielablauf verändern:</p>
     <ul>
       <li>
-        <b>Die wahre Wahrheit erkennen:</b> Statt des ganzen Decks gilt ein Punkteziel – 13 (kurz), 25, 50 oder 100.
+        <b>Die wahre Wahrheit erkennen:</b> Statt des ganzen Decks gilt ein Punkteziel – {goalList}.
         Wer es zuerst erreicht, beendet das Spiel; die Runde wird noch zu Ende gespielt, damit alle gleich viele Züge
         hatten. Ist der Nachziehstapel leer, werden die Ablagestapel bis auf ihre oberste Karte gemischt und bilden einen
         neuen – nach {MAX_RESHUFFLES} Mischungen ist spätestens Schluss. Allein zählt, in wie vielen Zügen du das Ziel
@@ -129,6 +140,9 @@ const close = (): void => {
   {/if}
 
   {#snippet actions()}
+    {#if !ruleset}
+      <button type="button" class="btn btn--ghost" onclick={learn}>Lernrunde spielen</button>
+    {/if}
     <button type="button" class="btn btn--primary" onclick={close}>Verstanden</button>
   {/snippet}
 </Sheet>

@@ -15,7 +15,7 @@ const cards = $derived(table.hand(index));
 const interactive = $derived(table.canPlay && index === game.current && !playerAt(game, index).cpu);
 </script>
 
-<div class="hand">
+<div class="hand" data-tour="hand">
   {#if cards.length === 0}
     <p class="muted">Keine Handkarten mehr.</p>
   {:else}

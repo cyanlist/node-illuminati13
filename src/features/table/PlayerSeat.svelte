@@ -33,6 +33,7 @@ const waiting = $derived(DIM_WHILE_WAITING && showsHand && (table.phase === 'cpu
 
 <Seat
   label={position === 'bottom' ? 'Platz unten' : 'Platz oben'}
+  tour={position === 'top' ? 'opponent' : undefined}
   name={player.name}
   cpu={player.cpu}
   points={table.points(index)}
@@ -43,7 +44,9 @@ const waiting = $derived(DIM_WHILE_WAITING && showsHand && (table.phase === 'cpu
   lastTurn={lastTurnPlayers(game).includes(index)}
   {waiting}
   presence={isOnline(game.settings) && index !== table.me ? (online.presence ?? 'lost') : null}
-  thinking={((player.cpu && table.phase === 'cpu') || (index !== table.me && table.phase === 'remote')) && !table.anim}
+  thinking={((player.cpu && table.phase === 'cpu') || (index !== table.me && table.phase === 'remote')) &&
+    !table.anim &&
+    !table.paused}
 >
   {#if showsHand}
     <HandCards {game} {index} />

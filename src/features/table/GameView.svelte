@@ -3,7 +3,9 @@ import { type GameState, rulesetFor } from '../../core/game';
 import { isOnline } from '../../core/settings';
 import Actions from './Actions.svelte';
 import { table } from '../../state/table.svelte';
+import { lesson } from '../../state/lesson.svelte';
 import Board from './Board.svelte';
+import Coach from './Coach.svelte';
 import ConnectionBanner from './ConnectionBanner.svelte';
 import FinalRoundNotice from './FinalRoundNotice.svelte';
 import GameLog from './GameLog.svelte';
@@ -37,6 +39,7 @@ const chrome = $derived(
 
 <div class="game">
   <TopBar />
+  {#if lesson.active}<Coach {game} />{/if}
   <main class="table">
     <div class="play" style:--chrome="{chrome}px">
       <!-- legt sich über den Platz gegenüber, statt den Tisch nach unten zu schieben -->

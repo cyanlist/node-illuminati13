@@ -40,7 +40,7 @@ Alles liegt in `src/core/game/ruleset/` und wird über `src/core/game/index.ts` 
 | `types.ts`                   | Schnittstellen `Ending`, `DrawPolicy`, `PlacementEffect`, `HintStyle`, `Ruleset`    |
 | `index.ts`                   | `rulesetFor(settings)` – ordnet jeder Einstellung ihren Baustein zu                 |
 | `ending/full-deck.ts`        | `fullDeck` – bis der Stapel leer ist; meiste Punkte; allein zählen die Punkte       |
-| `ending/first-to.ts`         | `firstTo(points)` – Punkteziel (13, 25, 50, 100); faire letzte Runde; allein zählen die Züge |
+| `ending/first-to.ts`         | `firstTo(points)` – Punkteziel (13, 23, 33, 52, 100); faire letzte Runde; allein zählen die Züge |
 | `draw/stop-when-empty.ts`    | `stopWhenEmpty` – nachziehen, solange es geht; leerer Stapel startet die letzte Runde |
 | `draw/reshuffle.ts`          | `reshuffle` – leerer Stapel wird aus den Ablagestapeln nachgemischt („Die wahre Wahrheit erkennen“) |
 | `placement/none.ts`          | `noEffect` – ohne Variante                                                          |
