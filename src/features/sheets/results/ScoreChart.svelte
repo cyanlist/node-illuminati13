@@ -4,7 +4,7 @@ import { hueFor } from '../../../ui/avatar';
 
 /**
  * Der Verlauf als kleine Linie: Punkte nach jedem Zug, je Person in ihrer Farbe – man sieht, ob es knapp war oder
- * eine Aufholjagd. Mit Punkteziel zeigt eine gestrichelte Linie, wo das Ziel lag. Darüber ein Satz dazu.
+ * eine Aufholjagd. Mit Punkteziel zeigt eine gestrichelte Linie, wo das Ziel lag.
  */
 interface Props {
   /** Punkte aller Personen nach jedem Zug (scoreHistory) */
@@ -14,9 +14,8 @@ interface Props {
   /** Diese Linie etwas kräftiger (wer gewinnt); null bei Gleichstand */
   highlight: number | null;
   goal: number | null;
-  caption: string;
 }
-let { history, players, highlight, goal, caption }: Props = $props();
+let { history, players, highlight, goal }: Props = $props();
 
 const WIDTH = 300;
 const HEIGHT = 72;
@@ -33,7 +32,7 @@ const color = (player: Player): string =>
 </script>
 
 <figure>
-  <figcaption><span class="label">Verlauf</span> · {caption}</figcaption>
+  <figcaption>Verlauf</figcaption>
   <svg viewBox="0 0 {WIDTH} {HEIGHT}" preserveAspectRatio="none" role="img" aria-label="Punkte nach jedem Zug">
     <line class="base" x1="0" y1={HEIGHT - PAD} x2={WIDTH} y2={HEIGHT - PAD} />
     {#if goal !== null}<line class="goal" x1="0" y1={y(goal)} x2={WIDTH} y2={y(goal)} />{/if}
@@ -54,9 +53,6 @@ const color = (player: Player): string =>
     margin-bottom: 6px;
     color: var(--muted);
     font-size: 13px;
-  }
-
-  .label {
     font-weight: 700;
   }
 

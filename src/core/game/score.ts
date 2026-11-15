@@ -6,8 +6,6 @@ export interface Ranking {
   order: Player[];
   /** Gleich viele Punkte und gleich viele 13er */
   tie: boolean;
-  /** Punktgleich, aber durch die Zahl der 13er entschieden */
-  decidedByCombos: boolean;
 }
 
 /**
@@ -23,5 +21,5 @@ export function ranking(state: GameState): Ranking {
   const [first, second] = order;
   const samePoints = !!first && !!second && first.points === second.points;
   const tie = samePoints && first?.combos === second?.combos;
-  return { order, tie, decidedByCombos: samePoints && !tie };
+  return { order, tie };
 }

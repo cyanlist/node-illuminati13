@@ -23,36 +23,6 @@ export function scoreHistory(state: GameState): number[][] {
 /** Protokolleinträge, die für einen Zug stehen – auch Aussetzen zählt */
 const isTurn = (kind: string): boolean => kind === 'proof' || kind === 'discard' || kind === 'skip';
 
-/** Wie die Führung im Lauf des Spiels verlief – aus Sicht derjenigen, die am Ende vorn liegt. */
-export interface LeadStory {
-  /** Wie oft eine andere Person die alleinige Führung übernommen hat */
-  changes: number;
-  /** Wer als Erstes allein vorn lag; null, wenn nie jemand vorn lag */
-  firstLeader: number | null;
-  /** Größter Rückstand der Person `winner` im Lauf des Spiels (0: nie zurück) */
-  deficit: number;
-}
-
-export function leadStory(history: readonly (readonly number[])[], winner: number): LeadStory {
-  let changes = 0;
-  let firstLeader: number | null = null;
-  let leader: number | null = null;
-  let deficit = 0;
-  for (const points of history) {
-    const best = Math.max(...points);
-    const ahead = points.flatMap((p, i) => (p === best ? [i] : []));
-    if (ahead.length === 1) {
-      const now = ahead[0] as number;
-      if (leader !== null && now !== leader) changes++;
-      leader = now;
-      firstLeader ??= now;
-    }
-    const others = points.filter((_, i) => i !== winner);
-    if (others.length > 0) deficit = Math.max(deficit, Math.max(...others) - (points[winner] ?? 0));
-  }
-  return { changes, firstLeader, deficit };
-}
-
 /**
  * Die Regeln der vier Stapel, wie sie zu Beginn des Spiels galten. In der Variante „Wenn die Weltordnung sich
  * verschiebt“ sind sie inzwischen weitergerückt – hier wird jede Verschiebung zurückgedreht.

@@ -1,18 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { leadStory, newGame, type Player, rulesAtStart, scoreHistory } from '../src/core/game';
+import { newGame, type Player, rulesAtStart, scoreHistory } from '../src/core/game';
 import { rotateRules } from '../src/core/rules';
 import { PUBLIC_URL, shareCaption, summarize } from '../src/features/sheets/results/result-summary';
-import { storyLine } from '../src/features/sheets/results/story';
 import { playOut, seededRng, settings } from './helpers';
-
-const player = (name: string, you = false): Player => ({
-  name,
-  cpu: false,
-  you,
-  hand: [],
-  points: 0,
-  combos: 0,
-});
 
 describe('Verlauf', () => {
   it('endet bei den Punkten, die alle am Schluss haben – auch mit bezahlten Tipps', () => {
@@ -29,61 +19,10 @@ describe('Verlauf', () => {
     ).length;
     expect(history).toHaveLength(moves + 1);
   });
-
-  it('erzählt Führungswechsel, Aufholjagd und Vorsprung von Anfang an', () => {
-    const anna = player('Anna');
-    const you = player('Ben', true);
-    // Ben führt, Anna holt auf und gewinnt
-    const comeback = [
-      [0, 0],
-      [0, 4],
-      [0, 8],
-      [5, 8],
-      [10, 8],
-      [12, 9],
-    ];
-    expect(leadStory(comeback, 0)).toEqual({ changes: 1, firstLeader: 1, deficit: 8 });
-    expect(storyLine(leadStory(comeback, 0), anna, 0, false)).toBe(
-      'Aufholjagd: Anna lag zwischendurch 8 Punkte zurück.',
-    );
-
-    const seesaw = [
-      [0, 0],
-      [2, 0],
-      [2, 3],
-      [5, 3],
-      [5, 6],
-      [8, 6],
-    ];
-    expect(storyLine(leadStory(seesaw, 0), anna, 0, false)).toBe('Die Führung wechselte 4-mal.');
-
-    const ahead = [
-      [0, 0],
-      [0, 2],
-      [1, 2],
-      [1, 4],
-    ];
-    expect(storyLine(leadStory(ahead, 1), you, 1, false)).toBe('Du lagst von Anfang an vorn.');
-
-    expect(
-      storyLine(
-        leadStory(
-          [
-            [0, 0],
-            [3, 3],
-          ],
-          0,
-        ),
-        anna,
-        0,
-        true,
-      ),
-    ).toBe('Kopf an Kopf bis zum Schluss.');
-  });
 });
 
 describe('Was das Ergebnis zeigt und teilt', () => {
-  it('nennt die Stapelregeln vom Spielbeginn, die Varianten und erzählt den Verlauf', () => {
+  it('nennt, wer gewinnt, die Stapelregeln vom Spielbeginn und die Varianten', () => {
     const game = newGame(
       settings({ variant: true, dir: 'rechts', truth: true, truthGoal: 33 }),
       seededRng(5),

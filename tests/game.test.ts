@@ -190,7 +190,7 @@ describe('Rundenablauf', () => {
     if (!a || !b) throw new Error('zwei Personen erwartet');
     Object.assign(a, { points: 10, combos: 3 });
     Object.assign(b, { points: 10, combos: 4 });
-    expect(ranking(game)).toMatchObject({ order: [a, b], tie: false, decidedByCombos: true });
+    expect(ranking(game)).toMatchObject({ order: [a, b], tie: false });
     b.combos = 3;
     expect(ranking(game).tie).toBe(true);
   });

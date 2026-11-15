@@ -91,10 +91,10 @@ async function loadFonts(): Promise<void> {
 }
 
 function layout(ctx: Ctx, game: GameState, summary: ResultSummary): Block[] {
-  const blocks: Block[] = [header(), titleBlock(ctx, summary)];
+  const blocks: Block[] = [header(), titleBlock(summary)];
   if (!summary.solo) blocks.push(duel(summary));
   else if (summary.comparison) blocks.push(soloBest(summary));
-  blocks.push(chart(ctx, game, summary), piles(ctx, summary), footer());
+  blocks.push(chart(game, summary), piles(ctx, summary), footer());
   return blocks;
 }
 
@@ -119,20 +119,15 @@ function header(): Block {
   };
 }
 
-function titleBlock(ctx: Ctx, summary: ResultSummary): Block {
-  ctx.font = font(34);
-  const lines = wrap(ctx, summary.subtitle, INNER);
+function titleBlock(summary: ResultSummary): Block {
   return {
     gap: 48,
-    height: 76 + 14 + lines.length * 46,
+    height: 76,
     draw(ctx, top) {
       ctx.textBaseline = 'top';
       ctx.fillStyle = COLOR.text;
       ctx.font = font(64, true);
       ctx.fillText(summary.title, PAD, top);
-      ctx.fillStyle = COLOR.muted;
-      ctx.font = font(34);
-      for (const [i, line] of lines.entries()) ctx.fillText(line, PAD, top + 90 + i * 46);
     },
   };
 }
@@ -229,12 +224,11 @@ function soloBest(summary: ResultSummary): Block {
   };
 }
 
-/** Der Verlauf: Punkte nach jedem Zug, je Person in ihrer Farbe, darüber sein Satz */
-function chart(ctx: Ctx, game: GameState, summary: ResultSummary): Block {
-  ctx.font = font(30);
-  const caption = wrap(ctx, `Verlauf · ${summary.caption}`, INNER - 2 * BOX);
+/** Der Verlauf: Punkte nach jedem Zug, je Person in ihrer Farbe */
+function chart(game: GameState, summary: ResultSummary): Block {
   const chartHeight = 240;
-  const captionHeight = caption.length * 40;
+  // nur die Überschrift „Verlauf“
+  const captionHeight = 40;
   return {
     gap: 44,
     height: BOX + captionHeight + 24 + chartHeight + BOX,
@@ -245,7 +239,7 @@ function chart(ctx: Ctx, game: GameState, summary: ResultSummary): Block {
       ctx.fillStyle = COLOR.muted;
       ctx.font = font(30);
       ctx.textBaseline = 'top';
-      for (const [i, line] of caption.entries()) ctx.fillText(line, PAD + BOX, top + BOX + i * 40);
+      ctx.fillText('Verlauf', PAD + BOX, top + BOX);
 
       const left = PAD + BOX;
       const width = INNER - 2 * BOX;

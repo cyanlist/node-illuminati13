@@ -56,8 +56,6 @@ async function share(): Promise<void> {
 </script>
 
 <Sheet title={summary.title}>
-  <p>{summary.subtitle}</p>
-
   {#if !summary.solo}<ResultDuel players={summary.order} tie={summary.tie} />{/if}
   {#if summary.comparison}<SoloBest {...summary.comparison} />{/if}
   <ScoreChart
@@ -65,7 +63,6 @@ async function share(): Promise<void> {
     players={game.players}
     highlight={summary.tie ? null : summary.winnerIndex}
     goal={summary.goal}
-    caption={summary.caption}
   />
 
   {#snippet actions()}
