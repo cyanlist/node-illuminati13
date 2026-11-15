@@ -9,6 +9,7 @@ const SETTINGS_KEY = 'illu13-settings';
 
 const DECK_KEY = 'illu13-deck';
 const THEME_KEY = 'illu13-theme';
+const LOG_PANEL_KEY = 'illu13-log-panel';
 
 function read(key: string): unknown {
   try {
@@ -52,3 +53,7 @@ export function loadTheme(): Theme {
   return isTheme(value) ? value : 'auto';
 }
 export const saveTheme = (theme: Theme): void => write(THEME_KEY, theme);
+
+/** Breite Bildschirme: Protokoll als Seitenleiste offen – wer es offen mag, findet es beim nächsten Spiel wieder offen. */
+export const loadLogPanel = (): boolean => read(LOG_PANEL_KEY) === true;
+export const saveLogPanel = (open: boolean): void => write(LOG_PANEL_KEY, open);

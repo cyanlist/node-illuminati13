@@ -6,7 +6,7 @@ import LogButton from './LogButton.svelte';
 </script>
 
 <!--
-  Rechts nur zwei Knöpfe: das Protokoll (nur wo es nicht neben dem Tisch steht) und das Zahnrad mit Regeln,
+  Rechts nur zwei Knöpfe: das Protokoll (breit als Seitenleiste, schmal als Fenster) und das Zahnrad mit Regeln,
   Einstellungen und Startseite. Auf dem Handy steht vom Titel nur das Logo da.
 -->
 <header>

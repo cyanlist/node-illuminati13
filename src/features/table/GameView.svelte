@@ -39,6 +39,8 @@ const chrome = $derived(
 
 <div class="game">
   <TopBar />
+  <!-- die Seitenleiste mit dem Protokoll liegt rechts am Rand dieses Bereichs, über dem Tisch -->
+  <div class="stage">
   <main class="table">
     <div class="play" style:--chrome="{chrome}px">
       <!-- legt sich über den Platz gegenüber, statt den Tisch nach unten zu schieben -->
@@ -51,9 +53,10 @@ const chrome = $derived(
       </div>
       <PlayerSeat {game} index={bottom} position="bottom" />
     </div>
-    <GameLog {game} />
     <div class="controls"><Actions {game} /></div>
   </main>
+  <GameLog {game} />
+  </div>
   <!-- liegt über dem Tisch und nimmt ihm keinen Platz weg -->
   {#if lesson.active}<LessonOverlay {game} />{/if}
 </div>
@@ -67,6 +70,10 @@ const chrome = $derived(
     gap: 16px;
   }
 
+  .stage {
+    position: relative;
+  }
+
   .table {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -75,24 +82,19 @@ const chrome = $derived(
 
   /* Knöpfe und Rückmeldung unter dem Tisch */
   .controls {
-    grid-column: 1;
     display: flex;
     flex-direction: column;
     gap: 14px;
   }
 
   /*
-   * Breite Bildschirme: Das Protokoll steht in der ersten Zeile neben Plätzen und Board und endet damit am
-   * unteren Platz – die Knöpfe darunter bekommen ihre eigene Zeile.
+   * Breite Bildschirme: Die Karten sind hier schon so groß, wie sie werden – breiter als nötig stünde der Tisch leer
+   * da. Er bleibt deshalb schmal und mittig; das Protokoll schiebt sich bei Bedarf von rechts darüber (GameLog).
    */
   @media (min-width: 980px) {
     .table {
-      grid-template-columns: minmax(0, 1fr) 290px;
-    }
-
-    .table > :global(aside) {
-      grid-column: 2;
-      grid-row: 1;
+      max-width: 860px;
+      margin-inline: auto;
     }
   }
 
@@ -131,6 +133,13 @@ const chrome = $derived(
     .game {
       height: 100%;
       gap: 10px;
+    }
+
+    .stage {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
     }
 
     .table {

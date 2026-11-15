@@ -4,7 +4,7 @@ import { table } from '../../state/table.svelte';
 import { isSystemEntry } from '../../ui/format';
 import LogText from './LogText.svelte';
 
-/** Alle Züge als Liste, das Neueste oben – neben dem Tisch und im Protokoll-Fenster. */
+/** Alle Züge als Liste, das Neueste oben – in der Seitenleiste und im Protokoll-Fenster. */
 let { game }: { game: GameState } = $props();
 
 const newestFirst = $derived([...table.log].reverse());

@@ -4,7 +4,7 @@ import { sheets } from '../../state/sheets.svelte';
 import Sheet from '../../ui/Sheet.svelte';
 import LogList from '../table/LogList.svelte';
 
-/** Das Protokoll als Fenster – auf schmalen Bildschirmen, wo es nicht neben dem Tisch steht. */
+/** Das Protokoll als Fenster – auf schmalen Bildschirmen; auf breiten klappt es als Seitenleiste auf (GameLog). */
 let { game }: { game: GameState } = $props();
 
 const close = (): void => {
