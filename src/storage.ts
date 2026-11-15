@@ -28,6 +28,8 @@ function write(key: string, value: unknown): void {
 }
 
 export const loadSettings = (): Settings => normalizeSettings(read(SETTINGS_KEY));
+/** Wurde auf diesem Gerät schon einmal ein Spiel gestartet? (Erst dann gibt es eine „zuletzt“ gespielte Spielart.) */
+export const hasSavedSettings = (): boolean => read(SETTINGS_KEY) !== null;
 export const saveSettings = (settings: Settings): void => write(SETTINGS_KEY, settings);
 
 /** Bestwert allein – je Spielende unter eigenem Namen (`Ending.recordName`), z. B. illu13-best-solo-13 */

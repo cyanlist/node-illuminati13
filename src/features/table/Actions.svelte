@@ -1,8 +1,8 @@
 <script lang="ts">
 import { currentPlayer, type GameState } from '../../core/game';
 import { playSelection, showHint } from '../../state/actions';
-import { goHome } from '../../state/flow';
 import { sheets } from '../../state/sheets.svelte';
+import { openSetup } from '../../state/start-screen.svelte';
 import { table } from '../../state/table.svelte';
 import { hintButton, mainButton } from './buttons';
 
@@ -39,7 +39,7 @@ const waitingLabel = $derived(
 <div class="actions" data-tour="actions">
   {#if table.phase === 'over' && !table.anim}
     <button type="button" class="btn btn--primary" onclick={() => (sheets.resultsHidden = false)}>Ergebnis ansehen</button>
-    <button type="button" class="btn btn--ghost" onclick={goHome}>Andere Einstellungen</button>
+    <button type="button" class="btn btn--ghost" onclick={openSetup}>Andere Einstellungen</button>
   {:else if table.canPlay}
     <button
       type="button"

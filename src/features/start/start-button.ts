@@ -32,7 +32,7 @@ export function startButton(onlineMode: boolean, link: Link): StartButton {
   const peer = link.peerName || 'Das andere Gerät';
   if (link.role === 'guest' && link.connected) return blocked(`${peer} startet das Spiel.`);
   if (!link.connected && link.pending) return blocked('Warte auf das andere Gerät …');
-  if (!link.connected) return blocked('Verbinde erst ein 2. Gerät – oben bei „Gegenüber“.');
+  if (!link.connected) return blocked('Verbinde erst ein 2. Gerät – oben über „Einladen“ oder „Beitreten“.');
   if (link.silent) return blocked(`${peer} antwortet gerade nicht.`);
   return READY;
 }
