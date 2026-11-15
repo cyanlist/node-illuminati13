@@ -1,4 +1,5 @@
 import { turnsTaken, turnsUntilRoundEnds } from '../../history';
+import { TIE_BREAK_TEXT } from '../../score';
 import type { GameState } from '../../types';
 import type { Ending } from '../types';
 
@@ -37,6 +38,6 @@ export function firstTo(points: number): Ending {
     endText: (solo, draw) =>
       solo
         ? `Das Spiel endet, sobald du ${points} Punkte hast – gewertet wird, in wie vielen Zügen du sie schaffst. ${draw.emptyText(true)}`
-        : `Wer zuerst ${points} Punkte hat, beendet das Spiel. Die Runde wird noch zu Ende gespielt, damit alle gleich viele Züge hatten – dann gewinnen die meisten Punkte. ${draw.emptyText(false)} Bei Punktgleichstand gewinnt, wer mehr 13er-Kombinationen gefunden hat.`,
+        : `Wer zuerst ${points} Punkte hat, beendet das Spiel. Die Runde wird noch zu Ende gespielt, damit alle gleich viele Züge hatten – dann gewinnen die meisten Punkte. ${draw.emptyText(false)} ${TIE_BREAK_TEXT}`,
   };
 }

@@ -184,13 +184,13 @@ describe('Rundenablauf', () => {
     expect(game.over).toBe(true);
   });
 
-  it('bei Punktgleichstand entscheiden die 13er', () => {
+  it('bei Punktgleichstand gewinnt, wer weniger 13er gebraucht hat', () => {
     const game = newGame(settings({ mode: 'hotseat' }));
     const [a, b] = game.players;
     if (!a || !b) throw new Error('zwei Personen erwartet');
     Object.assign(a, { points: 10, combos: 3 });
     Object.assign(b, { points: 10, combos: 4 });
-    expect(ranking(game)).toMatchObject({ order: [b, a], tie: false, decidedByCombos: true });
+    expect(ranking(game)).toMatchObject({ order: [a, b], tie: false, decidedByCombos: true });
     b.combos = 3;
     expect(ranking(game).tie).toBe(true);
   });

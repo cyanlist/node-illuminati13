@@ -1,3 +1,4 @@
+import { TIE_BREAK_TEXT } from '../../score';
 import type { Ending } from '../types';
 
 /**
@@ -12,6 +13,5 @@ export const fullDeck: Ending = {
   beatsBest: (score, best) => score > best,
   aimText: (solo) =>
     solo ? 'Sammle so viele Punkte wie möglich.' : 'Wer am Ende die meisten Punkte hat, gewinnt.',
-  endText: (solo, draw) =>
-    `${draw.emptyText(solo)} ${solo ? 'Danach zählen deine Punkte.' : 'Bei Punktgleichstand gewinnt, wer mehr 13er-Kombinationen gefunden hat.'}`,
+  endText: (solo, draw) => `${draw.emptyText(solo)} ${solo ? 'Danach zählen deine Punkte.' : TIE_BREAK_TEXT}`,
 };

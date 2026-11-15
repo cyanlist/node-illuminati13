@@ -12,7 +12,7 @@ export interface Player {
   you: boolean;
   hand: Card[];
   points: number;
-  /** Anzahl gefundener 13er-Kombinationen (entscheidet bei Punktgleichstand) */
+  /** Anzahl gefundener 13er-Kombinationen (bei Punktgleichstand gewinnen die wenigsten) */
   combos: number;
 }
 

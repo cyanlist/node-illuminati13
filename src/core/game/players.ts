@@ -39,7 +39,7 @@ export const currentPlayer = (state: GameState): Player => playerAt(state, state
 
 /* ---------- Punkte ---------- */
 
-/** Ein gelungener Beweis: je Karte ein Punkt – und die 13 einmal mehr gefunden (entscheidet bei Gleichstand). */
+/** Ein gelungener Beweis: je Karte ein Punkt – und die 13 einmal mehr gefunden (bei Punktgleichstand gewinnen die wenigsten). */
 export function scoreProof(player: Player, cardCount: number): void {
   player.points += cardCount;
   player.combos++;

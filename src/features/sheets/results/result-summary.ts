@@ -111,7 +111,7 @@ function duelHeadline(result: Ranking, winner: Player): Headline {
   return {
     title: winner.you ? 'Du gewinnst!' : `${winner.name} gewinnt!`,
     subtitle: result.decidedByCombos
-      ? 'Punktgleich, aber mit mehr gefundenen 13er-Kombinationen.'
+      ? 'Punktgleich, aber mit weniger, dafür größeren 13er-Kombinationen.'
       : 'Die Wahrheit wurde am klarsten bewiesen.',
     comparison: null,
   };
